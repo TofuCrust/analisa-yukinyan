@@ -1,1620 +1,1091 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Migration Strategy — Yukinyan HFT → New Architecture</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&display=swap"
-    rel="stylesheet">
+  <title>Project Dashboard — YukiNexus & NekoSport</title>
   <style>
-    :root {
-      --bg-deep: #0b0f1a;
-      --bg-surface: #111827;
-      --bg-card: #1a2235;
-      --bg-card-hover: #1e2a42;
-      --bg-elevated: #243049;
-      --border: #2a3654;
-      --border-accent: #334670;
-      --text-primary: #e8ecf4;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      --teal: #2dd4bf;
-      --teal-dim: #14b8a6;
-      --teal-bg: rgba(45, 212, 191, 0.08);
-      --amber: #f59e0b;
-      --amber-dim: #d97706;
-      --amber-bg: rgba(245, 158, 11, 0.08);
-      --red: #f87171;
-      --red-bg: rgba(248, 113, 113, 0.07);
-      --green: #4ade80;
-      --green-bg: rgba(74, 222, 128, 0.07);
-      --blue: #60a5fa;
-      --blue-bg: rgba(96, 165, 250, 0.07);
-      --purple: #a78bfa;
-      --radius: 12px;
-      --radius-sm: 8px;
-      --radius-lg: 16px;
-      --font-body: 'DM Sans', sans-serif;
-      --font-display: 'Fraunces', serif;
-      --font-mono: 'JetBrains Mono', monospace;
-      --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
-    }
-
-    * {
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      scroll-padding-top: 80px;
     }
 
     body {
-      font-family: var(--font-body);
-      background: var(--bg-deep);
-      color: var(--text-primary);
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #111318;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
-    /* === TOP NAV === */
-    .topnav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: rgba(11, 15, 26, 0.85);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      height: 64px;
+    .tab-bar {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 4px;
+      padding: 10px 20px;
+      background: #181b22;
+      border-bottom: 1px solid #2a2d36;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    .topnav-brand {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--teal);
-      white-space: nowrap;
-      margin-right: 1rem;
-      letter-spacing: -0.02em;
+    .tab-bar .brand {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6b7080;
+      margin-right: 16px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
-    .topnav-links {
-      display: flex;
-      gap: 0.25rem;
-      overflow-x: auto;
-      scrollbar-width: none;
+    .tab-btn {
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: #8a8f9d;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .tab-btn:hover {
+      background: #1f222b;
+      color: #c0c4ce;
+    }
+
+    .tab-btn.active {
+      background: #252830;
+      color: #ffffff;
+      border-color: #3a3d48;
+    }
+
+    .tab-content {
       flex: 1;
+      position: relative;
+      overflow: hidden;
     }
 
-    .topnav-links::-webkit-scrollbar {
+    .tab-content iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
       display: none;
     }
 
-    .topnav-links a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.8rem;
-      font-weight: 500;
-      padding: 0.4rem 0.75rem;
-      border-radius: 6px;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-
-    .topnav-links a:hover,
-    .topnav-links a.active {
-      color: var(--text-primary);
-      background: var(--bg-card);
-    }
-
-    /* === MAIN === */
-    main {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 100px 1.5rem 6rem;
-    }
-
-    /* === HERO === */
-    .hero {
-      text-align: center;
-      padding: 3rem 0 4rem;
-      position: relative;
-    }
-
-    .hero::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 10%;
-      right: 10%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
-    }
-
-    .hero-badge {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 500;
-      color: var(--teal);
-      background: var(--teal-bg);
-      border: 1px solid rgba(45, 212, 191, 0.15);
-      padding: 0.35rem 1rem;
-      border-radius: 50px;
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 700;
-      line-height: 1.2;
-      color: var(--text-primary);
-      margin-bottom: 1rem;
-      letter-spacing: -0.03em;
-    }
-
-    .hero h1 em {
-      font-style: italic;
-      color: var(--teal);
-    }
-
-    .hero-sub {
-      font-size: 1.05rem;
-      color: var(--text-secondary);
-      max-width: 600px;
-      margin: 0 auto;
-      line-height: 1.8;
-    }
-
-    /* === SECTION === */
-    section {
-      padding: 3.5rem 0 2rem;
-    }
-
-    .section-label {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--teal-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.6rem;
-    }
-
-    .section-title {
-      font-family: var(--font-display);
-      font-size: 1.7rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 1.2rem;
-      letter-spacing: -0.02em;
-    }
-
-    .section-desc {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      max-width: 700px;
-      margin-bottom: 2rem;
-      line-height: 1.8;
-    }
-
-    /* === CARDS === */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
-    }
-
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      transition: all 0.25s;
-    }
-
-    .card:hover {
-      border-color: var(--border-accent);
-      background: var(--bg-card-hover);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-
-    .card-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.75rem;
+    .tab-content iframe.active {
       display: block;
-    }
-
-    .card h3 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
-    }
-
-    .card p {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-    }
-
-    /* === COMPARISON === */
-    .comparison {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    .comp-col {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.75rem;
-      position: relative;
-    }
-
-    .comp-col.before {
-      border-top: 3px solid var(--amber);
-    }
-
-    .comp-col.after {
-      border-top: 3px solid var(--teal);
-    }
-
-    .comp-col h3 {
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 1rem;
-    }
-
-    .comp-col.before h3 {
-      color: var(--amber);
-    }
-
-    .comp-col.after h3 {
-      color: var(--teal);
-    }
-
-    .comp-col ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .comp-col ul li {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-      padding: 0.4rem 0;
-      padding-left: 1.4rem;
-      position: relative;
-      line-height: 1.6;
-    }
-
-    .comp-col ul li::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0.75rem;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-    }
-
-    .comp-col.before ul li::before {
-      background: var(--amber-dim);
-    }
-
-    .comp-col.after ul li::before {
-      background: var(--teal-dim);
-    }
-
-    /* === TABLE === */
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      margin-top: 1.5rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-
-    thead th {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      font-weight: 600;
-      text-align: left;
-      padding: 1rem 1.25rem;
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      border-bottom: 1px solid var(--border);
-    }
-
-    thead th:first-child {
-      border-radius: var(--radius) 0 0 0;
-    }
-
-    thead th:last-child {
-      border-radius: 0 var(--radius) 0 0;
-    }
-
-    tbody td {
-      padding: 0.85rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-secondary);
-      line-height: 1.6;
-      vertical-align: top;
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    tbody tr:hover {
-      background: var(--bg-card-hover);
-    }
-
-    td .verdict {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .verdict.recommended {
-      background: var(--green-bg);
-      color: var(--green);
-      border: 1px solid rgba(74, 222, 128, 0.2);
-    }
-
-    .verdict.not-recommended {
-      background: var(--red-bg);
-      color: var(--red);
-      border: 1px solid rgba(248, 113, 113, 0.2);
-    }
-
-    /* === TIMELINE === */
-    .timeline {
-      position: relative;
-      margin-top: 2rem;
-      padding-left: 2rem;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 7px;
-      top: 8px;
-      bottom: 8px;
-      width: 2px;
-      background: linear-gradient(to bottom, var(--teal), var(--amber), var(--teal));
-      border-radius: 2px;
-    }
-
-    .tl-item {
-      position: relative;
-      padding-bottom: 2rem;
-    }
-
-    .tl-item:last-child {
-      padding-bottom: 0;
-    }
-
-    .tl-dot {
-      position: absolute;
-      left: -2rem;
-      top: 4px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--bg-deep);
-      border: 3px solid var(--teal);
-      z-index: 1;
-    }
-
-    .tl-phase {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--teal-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .tl-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin: 0.3rem 0 0.4rem;
-    }
-
-    .tl-duration {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--amber);
-      background: var(--amber-bg);
-      border: 1px solid rgba(245, 158, 11, 0.15);
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-    }
-
-    .tl-desc {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-    }
-
-    .tl-desc ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 0.3rem;
-    }
-
-    .tl-desc ul li {
-      padding: 0.15rem 0;
-      padding-left: 1.2rem;
-      position: relative;
-    }
-
-    .tl-desc ul li::before {
-      content: '›';
-      position: absolute;
-      left: 0;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
-
-    /* === DATA FLOW DIAGRAM === */
-    .flow-diagram {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 2.5rem 2rem;
-      margin-top: 1.5rem;
-      text-align: center;
-    }
-
-    .flow-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-
-    .flow-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .flow-box {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-accent);
-      border-radius: var(--radius-sm);
-      padding: 0.75rem 1.25rem;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--text-primary);
-      white-space: nowrap;
-    }
-
-    .flow-box.accent-teal {
-      border-color: rgba(45, 212, 191, 0.3);
-      background: var(--teal-bg);
-      color: var(--teal);
-    }
-
-    .flow-box.accent-amber {
-      border-color: rgba(245, 158, 11, 0.3);
-      background: var(--amber-bg);
-      color: var(--amber);
-    }
-
-    .flow-box.accent-blue {
-      border-color: rgba(96, 165, 250, 0.3);
-      background: var(--blue-bg);
-      color: var(--blue);
-    }
-
-    .flow-arrow {
-      color: var(--text-muted);
-      font-size: 1.2rem;
-      line-height: 1;
-    }
-
-    .flow-arrow.down {
-      display: block;
-      text-align: center;
-      margin: 0.5rem auto;
-      font-size: 1.4rem;
-    }
-
-    /* === CALLOUT === */
-    .callout {
-      background: var(--teal-bg);
-      border: 1px solid rgba(45, 212, 191, 0.15);
-      border-left: 4px solid var(--teal);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      padding: 1.25rem 1.5rem;
-      margin-top: 1.5rem;
-    }
-
-    .callout p {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-    }
-
-    .callout strong {
-      color: var(--teal);
-    }
-
-    /* === EXEC SUMMARY ITEMS === */
-    .exec-list {
-      display: grid;
-      gap: 0.75rem;
-      margin-top: 1rem;
-    }
-
-    .exec-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 1rem 1.25rem;
-    }
-
-    .exec-num {
-      flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 700;
-      background: var(--teal-bg);
-      color: var(--teal);
-      border: 1px solid rgba(45, 212, 191, 0.2);
-    }
-
-    .exec-text {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    .exec-text strong {
-      color: var(--text-primary);
-    }
-
-    /* === RECOMMENDATION CARD === */
-    .rec-card {
-      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(45, 212, 191, 0.04) 100%);
-      border: 1px solid rgba(45, 212, 191, 0.2);
-      border-radius: var(--radius-lg);
-      padding: 2.5rem;
-      margin-top: 1.5rem;
-      text-align: center;
-    }
-
-    .rec-card h3 {
-      font-family: var(--font-display);
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--teal);
-      margin-bottom: 1rem;
-    }
-
-    .rec-card p {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      line-height: 1.8;
-      max-width: 650px;
-      margin: 0 auto 1rem;
-    }
-
-    .rec-pills {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem;
-      margin-top: 1.5rem;
-    }
-
-    .rec-pill {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 0.4rem 1rem;
-      border-radius: 50px;
-      border: 1px solid var(--border-accent);
-      color: var(--text-secondary);
-      background: var(--bg-elevated);
-      letter-spacing: 0.02em;
-    }
-
-    /* === TAG === */
-    .tag {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      font-weight: 600;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .tag.low {
-      background: var(--green-bg);
-      color: var(--green);
-      border: 1px solid rgba(74, 222, 128, 0.2);
-    }
-
-    .tag.med {
-      background: var(--amber-bg);
-      color: var(--amber);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-    }
-
-    .tag.high {
-      background: var(--red-bg);
-      color: var(--red);
-      border: 1px solid rgba(248, 113, 113, 0.2);
-    }
-
-    /* === ACCORDION FAQ === */
-    .accordion {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-
-    .accordion-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      transition: border-color 0.25s;
-    }
-
-    .accordion-item.open {
-      border-color: var(--border-accent);
-    }
-
-    .accordion-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.1rem 1.35rem;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.2s;
-    }
-
-    .accordion-header:hover {
-      background: var(--bg-card-hover);
-    }
-
-    .accordion-num {
-      flex-shrink: 0;
-      width: 26px;
-      height: 26px;
-      border-radius: 7px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 700;
-      background: var(--teal-bg);
-      color: var(--teal);
-      border: 1px solid rgba(45, 212, 191, 0.2);
-    }
-
-    .accordion-question {
-      flex: 1;
-      font-size: 0.92rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      line-height: 1.4;
-    }
-
-    .accordion-chevron {
-      flex-shrink: 0;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      transition: transform 0.3s ease;
-    }
-
-    .accordion-item.open .accordion-chevron {
-      transform: rotate(180deg);
-    }
-
-    .accordion-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.35s ease, padding 0.25s ease;
-    }
-
-    .accordion-item.open .accordion-body {
-      max-height: 500px;
-    }
-
-    .accordion-answer {
-      padding: 0 1.35rem 1.25rem;
-      padding-left: calc(1.35rem + 26px + 1rem);
-      font-size: 0.86rem;
-      color: var(--text-secondary);
-      line-height: 1.75;
-    }
-
-    /* === DECISION BOX === */
-    .decision-box {
-      background: var(--bg-card);
-      border: 1px solid rgba(45, 212, 191, 0.2);
-      border-radius: var(--radius-lg);
-      padding: 0.5rem;
-      margin-top: 1rem;
-    }
-
-    .decision-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      padding: 1.15rem 1.25rem;
-      border-radius: var(--radius-sm);
-      transition: background 0.2s;
-    }
-
-    .decision-item:hover {
-      background: var(--bg-card-hover);
-    }
-
-    .decision-item+.decision-item {
-      border-top: 1px solid var(--border);
-    }
-
-    .decision-check {
-      flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      border: 2px solid var(--teal-dim);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0;
-      margin-top: 2px;
-      background: var(--teal-bg);
-    }
-
-    .decision-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .decision-content strong {
-      font-size: 0.9rem;
-      color: var(--text-primary);
-    }
-
-    .decision-content span {
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    /* === FOOTER === */
-    .footer {
-      text-align: center;
-      padding: 3rem 0 2rem;
-      color: var(--text-muted);
-      font-size: 0.78rem;
-      border-top: 1px solid var(--border);
-      margin-top: 3rem;
-    }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 700px) {
-      .comparison {
-        grid-template-columns: 1fr;
-      }
-
-      .topnav {
-        padding: 0 1rem;
-      }
-
-      .topnav-brand {
-        font-size: 0.95rem;
-      }
-
-      main {
-        padding: 80px 1rem 4rem;
-      }
-
-      .rec-card {
-        padding: 1.5rem;
-      }
-
-      .flow-row {
-        gap: 0.5rem;
-      }
-
-      .flow-box {
-        font-size: 0.75rem;
-        padding: 0.5rem 0.75rem;
-      }
-    }
-
-    /* === ANIMATION === */
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(16px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    section {
-      animation: fadeUp 0.5s ease both;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- TOP NAV -->
-  <nav class="topnav">
-    <div class="topnav-brand">⬡ Migration Strategy</div>
-    <div class="topnav-links">
-      <a href="#summary">Summary</a>
-      <a href="#current">Kondisi</a>
-      <a href="#why-new">Arsitektur Baru</a>
-      <a href="#why-not-rewrite">Kenapa Tidak Rombak</a>
-      <a href="#role-shift">Perubahan Fungsi</a>
-      <a href="#data-use">Pemanfaatan Data</a>
-      <a href="#options">Opsi</a>
-      <a href="#timeline">Timeline</a>
-      <a href="#decision">Keputusan</a>
-      <a href="#faq">FAQ</a>
-      <a href="#recommendation">Rekomendasi</a>
-    </div>
-  </nav>
-
-  <main>
-
-    <!-- HERO -->
-    <div class="hero">
-      <span class="hero-badge">Strategy Document · Q2 2026</span>
-      <h1>Dari Yukinyan ke <em>Arsitektur Baru</em></h1>
-      <p class="hero-sub">
-        Dokumen strategi migrasi bot trading Polymarket —
-        membangun fondasi baru tanpa kehilangan aset yang sudah ada.
-      </p>
-    </div>
-
-    <!-- 1. EXECUTIVE SUMMARY -->
-    <section id="summary">
-      <div class="section-label">01 — Ringkasan</div>
-      <div class="section-title">Executive Summary</div>
-      <div class="section-desc">
-        Keputusan inti dan poin-poin utama yang perlu dipahami sebelum membaca detail.
-      </div>
-
-      <div class="exec-list">
-        <div class="exec-item">
-          <div class="exec-num">1</div>
-          <div class="exec-text"><strong>Bangun bot baru dengan arsitektur baru.</strong> Fondasi yang lebih modular,
-            stabil, dan siap dikembangkan untuk jangka panjang.</div>
-        </div>
-        <div class="exec-item">
-          <div class="exec-num">2</div>
-          <div class="exec-text"><strong>Yukinyan tetap dipakai — bukan dibuang.</strong> Fungsinya dialihkan dari
-            trading aktif menjadi data collector, observer, dan baseline.</div>
-        </div>
-        <div class="exec-item">
-          <div class="exec-num">3</div>
-          <div class="exec-text"><strong>Data lama tidak hilang.</strong> Seluruh log, telemetry, dan observasi Yukinyan
-            akan dimanfaatkan untuk memvalidasi dan mempercepat pengembangan bot baru.</div>
-        </div>
-        <div class="exec-item">
-          <div class="exec-num">4</div>
-          <div class="exec-text"><strong>Migrasi bertahap, bukan big bang.</strong> Risiko lebih rendah karena data
-            collection tetap berjalan dan pembanding selalu tersedia.</div>
-        </div>
-        <div class="exec-item">
-          <div class="exec-num">5</div>
-          <div class="exec-text"><strong>Target akhir:</strong> bot yang lebih andal (reliability), lebih mudah dipantau
-            (observability), lebih mudah dikelola (maintainability), dan lebih siap untuk scale-up (scalability).</div>
-        </div>
-      </div>
-
-      <div class="callout" style="margin-top:1.5rem;">
-        <p>
-          <strong>Tujuan inti migrasi dalam satu kalimat:</strong> Membangun fondasi yang lebih andal, lebih mudah
-          dipantau, lebih mudah dikelola, dan lebih siap untuk dikembangkan — tanpa kehilangan aset dan data yang sudah
-          ada.
-        </p>
-      </div>
-
-      <div class="callout" style="margin-top:0.75rem;">
-        <p>
-          <strong>Framing utama:</strong> "Freeze strategy, expand telemetry" — Yukinyan menjadi collector + observer +
-          benchmark. Bot baru menjadi future execution engine.
-        </p>
-      </div>
-    </section>
-
-    <!-- 2. KONDISI SAAT INI -->
-    <section id="current">
-      <div class="section-label">02 — Status Quo</div>
-      <div class="section-title">Kondisi Saat Ini</div>
-      <div class="section-desc">
-        Yukinyan sudah berjalan, menghasilkan data, dan berhasil membuktikan konsep strategi — tetapi bukan fondasi
-        ideal untuk langkah berikutnya.
-      </div>
-
-      <div class="card-grid">
-        <div class="card">
-          <span class="card-icon">✅</span>
-          <h3>Sudah Berjalan & Menghasilkan Data</h3>
-          <p>Yukinyan aktif di market BTC 5-min dan telah mengumpulkan ratusan data trade yang sangat berharga.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">✅</span>
-          <h3>Konsep Strategy Terbukti</h3>
-          <p>Dari data 834+ trade, kita sudah tahu exit mechanism mana yang profitable dan mana yang perlu diperbaiki.
-          </p>
-        </div>
-        <div class="card">
-          <span class="card-icon">⚠️</span>
-          <h3>Logic Masih Hardcoded</h3>
-          <p>Strategi trading masih tertanam langsung di kode utama, sulit untuk diubah atau diuji secara terpisah.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">⚠️</span>
-          <h3>Arsitektur Kurang Ideal</h3>
-          <p>Menambahkan fitur baru di atas sistem yang ada akan semakin sulit dan berisiko merusak bagian yang sudah
-            jalan.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. KENAPA ARSITEKTUR BARU -->
-    <section id="why-new">
-      <div class="section-label">03 — Visi</div>
-      <div class="section-title">Mengapa Perlu Arsitektur Baru</div>
-      <div class="section-desc">
-        Arsitektur baru dirancang agar setiap bagian sistem bisa dikembangkan, diuji, dan diperbaiki secara independen —
-        tanpa mengganggu bagian lain. Secara bisnis, ini berarti: sistem lebih andal saat dijalankan, lebih mudah
-        dipantau saat ada masalah, lebih mudah dikelola oleh tim, dan lebih siap untuk dikembangkan ke skala yang lebih
-        besar.
-      </div>
-
-      <div class="card-grid">
-        <div class="card">
-          <span class="card-icon">🧩</span>
-          <h3>Pemisahan Concern yang Jelas</h3>
-          <p>Data ingestion, feature calculation, strategy, execution, storage, dan diagnostics — masing-masing berdiri
-            sendiri dan saling terhubung dengan rapi.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🔍</span>
-          <h3>Lebih Mudah di-Debug</h3>
-          <p>Saat ada masalah, kita bisa langsung mengisolasi komponen mana yang bermasalah tanpa harus membongkar
-            seluruh sistem.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🔁</span>
-          <h3>Bisa Diuji Ulang dengan Data Nyata</h3>
-          <p>Bisa memutar ulang data historis untuk menguji strategi baru — memvalidasi keputusan sebelum dijalankan
-            dengan uang sungguhan.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🧪</span>
-          <h3>Lebih Mudah di-Test</h3>
-          <p>Setiap komponen bisa diuji secara terpisah. Perubahan di satu tempat tidak merusak tempat lain.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🛡️</span>
-          <h3>Lebih Aman untuk Live Execution</h3>
-          <p>Fondasi yang lebih kokoh untuk menjalankan bot dengan uang sungguhan di tahap produksi.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">📋</span>
-          <h3>Siap untuk Verifikasi & Investigasi</h3>
-          <p>Setiap keputusan trading bisa dilacak dan diverifikasi — penting untuk membangun kepercayaan, menemukan
-            masalah, dan perbaikan berkelanjutan.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. KENAPA TIDAK ROMBAK YUKINYAN -->
-    <section id="why-not-rewrite">
-      <div class="section-label">04 — Pertimbangan Risiko</div>
-      <div class="section-title">Kenapa Tidak Merombak Yukinyan Total Sekarang</div>
-      <div class="section-desc">
-        Full rewrite terhadap Yukinyan terdengar menarik, tetapi justru membawa risiko lebih besar dibanding membangun
-        baru secara terpisah.
-      </div>
-
-      <div class="card-grid">
-        <div class="card">
-          <span class="card-icon">🚫</span>
-          <h3>Risiko Putusnya Data Collection</h3>
-          <p>Merombak total bisa mematikan aliran data selama proses rewrite — data yang sedang dikumpulkan akan
-            terganggu.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🔀</span>
-          <h3>Masalah Lama & Baru Tercampur</h3>
-          <p>Saat refactor, sulit membedakan apakah bug datang dari logic lama, kode baru, atau interaksi keduanya.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🎯</span>
-          <h3>Risiko Refactor & Risiko Strategi Tercampur</h3>
-          <p>Jika terjadi kegagalan, akan sangat sulit menentukan: apakah masalahnya di strategi trading, di arsitektur,
-            atau di proses rewrite itu sendiri. Memisahkan keduanya jauh lebih aman.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">⏳</span>
-          <h3>Waktu & Risiko Lebih Besar</h3>
-          <p>Full rewrite cenderung memakan waktu lebih lama dari estimasi dan membawa ketidakpastian yang tinggi.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">📊</span>
-          <h3>Kehilangan Baseline Pembanding</h3>
-          <p>Tanpa Yukinyan yang tetap jalan, kita kehilangan acuan untuk memvalidasi apakah bot baru benar-benar lebih
-            baik.</p>
-        </div>
-      </div>
-
-      <div class="callout">
-        <p>
-          <strong>Prinsip utama:</strong> Dengan mempertahankan Yukinyan sebagai penghasil data dan baseline pembanding,
-          kita bisa membangun yang baru tanpa tekanan dan tanpa kehilangan informasi berharga.
-        </p>
-      </div>
-    </section>
-
-    <!-- 5. PERUBAHAN FUNGSI YUKINYAN -->
-    <section id="role-shift">
-      <div class="section-label">05 — Transformasi Peran</div>
-      <div class="section-title">Perubahan Fungsi Yukinyan</div>
-      <div class="section-desc">
-        Yukinyan tidak dibuang — fungsinya digeser ke peran yang justru memaksimalkan nilai terbesarnya saat ini: data
-        dan baseline behavior.
-      </div>
-
-      <div class="comparison">
-        <div class="comp-col before">
-          <h3>⬡ Sebelum — Trading Engine</h3>
-          <ul>
-            <li>Bot trading aktif / research engine</li>
-            <li>Menjalankan strategi dan eksekusi order</li>
-            <li>Mengambil keputusan entry dan exit</li>
-            <li>Fokus pada profit dari eksekusi langsung</li>
-            <li>Menerima tekanan pengembangan logic baru</li>
-          </ul>
-        </div>
-        <div class="comp-col after">
-          <h3>⬡ Sesudah — Collector & Observer</h3>
-          <ul>
-            <li>Data collector — menangkap data pasar</li>
-            <li>Observer — menghasilkan telemetry dan log</li>
-            <li>Benchmark baseline untuk pembanding performa</li>
-            <li>Tidak lagi menanggung pengembangan fitur baru</li>
-            <li>Stabil, ringan, dan fokus pada perannya</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="callout" style="margin-top:1.5rem;">
-        <p>
-          <strong>Manfaat pergeseran ini:</strong> Yukinyan tetap berjalan tanpa modifikasi berat, data collection tidak
-          terputus, dan bot baru mendapatkan baseline yang solid untuk perbandingan performa.
-        </p>
-      </div>
-    </section>
-
-    <!-- 6. PEMANFAATAN DATA -->
-    <section id="data-use">
-      <div class="section-label">06 — Pemanfaatan Aset</div>
-      <div class="section-title">Bagaimana Data Yukinyan Akan Dimanfaatkan</div>
-      <div class="section-desc">
-        Data yang sudah dikumpulkan Yukinyan adalah aset paling berharga — dan akan terus dimanfaatkan sepenuhnya.
-      </div>
-
-      <div class="card-grid">
-        <div class="card">
-          <span class="card-icon">📦</span>
-          <h3>Historical Feed</h3>
-          <p>Data lama menjadi sumber utama untuk membangun dan menguji strategi baru sejak hari pertama.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🔁</span>
-          <h3>Replay & Validasi</h3>
-          <p>Memutar ulang keputusan historis untuk memvalidasi apakah logika baru menghasilkan keputusan yang lebih
-            baik.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">⚖️</span>
-          <h3>Shadow Testing</h3>
-          <p>Bot baru berjalan berdampingan dengan Yukinyan — keputusannya dibandingkan secara real-time.</p>
-        </div>
-        <div class="card">
-          <span class="card-icon">🧠</span>
-          <h3>Market Behavior Insights</h3>
-          <p>Data observasi memperkaya pemahaman perilaku market dan mempercepat pengembangan strategi.</p>
-        </div>
-      </div>
-
-      <!-- DATA FLOW DIAGRAM -->
-      <div class="flow-diagram" style="margin-top:2rem;">
-        <div
-          style="font-size:0.78rem; color:var(--text-muted); margin-bottom:1.5rem; text-transform:uppercase; letter-spacing:0.08em; font-family:var(--font-mono);">
-          Data Flow</div>
-
-        <div class="flow-row">
-          <div class="flow-box accent-amber">⬡ Yukinyan (Collector)</div>
-        </div>
-
-        <div class="flow-arrow down">↓</div>
-
-        <div class="flow-row">
-          <div class="flow-box">Logs</div>
-          <div class="flow-box">Telemetry</div>
-          <div class="flow-box">Market Observations</div>
-        </div>
-
-        <div class="flow-arrow down">↓</div>
-
-        <div class="flow-row">
-          <div class="flow-box accent-teal">⬢ New Architecture</div>
-        </div>
-
-        <div class="flow-arrow down">↓</div>
-
-        <div class="flow-row">
-          <div class="flow-box accent-blue">Replay</div>
-          <div class="flow-box accent-blue">Validation</div>
-          <div class="flow-box accent-blue">Strategy Dev</div>
-          <div class="flow-box accent-blue">Shadow Testing</div>
-        </div>
-      </div>
-
-      <div class="callout" style="margin-top:1.5rem;">
-        <p>
-          <strong>Poin penting:</strong> Bot baru tidak mulai dari nol. Data dari Yukinyan memberi head start yang
-          signifikan — mengurangi waktu pengembangan dan meningkatkan kualitas keputusan strategi sejak awal.
-        </p>
-      </div>
-
-      <div class="callout" style="margin-top:0.75rem; border-left-color: var(--amber);">
-        <p>
-          <strong style="color:var(--amber);">Catatan penting tentang data:</strong> Data Yukinyan sangat berharga,
-          tetapi perlu dipahami bahwa data tersebut dibentuk oleh strategi lama yang bersifat hardcoded. Karena itu,
-          data Yukinyan diposisikan sebagai <strong style="color:var(--text-primary);">baseline, referensi historis, dan
-            input untuk shadow comparison</strong> — bukan sebagai satu-satunya sumber kebenaran untuk bot baru. Bot
-          baru akan membangun pemahaman sendiri di atas fondasi data ini.
-        </p>
-      </div>
-    </section>
-
-    <!-- 7. OPSI -->
-    <section id="options">
-      <div class="section-label">07 — Analisa Opsi</div>
-      <div class="section-title">Opsi yang Dipertimbangkan</div>
-      <div class="section-desc">
-        Perbandingan dua pendekatan yang dipertimbangkan untuk langkah selanjutnya.
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:22%">Kriteria</th>
-              <th style="width:39%">Opsi 1 — Bangun Baru + Yukinyan Jadi Collector</th>
-              <th style="width:39%">Opsi 2 — Rombak Yukinyan Sepenuhnya</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Risiko</strong></td>
-              <td><span class="tag low">Rendah</span> — migrasi bertahap, rollback mudah</td>
-              <td><span class="tag high">Tinggi</span> — satu kesalahan bisa berdampak luas</td>
-            </tr>
-            <tr>
-              <td><strong>Continuity Data</strong></td>
-              <td>Tidak terputus — Yukinyan tetap jalan</td>
-              <td>Berisiko terputus selama proses rewrite</td>
-            </tr>
-            <tr>
-              <td><strong>Kecepatan Implementasi</strong></td>
-              <td><span class="tag low">Lebih cepat</span> — fokus tanpa beban legacy</td>
-              <td><span class="tag med">Lebih lambat</span> — harus navigasi kode lama</td>
-            </tr>
-            <tr>
-              <td><strong>Kemudahan Validasi</strong></td>
-              <td>Mudah — ada baseline pembanding langsung</td>
-              <td>Sulit — tidak ada referensi pembanding</td>
-            </tr>
-            <tr>
-              <td><strong>Maintainability</strong></td>
-              <td><span class="tag low">Baik</span> — arsitektur bersih dari awal</td>
-              <td><span class="tag med">Campuran</span> — legacy tetap ada</td>
-            </tr>
-            <tr>
-              <td><strong>Verdict</strong></td>
-              <td><span class="verdict recommended">✓ Direkomendasikan</span></td>
-              <td><span class="verdict not-recommended">✕ Tidak Direkomendasikan</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 8. TIMELINE -->
-    <section id="timeline">
-      <div class="section-label">08 — Roadmap</div>
-      <div class="section-title">Estimasi Waktu Pengerjaan</div>
-      <div class="section-desc">
-        Timeline berikut adalah estimasi realistis, bukan janji pasti. Durasi bisa berubah tergantung manpower dan scope
-        yang berkembang.
-      </div>
-
-      <div class="timeline">
-
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-phase">Fase 1</div>
-          <div class="tl-title">Stabilize Yukinyan as Collector</div>
-          <span class="tl-duration">~1 minggu</span>
-          <div class="tl-desc">
-            <ul>
-              <li>Freeze strategi trading lama — tidak ada perubahan logic baru</li>
-              <li>Rapikan logging dan telemetry yang sudah ada</li>
-              <li>Tetapkan peran resmi Yukinyan sebagai collector / observer / baseline</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-phase">Fase 2</div>
-          <div class="tl-title">Build Core New Architecture</div>
-          <span class="tl-duration">~2 minggu</span>
-          <div class="tl-desc">
-            <ul>
-              <li>Bootstrap project baru dengan struktur modular</li>
-              <li>Bangun feed ingestion dan data pipeline</li>
-              <li>Implementasi normalizer, clock, dan window map</li>
-              <li>Bangun event storage layer</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-phase">Fase 3</div>
-          <div class="tl-title">Build Strategy & Diagnostics Layer</div>
-          <span class="tl-duration">~2 minggu</span>
-          <div class="tl-desc">
-            <ul>
-              <li>Bangun feature engine untuk kalkulasi sinyal</li>
-              <li>Implementasi strategy state machine</li>
-              <li>Bangun replay, diagnostics, dan validation layer</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-phase">Fase 4</div>
-          <div class="tl-title">Shadow Run & Comparison</div>
-          <span class="tl-duration">~1–2 minggu</span>
-          <div class="tl-desc">
-            <ul>
-              <li>Jalankan bot baru secara paralel dengan Yukinyan (shadow mode)</li>
-              <li>Bandingkan output dan keputusan kedua bot</li>
-              <li>Validasi akurasi dan lakukan tuning awal</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-phase">Fase 5</div>
-          <div class="tl-title">Hardening & Readiness</div>
-          <span class="tl-duration">~1–2 minggu</span>
-          <div class="tl-desc">
-            <ul>
-              <li>Perkuat execution layer untuk kesiapan live</li>
-              <li>Stability fixes dan edge case handling</li>
-              <li>Susun operational checklist untuk deployment</li>
-            </ul>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="callout" style="margin-top:2rem;">
-        <p>
-          <strong>Total estimasi MVP & shadow validation: sekitar 6–8 minggu.</strong><br>
-          Angka ini adalah <em>approximation</em>, bukan komitmen pasti.
-        </p>
-      </div>
-
-      <div class="callout" style="margin-top:0.75rem; border-left-color: var(--amber);">
-        <p>
-          <strong style="color:var(--amber);">Asumsi yang mendasari estimasi ini:</strong> Tim kecil yang fokus penuh,
-          scope tetap terkendali sesuai rencana di atas, dan tidak ada perubahan arah besar di tengah jalan. Jika salah
-          satu asumsi berubah, durasi akan menyesuaikan.
-        </p>
-      </div>
-    </section>
-
-    <!-- 9. KEPUTUSAN STAKEHOLDER -->
-    <section id="decision">
-      <div class="section-label">09 — Keputusan</div>
-      <div class="section-title">Keputusan yang Diharapkan dari Stakeholder</div>
-      <div class="section-desc">
-        Untuk melanjutkan ke tahap eksekusi, kami memerlukan persetujuan terhadap empat poin berikut.
-      </div>
-
-      <div class="decision-box">
-        <div class="decision-item">
-          <div class="decision-check">☐</div>
-          <div class="decision-content">
-            <strong>Menyetujui pendekatan Opsi 1</strong>
-            <span>Membangun bot baru secara terpisah, sambil mempertahankan Yukinyan sebagai data collector — bukan
-              merombak total Yukinyan.</span>
-          </div>
-        </div>
-        <div class="decision-item">
-          <div class="decision-check">☐</div>
-          <div class="decision-content">
-            <strong>Menyetujui pengalihan fungsi Yukinyan</strong>
-            <span>Yukinyan resmi dialihkan dari trading engine menjadi collector, observer, dan baseline
-              pembanding.</span>
-          </div>
-        </div>
-        <div class="decision-item">
-          <div class="decision-check">☐</div>
-          <div class="decision-content">
-            <strong>Menyetujui pembangunan bot baru dengan arsitektur baru</strong>
-            <span>Tim mulai membangun arsitektur baru yang modular, dengan target MVP sekitar 6–8 minggu.</span>
-          </div>
-        </div>
-        <div class="decision-item">
-          <div class="decision-check">☐</div>
-          <div class="decision-content">
-            <strong>Menyetujui pendekatan shadow run sebelum transisi penuh</strong>
-            <span>Bot baru akan dijalankan secara paralel dengan Yukinyan untuk validasi, sebelum menggantikan eksekusi
-              secara penuh.</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 10. FAQ STAKEHOLDER -->
-    <section id="faq">
-      <div class="section-label">10 — FAQ</div>
-      <div class="section-title">FAQ Stakeholder</div>
-      <div class="section-desc">
-        Jawaban singkat atas pertanyaan yang paling mungkin muncul saat pembahasan strategi migrasi.
-      </div>
-
-      <div class="accordion">
-
-        <div class="accordion-item open">
-          <div class="accordion-header" onclick="toggleFaq(this)">
-            <div class="accordion-num">1</div>
-            <div class="accordion-question">Apakah bot baru akan memakai AI untuk membaca log lama?</div>
-            <div class="accordion-chevron">▾</div>
-          </div>
-          <div class="accordion-body">
-            <div class="accordion-answer">
-              Ya, AI bisa dimanfaatkan untuk menganalisa log lama — misalnya untuk menemukan pola, membuat laporan
-              diagnostik, atau memberikan rekomendasi evaluasi. Namun AI tidak ditempatkan di jalur eksekusi utama
-              (entry/exit real-time). Arsitektur baru secara sadar memisahkan jalur analisa dan jalur eksekusi, sehingga
-              AI bekerja di sisi evaluasi tanpa menambah risiko pada kecepatan pengambilan keputusan trading.
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleFaq(this)">
-            <div class="accordion-num">2</div>
-            <div class="accordion-question">Apakah bot baru akan lebih adaptif dibanding rule hardcoded lama?</div>
-            <div class="accordion-chevron">▾</div>
-          </div>
-          <div class="accordion-body">
-            <div class="accordion-answer">
-              Bot baru dirancang lebih adaptif karena memanfaatkan fitur pasar yang lebih kaya — bukan sekadar aturan
-              statis "jika A maka B". Keputusan dibangun dari kombinasi feature calculation dan proses validasi yang
-              lebih terstruktur. Meski demikian, akurasi yang lebih baik adalah target yang harus dibuktikan melalui
-              replay data historis, perbandingan dengan Yukinyan, dan shadow run — bukan sesuatu yang diasumsikan dari
-              awal.
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleFaq(this)">
-            <div class="accordion-num">3</div>
-            <div class="accordion-question">Apakah deployment bisa dipercepat?</div>
-            <div class="accordion-chevron">▾</div>
-          </div>
-          <div class="accordion-body">
-            <div class="accordion-answer">
-              Bisa, jika target dibatasi ke MVP atau shadow-only — artinya bot baru berjalan paralel tanpa eksekusi uang
-              sungguhan lebih dulu. Namun percepatan selalu membawa trade-off: semakin cepat target, semakin sempit
-              cakupan fitur dan validasi. Risiko terbesar dari pendekatan ini justru bukan lambatnya deployment,
-              melainkan scope yang melebar jika terlalu banyak fitur dimasukkan terlalu cepat. Disiplin menjaga scope
-              tetap terkendali adalah kunci.
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleFaq(this)">
-            <div class="accordion-num">4</div>
-            <div class="accordion-question">Bagaimana isu latency AI pada market BTC 5 menit?</div>
-            <div class="accordion-chevron">▾</div>
-          </div>
-          <div class="accordion-body">
-            <div class="accordion-answer">
-              Arsitektur baru tidak menghilangkan latency AI — yang berubah adalah penempatannya. Jalur eksekusi utama
-              (hot path) tetap bersifat deterministik dan cepat, tanpa AI di dalamnya. AI ditempatkan di jalur analisa
-              (off-path / cold-path) untuk evaluasi dan insight. Justru inilah alasan utama kenapa arsitektur baru lebih
-              cocok: memisahkan kecepatan eksekusi dari kedalaman analisa.
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleFaq(this)">
-            <div class="accordion-num">5</div>
-            <div class="accordion-question">Bagaimana gambaran entry dan exit logic di bot baru?</div>
-            <div class="accordion-chevron">▾</div>
-          </div>
-          <div class="accordion-body">
-            <div class="accordion-answer">
-              Logika entry dan exit dari Yukinyan tidak dibuang mentah-mentah — ia dipindahkan ke bentuk yang lebih
-              modular. Entry dibangun dari feature layer yang membaca kondisi pasar, keputusan dikelola oleh state
-              machine, dan eksekusi dilakukan oleh execution layer yang terpisah. Exit tetap memiliki prioritas dan risk
-              control. Penting dicatat: Yukinyan tetap dijalankan sampai bot baru lolos shadow run dan tervalidasi —
-              jadi tidak ada jeda operasional.
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion-item">
-          <div class="accordion-header" onclick="toggleFaq(this)">
-            <div class="accordion-num">6</div>
-            <div class="accordion-question">Apakah bot baru memberi kontrol data trade yang lebih baik?</div>
-            <div class="accordion-chevron">▾</div>
-          </div>
-          <div class="accordion-body">
-            <div class="accordion-answer">
-              Ya, jauh lebih baik. Bot baru memisahkan data pasar, sinyal, order, eksekusi, alasan exit, dan diagnostik
-              ke dalam lapisan yang terpisah. Ini membuat replay dan investigasi jauh lebih mudah. Dan yang penting:
-              keberhasilan migrasi ini tidak diukur hanya dari profit, tetapi juga dari stabilitas sistem, kualitas data
-              dan telemetry, kemudahan validasi, serta kesiapan untuk transisi penuh.
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- 11. REKOMENDASI -->
-    <section id="recommendation">
-      <div class="section-label">11 — Penutup</div>
-      <div class="section-title">Rekomendasi Akhir</div>
-
-      <div class="rec-card">
-        <h3>Bangun Fondasi Baru, Manfaatkan Aset yang Ada</h3>
-        <p>
-          Bangun bot baru dengan arsitektur baru yang modular dan auditable.
-          Pertahankan Yukinyan sebagai data collector, observer, dan baseline pembanding.
-          Gunakan seluruh data Yukinyan untuk mempercepat pengembangan dan menurunkan risiko migrasi.
-        </p>
-        <p>
-          Lakukan migrasi bertahap — bukan big bang.
-          Pendekatan ini memberi manfaat jangka pendek (data tetap mengalir, baseline tersedia)
-          sekaligus jangka panjang (arsitektur siap untuk pengembangan selanjutnya).
-        </p>
-        <div class="rec-pills">
-          <span class="rec-pill">Freeze Strategy</span>
-          <span class="rec-pill">Expand Telemetry</span>
-          <span class="rec-pill">Collector + Observer + Benchmark</span>
-          <span class="rec-pill">Future Execution Engine</span>
-          <span class="rec-pill">Migrasi Bertahap</span>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <div class="footer">
-    Migration Strategy Document · Yukinyan → New Architecture · April 2026
+  <div class="tab-bar">
+    <span class="brand">Dashboard</span>
+    <button class="tab-btn active" onclick="switchTab('yuki', this)">YukiNexus</button>
+    <button class="tab-btn" onclick="switchTab('neko', this)">NekoSport</button>
   </div>
 
-  <!-- NAV ACTIVE STATE -->
+  <div class="tab-content">
+    <iframe id="frame-yuki" class="active" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;id&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Project Progress Tracker – YukiNexus&lt;/title&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
+&lt;link href=&quot;https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+&lt;style&gt;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --c-bg: #f6f5f1;
+  --c-surface: #ffffff;
+  --c-surface-alt: #f0eee8;
+  --c-border: #e0ddd5;
+  --c-border-strong: #c8c4b8;
+  --c-text: #1a1a18;
+  --c-text-secondary: #5a584f;
+  --c-text-muted: #8a877d;
+  --c-accent: #1b6b4a;
+  --c-accent-light: #e8f5ee;
+  --c-blue: #2563a0;
+  --c-blue-light: #e8f0f8;
+  --c-amber: #a07825;
+  --c-amber-light: #fdf6e3;
+  --c-red-light: #fef2f2;
+  --c-green-badge: #16a34a;
+  --c-blue-badge: #2563eb;
+  --c-amber-badge: #d97706;
+  --c-gray-badge: #71717a;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font-body: &#x27;DM Sans&#x27;, -apple-system, sans-serif;
+  --font-display: &#x27;Source Serif 4&#x27;, Georgia, serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--c-bg);
+  color: var(--c-text);
+  line-height: 1.65;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Header ── */
+.page-header {
+  background: linear-gradient(135deg, #1a2a1f 0%, #0f1f15 100%);
+  color: #fff;
+  padding: 56px 0 48px;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::before {
+  content: &#x27;&#x27;;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(27,107,74,0.15) 0%, transparent 60%);
+}
+.page-header .container { position: relative; }
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.page-header .subtitle {
+  font-size: 14.5px;
+  color: rgba(255,255,255,0.72);
+  max-width: 600px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 36px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+}
+.header-meta span { display: flex; align-items: center; gap: 6px; }
+.header-meta strong { color: rgba(255,255,255,0.88); font-weight: 500; }
+
+/* ── Sections ── */
+section { padding: 48px 0; }
+section + section { border-top: 1px solid var(--c-border); }
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-accent);
+  margin-bottom: 6px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--c-text);
+}
+.section-desc {
+  color: var(--c-text-secondary);
+  font-size: 14.5px;
+  max-width: 640px;
+  margin-bottom: 28px;
+}
+
+/* ── Snapshot Cards ── */
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: 14px;
+}
+.snap-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeUp 0.5s ease forwards;
+}
+.snap-card:nth-child(1) { animation-delay: 0.05s; }
+.snap-card:nth-child(2) { animation-delay: 0.1s; }
+.snap-card:nth-child(3) { animation-delay: 0.15s; }
+.snap-card:nth-child(4) { animation-delay: 0.2s; }
+.snap-card:nth-child(5) { animation-delay: 0.25s; }
+.snap-icon {
+  width: 36px; height: 36px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.snap-icon.green  { background: var(--c-accent-light); color: var(--c-accent); }
+.snap-icon.blue   { background: var(--c-blue-light);   color: var(--c-blue); }
+.snap-card h3 {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.snap-card p {
+  font-size: 12px;
+  color: var(--c-text-muted);
+  line-height: 1.5;
+}
+
+/* ── Result Cards ── */
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.result-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.result-card h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.result-card p {
+  font-size: 13px;
+  color: var(--c-text-secondary);
+  line-height: 1.55;
+}
+
+/* ── Data Table ── */
+.data-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  background: var(--c-surface);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+thead { background: var(--c-surface-alt); }
+th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-text-secondary);
+  border-bottom: 1px solid var(--c-border);
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--c-border);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(27,107,74,0.02); }
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge::before {
+  content: &#x27;&#x27;;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.badge-completed { background: #e8f5ee; color: #15803d; }
+.badge-completed::before { background: #16a34a; }
+.badge-final { background: #e0f2fe; color: #0369a1; }
+.badge-final::before { background: #0284c7; }
+.badge-stable { background: #f0fdf4; color: #166534; }
+.badge-stable::before { background: #22c55e; }
+.badge-ready { background: #fef9c3; color: #854d0e; }
+.badge-ready::before { background: #eab308; }
+.badge-notstarted { background: #f4f4f5; color: #71717a; }
+.badge-notstarted::before { background: #a1a1aa; }
+.badge-active { background: #dbeafe; color: #1d4ed8; }
+.badge-active::before { background: #3b82f6; animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── You-Are-Here row ── */
+.row-youarehere {
+  background: var(--c-amber-light) !important;
+}
+.row-youarehere td:first-child {
+  position: relative;
+  padding-left: 28px;
+}
+.row-youarehere td:first-child::before {
+  content: &#x27;▸&#x27;;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--c-amber-badge);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ── Focus / Next ── */
+.focus-list, .next-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.focus-list li, .next-list li {
+  padding: 14px 18px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--c-text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.focus-list li::before {
+  content: &#x27;&#x27;;
+  width: 8px; height: 8px;
+  background: var(--c-accent);
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.next-list li::before {
+  content: &#x27;&#x27;;
+  width: 8px; height: 8px;
+  background: var(--c-blue);
+  border-radius: 2px;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Prose ── */
+.prose { max-width: 680px; }
+.prose p { margin-bottom: 12px; color: var(--c-text-secondary); font-size: 14.5px; }
+.prose p:last-child { margin-bottom: 0; }
+
+/* ── Footer ── */
+.page-footer {
+  padding: 28px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--c-text-muted);
+  border-top: 1px solid var(--c-border);
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .page-header { padding: 36px 0 32px; }
+  .page-header h1 { font-size: 1.5rem; }
+  .header-meta { gap: 10px 20px; }
+  section { padding: 32px 0; }
+  .section-title { font-size: 1.2rem; }
+  .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
+  .result-grid { grid-template-columns: 1fr; }
+  th, td { padding: 10px 12px; font-size: 12.5px; }
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- ═══════ Header ═══════ --&gt;
+&lt;header class=&quot;page-header&quot;&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;h1&gt;Project Progress Tracker — YukiNexus&lt;/h1&gt;
+    &lt;p class=&quot;subtitle&quot;&gt;Pemantauan progres pembangunan sistem baru dan transisi terkontrol dari Yukinyan ke YukiNexus.&lt;/p&gt;
+    &lt;div class=&quot;header-meta&quot;&gt;
+      &lt;span&gt;Project: &lt;strong&gt;Yukinyan → YukiNexus&lt;/strong&gt;&lt;/span&gt;
+      &lt;span&gt;Status: &lt;strong&gt;Phase 1 Completed&lt;/strong&gt;&lt;/span&gt;
+      &lt;span&gt;Posisi: &lt;strong&gt;Ready for Phase 2&lt;/strong&gt;&lt;/span&gt;
+      &lt;span&gt;Audience: &lt;strong&gt;Stakeholders&lt;/strong&gt;&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;main&gt;
+
+&lt;!-- ═══════ Executive Snapshot ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Executive Snapshot&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Ringkasan Status&lt;/h2&gt;
+    &lt;p class=&quot;section-desc&quot;&gt;Gambaran cepat posisi proyek saat ini.&lt;/p&gt;
+
+    &lt;div class=&quot;snapshot-grid&quot;&gt;
+      &lt;div class=&quot;snap-card&quot;&gt;
+        &lt;div class=&quot;snap-icon green&quot;&gt;✓&lt;/div&gt;
+        &lt;h3&gt;Yukinyan Repositioned&lt;/h3&gt;
+        &lt;p&gt;Dialihfungsikan menjadi collector, observer, dan baseline&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snap-card&quot;&gt;
+        &lt;div class=&quot;snap-icon green&quot;&gt;✓&lt;/div&gt;
+        &lt;h3&gt;Baseline Data Ready&lt;/h3&gt;
+        &lt;p&gt;2.128 trusted trades siap untuk perbandingan sistem baru&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snap-card&quot;&gt;
+        &lt;div class=&quot;snap-icon green&quot;&gt;✓&lt;/div&gt;
+        &lt;h3&gt;Design Freeze Final&lt;/h3&gt;
+        &lt;p&gt;6 dokumen acuan final sudah selesai dan terkunci&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snap-card&quot;&gt;
+        &lt;div class=&quot;snap-icon green&quot;&gt;✓&lt;/div&gt;
+        &lt;h3&gt;Phase 0 Completed&lt;/h3&gt;
+        &lt;p&gt;Repo, skeleton, Docker, policy — fondasi proyek siap&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;snap-card&quot;&gt;
+        &lt;div class=&quot;snap-icon green&quot;&gt;✓&lt;/div&gt;
+        &lt;h3&gt;Phase 1 Completed&lt;/h3&gt;
+        &lt;p&gt;Event Store aktif, service hidup sehat di VPS&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Ringkasan Progres ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Ringkasan Progres&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Dari Mana dan Ke Mana&lt;/h2&gt;
+    &lt;div class=&quot;prose&quot;&gt;
+      &lt;p&gt;Yukinyan — sistem trading sebelumnya — sudah diamankan perannya. Sekarang Yukinyan hanya berfungsi sebagai pengumpul data dan pembanding, bukan lagi sebagai bot trading aktif. Peran ini tetap penting selama masa transisi.&lt;/p&gt;
+      &lt;p&gt;Dari data historis Yukinyan, sudah dihasilkan baseline bersih yang menjadi acuan utama untuk mengevaluasi kinerja sistem baru nanti. Fondasi dokumen — mulai dari arsitektur, kontrak data, sampai peta risiko — sudah final.&lt;/p&gt;
+      &lt;p&gt;YukiNexus sebagai sistem baru sudah melewati dua tahap awal: fondasi proyek (Phase 0) dan infrastruktur pencatatan (Phase 1). Service YukiNexus sudah berjalan sehat di server, dengan pencatatan event aktif dan healthcheck Docker berfungsi.&lt;/p&gt;
+      &lt;p&gt;&lt;strong&gt;Proyek sekarang berada tepat sebelum Phase 2&lt;/strong&gt; — tahap di mana YukiNexus akan mulai terhubung ke sumber data pasar secara langsung.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Hasil Nyata ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Hasil Nyata&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Yang Sudah Tersedia Saat Ini&lt;/h2&gt;
+    &lt;p class=&quot;section-desc&quot;&gt;Bukan hanya rencana — ini hasil konkret yang sudah bisa diverifikasi.&lt;/p&gt;
+
+    &lt;div class=&quot;result-grid&quot;&gt;
+      &lt;div class=&quot;result-card&quot;&gt;
+        &lt;h4&gt;&lt;span class=&quot;badge badge-active&quot;&gt;Aktif&lt;/span&gt;&lt;/h4&gt;
+        &lt;h4&gt;Collector Yukinyan&lt;/h4&gt;
+        &lt;p&gt;Tetap berjalan di server, mengumpulkan data pasar secara real-time sebagai baseline pembanding.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;result-card&quot;&gt;
+        &lt;h4&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Completed&lt;/span&gt;&lt;/h4&gt;
+        &lt;h4&gt;Baseline Data&lt;/h4&gt;
+        &lt;p&gt;2.128 trade bersih yang sudah dinormalisasi dan siap dipakai untuk membandingkan keputusan sistem baru.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;result-card&quot;&gt;
+        &lt;h4&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final&lt;/span&gt;&lt;/h4&gt;
+        &lt;h4&gt;6 Dokumen Acuan&lt;/h4&gt;
+        &lt;p&gt;Arsitektur, kontrak, skema, roadmap, risk register, dan policy parity — semuanya final.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;result-card&quot;&gt;
+        &lt;h4&gt;&lt;span class=&quot;badge badge-stable&quot;&gt;Stable&lt;/span&gt;&lt;/h4&gt;
+        &lt;h4&gt;YukiNexus di VPS&lt;/h4&gt;
+        &lt;p&gt;Service skeleton sudah live, Event Store aktif, healthcheck Docker berjalan, deploy otomatis via GitHub Actions.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Dataset Baseline ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Dataset Baseline&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Data Acuan dari Yukinyan&lt;/h2&gt;
+    &lt;p class=&quot;section-desc&quot;&gt;Tiga tingkatan data yang sudah dibersihkan dari riwayat trading Yukinyan.&lt;/p&gt;
+
+    &lt;div class=&quot;data-table-wrap&quot;&gt;
+      &lt;table&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            &lt;th&gt;Dataset&lt;/th&gt;
+            &lt;th&gt;Deskripsi&lt;/th&gt;
+            &lt;th style=&quot;text-align:right&quot;&gt;Jumlah&lt;/th&gt;
+            &lt;th&gt;Status&lt;/th&gt;
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;master_trades_normalized&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Seluruh data trade yang sudah dinormalisasi formatnya&lt;/td&gt;
+            &lt;td style=&quot;text-align:right&quot;&gt;2.428&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Ready&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;master_trades_analysis&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Data yang sudah melewati filter kelayakan analisis&lt;/td&gt;
+            &lt;td style=&quot;text-align:right&quot;&gt;2.346&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Ready&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;master_trades_strict&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Baseline utama — hanya trade yang memenuhi seluruh kriteria ketat&lt;/td&gt;
+            &lt;td style=&quot;text-align:right&quot;&gt;2.128&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final Baseline&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Dokumen Acuan ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Dokumen Acuan&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Fondasi Perencanaan&lt;/h2&gt;
+    &lt;p class=&quot;section-desc&quot;&gt;Enam dokumen yang menjadi panduan pengerjaan — semuanya sudah final.&lt;/p&gt;
+
+    &lt;div class=&quot;data-table-wrap&quot;&gt;
+      &lt;table&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            &lt;th&gt;Dokumen&lt;/th&gt;
+            &lt;th&gt;Fungsi&lt;/th&gt;
+            &lt;th&gt;Status&lt;/th&gt;
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Policy Parity v1&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Menjaga agar sistem baru tidak berubah arah terlalu cepat — semua parameter awal identik dengan Yukinyan&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Architecture v2&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Menjelaskan bentuk sistem yang akan dibangun, peran tiap komponen, dan batasan-batasan penting&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Service Contracts v2&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Membagi tanggung jawab antar bagian sistem agar masing-masing jelas input, output, dan ketergantungannya&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Event Schema v2&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Memastikan catatan sistem rapi, konsisten, dan bisa dievaluasi kembali kapan saja&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Implementation Roadmap v2&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Menjelaskan tahap pengerjaan dari nol sampai siap beroperasi, beserta estimasi durasi&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;Risk Register v2&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Memetakan risiko utama proyek dan langkah pencegahannya agar proyek tetap terkendali&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-final&quot;&gt;Final&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Progress Utama ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Progress Utama&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Tabel Kemajuan Proyek&lt;/h2&gt;
+    &lt;p class=&quot;section-desc&quot;&gt;Seluruh tahapan proyek dari awal sampai target akhir.&lt;/p&gt;
+
+    &lt;div class=&quot;data-table-wrap&quot;&gt;
+      &lt;table&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            &lt;th style=&quot;min-width:180px&quot;&gt;Tahap&lt;/th&gt;
+            &lt;th&gt;Ringkasan&lt;/th&gt;
+            &lt;th style=&quot;min-width:120px&quot;&gt;Status&lt;/th&gt;
+            &lt;th&gt;Catatan&lt;/th&gt;
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Reposisi Yukinyan&lt;/td&gt;
+            &lt;td&gt;Mengubah peran Yukinyan dari bot trading menjadi collector / observer / baseline&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Completed&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Frozen di v2.4.0-g&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Stabilitas Collector&lt;/td&gt;
+            &lt;td&gt;Menjaga Yukinyan tetap berjalan stabil di VPS sebagai pengumpul data&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-active&quot;&gt;Aktif&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Berjalan terus selama transisi&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Baseline Data&lt;/td&gt;
+            &lt;td&gt;Membersihkan data historis menjadi 3 tingkatan dataset acuan&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Completed&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;2.128 trusted trades&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Dokumen Acuan Final&lt;/td&gt;
+            &lt;td&gt;Menyusun 6 dokumen panduan implementasi (arsitektur, kontrak, roadmap, risiko)&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Completed&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Design Freeze v2&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Phase 0 — Project Setup&lt;/td&gt;
+            &lt;td&gt;Membuat repo baru, struktur folder, Docker, policy skeleton, bootstrap minimal&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Completed&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Fondasi siap&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Phase 1 — Event Store&lt;/td&gt;
+            &lt;td&gt;Membangun pencatatan event, healthcheck, dan idle loop agar service hidup sehat di VPS&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-completed&quot;&gt;Completed&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Deploy via GitHub Actions&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr class=&quot;row-youarehere&quot;&gt;
+            &lt;td&gt;&lt;strong&gt;Phase 2 — Feed Ingestion&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;Menghubungkan YukiNexus ke sumber data pasar dan membangun normalizer + clock&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-ready&quot;&gt;Ready to Start&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;Posisi saat ini&lt;/strong&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Phase 3 — Feature Engine&lt;/td&gt;
+            &lt;td&gt;Menghitung fitur-fitur turunan dari data yang masuk (GAP, tren, volatilitas)&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-notstarted&quot;&gt;Not Started&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Bergantung pada Phase 2&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Phase 4 — Strategy&lt;/td&gt;
+            &lt;td&gt;Membangun mesin keputusan trading dengan state machine berbasis policy&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-notstarted&quot;&gt;Not Started&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Tahap terberat&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Phase 5 — Execution&lt;/td&gt;
+            &lt;td&gt;Membangun gateway eksekusi (paper / shadow / live)&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-notstarted&quot;&gt;Not Started&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Bergantung pada Phase 4&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Phase 6 — Replay Engine&lt;/td&gt;
+            &lt;td&gt;Kemampuan menjalankan ulang keputusan dari data historis secara deterministik&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-notstarted&quot;&gt;Not Started&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Bergantung pada Phase 1–5&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Phase 7 — Shadow Comparison&lt;/td&gt;
+            &lt;td&gt;Membandingkan keputusan YukiNexus dengan baseline Yukinyan secara head-to-head&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-notstarted&quot;&gt;Not Started&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Milestone v1 complete&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;Live Readiness&lt;/td&gt;
+            &lt;td&gt;Kesiapan untuk operasi nyata setelah validasi menyeluruh&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;badge badge-notstarted&quot;&gt;Not Started&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;Setelah shadow berhasil&lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Posisi Proyek ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Posisi Proyek&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Di Mana Kita Sekarang&lt;/h2&gt;
+    &lt;div class=&quot;prose&quot;&gt;
+      &lt;p&gt;&lt;strong&gt;Yang sudah selesai:&lt;/strong&gt; Yukinyan sudah diamankan perannya, data baseline sudah bersih dan final, seluruh dokumen panduan sudah terkunci, dan YukiNexus sudah berdiri — repo, infrastruktur, pencatatan event, dan service skeleton sudah berjalan sehat di server.&lt;/p&gt;
+      &lt;p&gt;&lt;strong&gt;Yang tetap berjalan:&lt;/strong&gt; Collector Yukinyan tetap aktif mengumpulkan data pasar secara real-time. YukiNexus Phase 1 tetap hidup di VPS dalam mode idle dengan healthcheck aktif.&lt;/p&gt;
+      &lt;p&gt;&lt;strong&gt;Yang belum dimulai:&lt;/strong&gt; Koneksi ke sumber data pasar (Phase 2), perhitungan fitur (Phase 3), mesin keputusan (Phase 4), gateway eksekusi (Phase 5), replay (Phase 6), dan perbandingan langsung dengan baseline (Phase 7).&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Fokus Saat Ini ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Fokus Saat Ini&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Prioritas Operasional&lt;/h2&gt;
+    &lt;ul class=&quot;focus-list&quot;&gt;
+      &lt;li&gt;Menjaga Yukinyan collector tetap stabil dan mengumpulkan data tanpa gangguan&lt;/li&gt;
+      &lt;li&gt;Menjaga YukiNexus Phase 1 tetap sehat di VPS — healthcheck aktif, Event Store berjalan&lt;/li&gt;
+      &lt;li&gt;Memulai persiapan pengerjaan Phase 2 — koneksi ke sumber data dan normalisasi&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;!-- ═══════ Next Step ═══════ --&gt;
+&lt;section&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;section-label&quot;&gt;Langkah Berikutnya&lt;/div&gt;
+    &lt;h2 class=&quot;section-title&quot;&gt;Menuju Phase 2&lt;/h2&gt;
+    &lt;p class=&quot;section-desc&quot;&gt;Setelah Phase 1 berjalan stabil, tahap berikutnya adalah menghubungkan YukiNexus ke dunia luar.&lt;/p&gt;
+    &lt;ul class=&quot;next-list&quot;&gt;
+      &lt;li&gt;Mulai Phase 2 — membangun modul pembacaan data dari sumber pasar yang dibutuhkan&lt;/li&gt;
+      &lt;li&gt;Membangun normalizer untuk menyeragamkan format data dari berbagai sumber&lt;/li&gt;
+      &lt;li&gt;Membangun clock dan window map sebagai acuan waktu sesi&lt;/li&gt;
+      &lt;li&gt;Menyiapkan fondasi agar data yang masuk langsung bisa diproses oleh feature engine di Phase 3&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;/main&gt;
+
+&lt;footer class=&quot;page-footer&quot;&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    YukiNexus Project Progress Tracker — Internal Use Only — Last updated April 2026
+  &lt;/div&gt;
+&lt;/footer&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+    <iframe id="frame-neko" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;id&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;NekoSport — Status Proyek&lt;/title&gt;
+&lt;style&gt;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0c0f14;--bg2:#13161d;--bg3:#1a1e27;--bg4:#222733;
+--tx:#e8e6e1;--tx2:#9fa3ad;--tx3:#6b7080;
+--accent:#3b82f6;--accent2:#60a5fa;
+--green:#22c55e;--green2:#16a34a;--green-bg:rgba(34,197,94,.08);--green-bdr:rgba(34,197,94,.2);
+--amber:#f59e0b;--amber-bg:rgba(245,158,11,.08);--amber-bdr:rgba(245,158,11,.2);
+--red:#ef4444;--red-bg:rgba(239,68,68,.06);--red-bdr:rgba(239,68,68,.15);
+--blue-bg:rgba(59,130,246,.08);--blue-bdr:rgba(59,130,246,.2);
+--radius:10px;--radius-lg:14px;
+--sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif;
+--serif:Georgia,&quot;Times New Roman&quot;,serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);line-height:1.65;font-size:15px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+a{color:var(--accent2);text-decoration:none}
+
+.hero{padding:72px 0 48px;text-align:center;border-bottom:1px solid var(--bg3)}
+.hero h1{font-family:var(--serif);font-size:42px;font-weight:400;letter-spacing:-.5px;margin-bottom:8px}
+.hero .sub{color:var(--tx2);font-size:17px;margin-bottom:28px}
+.badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.badge{font-size:12px;font-weight:500;padding:6px 16px;border-radius:20px;letter-spacing:.3px}
+.badge.shadow{background:var(--blue-bg);border:1px solid var(--blue-bdr);color:var(--accent2)}
+.badge.stable{background:var(--green-bg);border:1px solid var(--green-bdr);color:var(--green)}
+.badge.next{background:var(--amber-bg);border:1px solid var(--amber-bdr);color:var(--amber)}
+.hero p{color:var(--tx2);font-size:15px;max-width:640px;margin:0 auto;line-height:1.7}
+
+section{padding:56px 0;border-bottom:1px solid var(--bg3)}
+section:last-of-type{border-bottom:none}
+.stitle{font-family:var(--serif);font-size:26px;font-weight:400;margin-bottom:8px}
+.sdesc{color:var(--tx2);font-size:14px;margin-bottom:28px}
+
+.cards{display:grid;gap:14px}
+.cards.c2{grid-template-columns:repeat(2,1fr)}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.cards.c4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:700px){.cards.c2,.cards.c3,.cards.c4{grid-template-columns:1fr}}
+.card{background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-lg);padding:22px 24px}
+.card .label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);margin-bottom:6px;font-weight:500}
+.card .val{font-size:20px;font-weight:600;margin-bottom:4px}
+.card .note{font-size:13px;color:var(--tx2);line-height:1.55}
+
+.timeline{position:relative;padding-left:32px}
+.timeline::before{content:&#x27;&#x27;;position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--bg4)}
+.titem{position:relative;margin-bottom:24px}
+.titem:last-child{margin-bottom:0}
+.titem .dot{position:absolute;left:-32px;top:3px;width:16px;height:16px;border-radius:50%;border:2px solid var(--bg4);background:var(--bg)}
+.titem.done .dot{background:var(--green);border-color:var(--green)}
+.titem.active .dot{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 4px rgba(245,158,11,.2)}
+.titem.future .dot{background:var(--bg3);border-color:var(--bg4)}
+.titem .tlab{font-weight:500;font-size:15px;margin-bottom:2px}
+.titem .tdesc{font-size:13px;color:var(--tx2)}
+.titem.done .tlab{color:var(--green)}
+.titem.active .tlab{color:var(--amber)}
+.titem.future .tlab{color:var(--tx3)}
+
+.checklist{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:600px){.checklist{grid-template-columns:1fr}}
+.chk{display:flex;align-items:flex-start;gap:10px;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius);padding:14px 16px}
+.chk .ico{flex-shrink:0;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px}
+.chk.ok .ico{background:var(--green-bg);border:1px solid var(--green-bdr);color:var(--green)}
+.chk.no .ico{background:var(--amber-bg);border:1px solid var(--amber-bdr);color:var(--amber)}
+.chk .ctx{font-size:14px;line-height:1.5}
+.chk .ctx strong{font-weight:500}
+.chk .ctx span{display:block;font-size:12px;color:var(--tx3);margin-top:2px}
+
+.callout{background:var(--bg2);border:1px solid var(--bg3);border-left:3px solid var(--accent);border-radius:var(--radius);padding:22px 24px;margin-bottom:24px}
+.callout h3{font-size:16px;font-weight:500;margin-bottom:8px}
+.callout p{font-size:14px;color:var(--tx2);line-height:1.65}
+
+.pcard{background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-lg);padding:24px;position:relative;overflow:hidden}
+.pcard::before{content:&#x27;&#x27;;position:absolute;top:0;left:0;right:0;height:3px}
+.pcard.p1::before{background:var(--green)}
+.pcard.p2::before{background:var(--accent)}
+.pcard.p3::before{background:var(--amber)}
+.pcard .pnum{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;color:var(--tx3)}
+.pcard h4{font-size:17px;font-weight:500;margin-bottom:8px}
+.pcard p{font-size:13px;color:var(--tx2);line-height:1.6}
+
+.guardrails{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media(max-width:700px){.guardrails{grid-template-columns:repeat(2,1fr)}}
+.gr{text-align:center;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius);padding:18px 12px}
+.gr .gico{font-size:22px;margin-bottom:8px}
+.gr .glab{font-size:12px;font-weight:500;color:var(--tx2);line-height:1.4}
+
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.dcard{background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius);padding:16px 18px}
+.dcard .dnum{font-size:11px;color:var(--tx3);font-weight:500;margin-bottom:4px}
+.dcard .dname{font-size:14px;font-weight:500;margin-bottom:4px}
+.dcard .ddesc{font-size:12px;color:var(--tx3);line-height:1.5}
+
+.rtable{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+.rtable th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);font-weight:500;padding:10px 14px;border-bottom:1px solid var(--bg3)}
+.rtable td{padding:12px 14px;border-bottom:1px solid var(--bg3);vertical-align:top}
+.rtable tr:last-child td{border-bottom:none}
+.rtable .rlev{font-size:11px;font-weight:500;padding:3px 10px;border-radius:12px;display:inline-block}
+.rlev.high{background:var(--red-bg);border:1px solid var(--red-bdr);color:var(--red)}
+.rlev.med{background:var(--amber-bg);border:1px solid var(--amber-bdr);color:var(--amber)}
+
+footer{padding:40px 0;text-align:center;border-top:1px solid var(--bg3);color:var(--tx3);font-size:12px}
+footer p{margin-bottom:4px}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div class=&quot;hero&quot;&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h1&gt;NekoSport&lt;/h1&gt;
+&lt;p class=&quot;sub&quot;&gt;Engine analisis dan pengambilan keputusan untuk pasar olahraga &amp;amp; esports di Polymarket&lt;/p&gt;
+&lt;div class=&quot;badges&quot;&gt;
+&lt;span class=&quot;badge shadow&quot;&gt;Shadow Mode&lt;/span&gt;
+&lt;span class=&quot;badge stable&quot;&gt;Fondasi Stabil&lt;/span&gt;
+&lt;span class=&quot;badge next&quot;&gt;Menuju Intelligence Layer&lt;/span&gt;
+&lt;/div&gt;
+&lt;p&gt;NekoSport memindai pasar olahraga terjadwal, mengevaluasi kandidat berdasarkan data fundamental, dan menghasilkan keputusan terstruktur yang tercatat penuh. Sistem saat ini berjalan dalam mode pengamatan — seluruh pipeline aktif, tetapi belum ada transaksi yang dikirim ke pasar.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Ringkasan Eksekutif&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;Status proyek dalam empat poin utama&lt;/p&gt;
+&lt;div class=&quot;cards c4&quot;&gt;
+&lt;div class=&quot;card&quot;&gt;
+&lt;div class=&quot;label&quot;&gt;Posisi proyek&lt;/div&gt;
+&lt;div class=&quot;val&quot; style=&quot;font-size:15px;line-height:1.4&quot;&gt;Akhir stabilisasi fondasi&lt;/div&gt;
+&lt;div class=&quot;note&quot;&gt;Memasuki fase aktivasi intelligence layer&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;card&quot;&gt;
+&lt;div class=&quot;label&quot;&gt;Status operasional&lt;/div&gt;
+&lt;div class=&quot;val&quot; style=&quot;color:var(--green)&quot;&gt;Pipeline aktif&lt;/div&gt;
+&lt;div class=&quot;note&quot;&gt;Scan 2×/hari, evaluasi 1×/hari, semua otomatis&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;card&quot;&gt;
+&lt;div class=&quot;label&quot;&gt;Status transaksi&lt;/div&gt;
+&lt;div class=&quot;val&quot; style=&quot;color:var(--amber)&quot;&gt;Belum ada&lt;/div&gt;
+&lt;div class=&quot;note&quot;&gt;Disengaja — BUY diblokir sampai data nyata siap&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;card&quot;&gt;
+&lt;div class=&quot;label&quot;&gt;Fokus berikutnya&lt;/div&gt;
+&lt;div class=&quot;val&quot; style=&quot;font-size:15px&quot;&gt;Real NBA Adapter&lt;/div&gt;
+&lt;div class=&quot;note&quot;&gt;Data fundamental nyata dari sumber resmi&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Perjalanan Proyek&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;Dari perancangan hingga target akhir&lt;/p&gt;
+&lt;div class=&quot;timeline&quot;&gt;
+&lt;div class=&quot;titem done&quot;&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;tlab&quot;&gt;Perancangan &amp;amp; arsitektur&lt;/div&gt;&lt;div class=&quot;tdesc&quot;&gt;Spesifikasi sistem, formula, keputusan desain&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;titem done&quot;&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;tlab&quot;&gt;Fondasi pipeline&lt;/div&gt;&lt;div class=&quot;tdesc&quot;&gt;Scanner, rule engine, execution engine, database, risk engine, 39 tes otomatis&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;titem done&quot;&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;tlab&quot;&gt;Deployment &amp;amp; integrasi&lt;/div&gt;&lt;div class=&quot;tdesc&quot;&gt;VPS, Docker, OpenClaw, Telegram bot, penjadwalan otomatis&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;titem done&quot;&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;tlab&quot;&gt;Stabilisasi shadow mode&lt;/div&gt;&lt;div class=&quot;tdesc&quot;&gt;Scope filter, persistence ke database, config versioning, evaluasi harian&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;titem active&quot;&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;tlab&quot;&gt;Intelligence layer&lt;/div&gt;&lt;div class=&quot;tdesc&quot;&gt;Adapter data nyata, AI analyzer, trade resolution — sedang dikerjakan&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;titem future&quot;&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;tlab&quot;&gt;Shadow validation&lt;/div&gt;&lt;div class=&quot;tdesc&quot;&gt;Kumpulkan data sinyal bermakna, ukur kualitas prediksi&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;titem future&quot;&gt;&lt;div class=&quot;dot&quot;&gt;&lt;/div&gt;&lt;div class=&quot;tlab&quot;&gt;Persiapan paper / live&lt;/div&gt;&lt;div class=&quot;tdesc&quot;&gt;Didefinisikan setelah validasi shadow selesai&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Yang Sudah Selesai&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;Komponen fondasi yang sudah berjalan dan terverifikasi&lt;/p&gt;
+&lt;div class=&quot;checklist&quot;&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Infrastruktur &amp;amp; deployment&lt;/strong&gt;&lt;span&gt;Docker, VPS, OpenClaw multi-agent&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Telegram reporting&lt;/strong&gt;&lt;span&gt;Bot aktif, laporan otomatis 3×/hari&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Pemindai pasar&lt;/strong&gt;&lt;span&gt;7 cabang terkonfigurasi, scope filter aktif&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Formula &amp;amp; rule engine&lt;/strong&gt;&lt;span&gt;Probabilitas, EV, Kelly — 39 tes lulus&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Risk engine&lt;/strong&gt;&lt;span&gt;Kill switch, batas harian, kontrol posisi&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Database &amp;amp; audit trail&lt;/strong&gt;&lt;span&gt;Setiap keputusan tersimpan dan bisa direkonstruksi&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Config versioning&lt;/strong&gt;&lt;span&gt;Setiap perubahan parameter tercatat&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk ok&quot;&gt;&lt;div class=&quot;ico&quot;&gt;✓&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Evaluasi harian&lt;/strong&gt;&lt;span&gt;Membaca data hari sebelumnya secara otomatis&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Yang Belum Aktif&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;Komponen yang sedang dipersiapkan atau menunggu giliran implementasi&lt;/p&gt;
+&lt;div class=&quot;checklist&quot;&gt;
+&lt;div class=&quot;chk no&quot;&gt;&lt;div class=&quot;ico&quot;&gt;—&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Adapter data olahraga nyata&lt;/strong&gt;&lt;span&gt;Saat ini masih menggunakan data placeholder. Belum terhubung ke sumber resmi.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk no&quot;&gt;&lt;div class=&quot;ico&quot;&gt;—&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;AI analyzer&lt;/strong&gt;&lt;span&gt;Belum aktif. Belum menjadi bagian jalur keputusan. Menunggu kontrak dan validasi siap.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk no&quot;&gt;&lt;div class=&quot;ico&quot;&gt;—&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Trade resolution&lt;/strong&gt;&lt;span&gt;Belum ada mekanisme untuk menentukan hasil pertandingan secara otomatis.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;chk no&quot;&gt;&lt;div class=&quot;ico&quot;&gt;—&lt;/div&gt;&lt;div class=&quot;ctx&quot;&gt;&lt;strong&gt;Live order builder&lt;/strong&gt;&lt;span&gt;Belum dibangun. Sengaja ditunda sampai validasi shadow mode selesai.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Mengapa Belum Ada Trade?&lt;/h2&gt;
+&lt;div class=&quot;callout&quot;&gt;
+&lt;h3&gt;Ini bukan kegagalan — ini desain.&lt;/h3&gt;
+&lt;p&gt;Sistem dirancang konservatif: keputusan BUY hanya diloloskan jika data fundamental dari sumber resmi sudah lengkap dan memadai. Saat ini adapter data masih dalam tahap awal dan belum terhubung ke sumber nyata, sehingga semua data ditandai &quot;belum lengkap&quot; dan sistem secara otomatis menolak semua sinyal BUY.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;callout&quot; style=&quot;border-left-color:var(--green)&quot;&gt;
+&lt;h3&gt;Prinsip yang dijaga&lt;/h3&gt;
+&lt;p&gt;Lebih baik melewatkan peluang yang mungkin bagus daripada mengambil keputusan berdasarkan data yang belum bisa dipercaya. Setiap sinyal SKIP saat ini adalah bukti bahwa sistem pengaman bekerja dengan benar.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Prioritas Berikutnya&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;Tiga pekerjaan utama agar sistem menghasilkan sinyal bermakna&lt;/p&gt;
+&lt;div class=&quot;cards c3&quot;&gt;
+&lt;div class=&quot;pcard p1&quot;&gt;&lt;div class=&quot;pnum&quot;&gt;Prioritas 1&lt;/div&gt;&lt;h4&gt;Real NBA Adapter&lt;/h4&gt;&lt;p&gt;Menghubungkan sistem ke sumber data resmi NBA — standings, statistik tim, dan laporan cedera. Ini akan membuat data mencapai status &quot;lengkap&quot; dan membuka gate pertama.&lt;/p&gt;&lt;/div&gt;
+&lt;div class=&quot;pcard p2&quot;&gt;&lt;div class=&quot;pnum&quot;&gt;Prioritas 2&lt;/div&gt;&lt;h4&gt;AI Analyzer Integration&lt;/h4&gt;&lt;p&gt;Mengaktifkan model AI untuk menganalisis data fundamental dan menghasilkan probabilitas yang bervariasi per pertandingan — bukan angka default seperti sekarang.&lt;/p&gt;&lt;/div&gt;
+&lt;div class=&quot;pcard p3&quot;&gt;&lt;div class=&quot;pnum&quot;&gt;Prioritas 3&lt;/div&gt;&lt;h4&gt;Trade Resolution&lt;/h4&gt;&lt;p&gt;Membangun mekanisme untuk mengetahui hasil pertandingan dan menentukan hasil secara otomatis. Prasyarat agar evaluasi kualitas prediksi bisa dimulai.&lt;/p&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Prinsip Pengaman&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;Guardrails yang aktif di seluruh pipeline&lt;/p&gt;
+&lt;div class=&quot;guardrails&quot;&gt;
+&lt;div class=&quot;gr&quot;&gt;&lt;div class=&quot;gico&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot;&gt;&lt;path d=&quot;M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;&lt;div class=&quot;glab&quot;&gt;Shadow-first&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;gr&quot;&gt;&lt;div class=&quot;gico&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot;&gt;&lt;path d=&quot;M9 11l3 3L22 4&quot;/&gt;&lt;path d=&quot;M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;&lt;div class=&quot;glab&quot;&gt;Conservative-first&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;gr&quot;&gt;&lt;div class=&quot;gico&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot;&gt;&lt;path d=&quot;M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z&quot;/&gt;&lt;path d=&quot;M14 2v6h6&quot;/&gt;&lt;path d=&quot;M16 13H8&quot;/&gt;&lt;path d=&quot;M16 17H8&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;&lt;div class=&quot;glab&quot;&gt;Audit-friendly&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;gr&quot;&gt;&lt;div class=&quot;gico&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;10&quot;/&gt;&lt;path d=&quot;M4.93 4.93l14.14 14.14&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;&lt;div class=&quot;glab&quot;&gt;AI off-path&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;gr&quot;&gt;&lt;div class=&quot;gico&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot;&gt;&lt;path d=&quot;M12 9v4&quot;/&gt;&lt;path d=&quot;M12 17h.01&quot;/&gt;&lt;path d=&quot;M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;&lt;div class=&quot;glab&quot;&gt;Tidak live sebelum validasi&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Dokumen Inti&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;7 dokumen yang menjadi fondasi governance proyek — semua sudah selesai&lt;/p&gt;
+&lt;div class=&quot;dgrid&quot;&gt;
+&lt;div class=&quot;dcard&quot;&gt;&lt;div class=&quot;dnum&quot;&gt;01&lt;/div&gt;&lt;div class=&quot;dname&quot;&gt;Tracker&lt;/div&gt;&lt;div class=&quot;ddesc&quot;&gt;Status proyek, posisi saat ini, arah berikutnya&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;dcard&quot;&gt;&lt;div class=&quot;dnum&quot;&gt;02&lt;/div&gt;&lt;div class=&quot;dname&quot;&gt;Architecture&lt;/div&gt;&lt;div class=&quot;ddesc&quot;&gt;Peta komponen, alur data, boundary antar modul&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;dcard&quot;&gt;&lt;div class=&quot;dnum&quot;&gt;03&lt;/div&gt;&lt;div class=&quot;dname&quot;&gt;Service Contracts&lt;/div&gt;&lt;div class=&quot;ddesc&quot;&gt;Input/output dan aturan antar komponen&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;dcard&quot;&gt;&lt;div class=&quot;dnum&quot;&gt;04&lt;/div&gt;&lt;div class=&quot;dname&quot;&gt;Data Schema&lt;/div&gt;&lt;div class=&quot;ddesc&quot;&gt;Struktur database dan field audit&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;dcard&quot;&gt;&lt;div class=&quot;dnum&quot;&gt;05&lt;/div&gt;&lt;div class=&quot;dname&quot;&gt;Roadmap&lt;/div&gt;&lt;div class=&quot;ddesc&quot;&gt;Fase implementasi bertahap dan gate per fase&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;dcard&quot;&gt;&lt;div class=&quot;dnum&quot;&gt;06&lt;/div&gt;&lt;div class=&quot;dname&quot;&gt;Risk Register&lt;/div&gt;&lt;div class=&quot;ddesc&quot;&gt;Risiko utama, mitigasi, dan indikator&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;dcard&quot;&gt;&lt;div class=&quot;dnum&quot;&gt;07&lt;/div&gt;&lt;div class=&quot;dname&quot;&gt;Decision Baseline&lt;/div&gt;&lt;div class=&quot;ddesc&quot;&gt;Aturan keputusan dan guardrails yang berlaku&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;h2 class=&quot;stitle&quot;&gt;Risiko Utama&lt;/h2&gt;
+&lt;p class=&quot;sdesc&quot;&gt;Risiko yang paling relevan untuk fase saat ini beserta mitigasinya&lt;/p&gt;
+&lt;table class=&quot;rtable&quot;&gt;
+&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;width:25%&quot;&gt;Risiko&lt;/th&gt;&lt;th style=&quot;width:8%&quot;&gt;Level&lt;/th&gt;&lt;th&gt;Mitigasi&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Overengineering&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;rlev high&quot;&gt;Tinggi&lt;/span&gt;&lt;/td&gt;&lt;td&gt;Setiap fitur baru harus menjawab: &quot;apakah ini menggerakkan pipeline lebih dekat ke sinyal bermakna?&quot; Jika tidak, ditunda.&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Data quality mismatch&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;rlev high&quot;&gt;Tinggi&lt;/span&gt;&lt;/td&gt;&lt;td&gt;Definisi &quot;data lengkap&quot; harus eksplisit per adapter. Jika satu field kritis missing, data ditandai belum lengkap dan BUY diblokir.&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;strong&gt;False confidence dari AI&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;rlev high&quot;&gt;Tinggi&lt;/span&gt;&lt;/td&gt;&lt;td&gt;AI hanya memberi rekomendasi, rule engine yang memutuskan. Kualitas prediksi AI akan diukur secara kuantitatif sebelum dipercaya.&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Premature move to live&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;rlev high&quot;&gt;Tinggi&lt;/span&gt;&lt;/td&gt;&lt;td&gt;Setiap fase punya checklist yang harus lolos. Mode operasi hanya bisa diubah manual oleh operator — sistem tidak bisa mengubahnya sendiri.&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Scope creep&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;rlev med&quot;&gt;Sedang&lt;/span&gt;&lt;/td&gt;&lt;td&gt;Daftar hal yang di luar scope sudah ditentukan di roadmap. Ide baru dicatat tapi tidak diimplementasi sebelum fase aktif selesai.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;footer&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;p&gt;Halaman ini adalah snapshot status proyek NekoSport.&lt;/p&gt;
+&lt;p&gt;Diperbarui berdasarkan paket dokumen inti NekoSport — status per Maret 2026.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/footer&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+  </div>
+
   <script>
-    (function () {
-      const links = document.querySelectorAll('.topnav-links a');
-      const sections = [];
-      links.forEach(a => {
-        const id = a.getAttribute('href').replace('#', '');
-        const el = document.getElementById(id);
-        if (el) sections.push({ el, a });
-      });
-
-      function update() {
-        let current = sections[0];
-        const scrollY = window.scrollY + 120;
-        sections.forEach(s => {
-          if (s.el.offsetTop <= scrollY) current = s;
-        });
-        links.forEach(a => a.classList.remove('active'));
-        if (current) current.a.classList.add('active');
-      }
-
-      window.addEventListener('scroll', update);
-      update();
-    })();
-
-    // Accordion FAQ
-    function toggleFaq(header) {
-      const item = header.parentElement;
-      const wasOpen = item.classList.contains('open');
-      document.querySelectorAll('.accordion-item.open').forEach(el => el.classList.remove('open'));
-      if (!wasOpen) item.classList.add('open');
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-content iframe').forEach(f => f.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('frame-' + id).classList.add('active');
+      btn.classList.add('active');
     }
   </script>
 
 </body>
+
 </html>
