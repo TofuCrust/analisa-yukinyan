@@ -1,750 +1,1620 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Handover Progress Project: Transisi Sistem Trading</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #0f172a; /* Slate 900 */
-            --secondary: #334155; /* Slate 700 */
-            --accent: #2563eb; /* Blue 600 */
-            --success: #059669; /* Emerald 600 */
-            --warning: #d97706; /* Amber 600 */
-            --danger: #dc2626; /* Red 600 */
-            --bg-light: #f8fafc;
-            --bg-card: #ffffff;
-            --border: #e2e8f0;
-            --text-main: #1e293b;
-            --text-muted: #475569;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migration Strategy — Yukinyan HFT → New Architecture</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0b0f1a;
+      --bg-surface: #111827;
+      --bg-card: #1a2235;
+      --bg-card-hover: #1e2a42;
+      --bg-elevated: #243049;
+      --border: #2a3654;
+      --border-accent: #334670;
+      --text-primary: #e8ecf4;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --teal: #2dd4bf;
+      --teal-dim: #14b8a6;
+      --teal-bg: rgba(45, 212, 191, 0.08);
+      --amber: #f59e0b;
+      --amber-dim: #d97706;
+      --amber-bg: rgba(245, 158, 11, 0.08);
+      --red: #f87171;
+      --red-bg: rgba(248, 113, 113, 0.07);
+      --green: #4ade80;
+      --green-bg: rgba(74, 222, 128, 0.07);
+      --blue: #60a5fa;
+      --blue-bg: rgba(96, 165, 250, 0.07);
+      --purple: #a78bfa;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+      --font-body: 'DM Sans', sans-serif;
+      --font-display: 'Fraunces', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-main);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        /* Typography */
-        h1 {
-            font-size: 2.25rem;
-            color: var(--primary);
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 12px;
-        }
+    /* === TOP NAV === */
+    .topnav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(11, 15, 26, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
 
-        h2 {
-            font-size: 1.5rem;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    .topnav-brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--teal);
+      white-space: nowrap;
+      margin-right: 1rem;
+      letter-spacing: -0.02em;
+    }
 
-        h2::before {
-            content: '';
-            width: 4px;
-            height: 24px;
-            background: var(--accent);
-            border-radius: 2px;
-        }
+    .topnav-links {
+      display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex: 1;
+    }
 
-        p {
-            margin-bottom: 16px;
-        }
+    .topnav-links::-webkit-scrollbar {
+      display: none;
+    }
 
-        /* Utility */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .badge-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-        .badge-green { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-        .badge-slate { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+    .topnav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
 
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+    .topnav-links a:hover,
+    .topnav-links a.active {
+      color: var(--text-primary);
+      background: var(--bg-card);
+    }
 
-        section {
-            margin-bottom: 64px;
-            animation: fadeIn 0.8s ease-out forwards;
-            opacity: 0;
-            transform: translateY(10px);
-        }
+    /* === MAIN === */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 100px 1.5rem 6rem;
+    }
 
-        /* Header & Meta */
-        header {
-            margin-bottom: 48px;
-            padding-bottom: 32px;
-            border-bottom: 2px solid var(--border);
-        }
+    /* === HERO === */
+    .hero {
+      text-align: center;
+      padding: 3rem 0 4rem;
+      position: relative;
+    }
 
-        .subtitle {
-            font-size: 1.125rem;
-            color: var(--text-muted);
-            max-width: 800px;
-        }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
+    }
 
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-            background: #f1f5f9;
-            padding: 16px 24px;
-            border-radius: 8px;
-        }
+    .hero-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--teal);
+      background: var(--teal-bg);
+      border: 1px solid rgba(45, 212, 191, 0.15);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
 
-        .meta-item label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      letter-spacing: -0.03em;
+    }
 
-        .meta-item span {
-            font-weight: 600;
-            color: var(--primary);
-        }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--teal);
+    }
 
-        /* Exec Summary */
-        .exec-summary {
-            background: #f8fafc;
-            border-left: 4px solid var(--accent);
-            padding: 24px;
-            border-radius: 0 8px 8px 0;
-            font-size: 1.05rem;
-            color: var(--secondary);
-        }
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.8;
+    }
 
-        .exec-summary ul {
-            margin-top: 12px;
-            padding-left: 24px;
-        }
+    /* === SECTION === */
+    section {
+      padding: 3.5rem 0 2rem;
+    }
 
-        .exec-summary li {
-            margin-bottom: 8px;
-        }
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--teal-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.6rem;
+    }
 
-        /* Transformation Grid (Before/Now/Future) */
-        .transform-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
+    }
 
-        .transform-card {
-            padding: 24px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: white;
-        }
+    .section-desc {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      max-width: 700px;
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
 
-        .transform-card h3 {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
+    /* === CARDS === */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
 
-        .transform-card.past h3 { color: var(--text-muted); }
-        .transform-card.present { border-top: 4px solid var(--accent); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .transform-card.present h3 { color: var(--accent); }
-        .transform-card.future { background: var(--primary); color: white; border-color: var(--primary); }
-        .transform-card.future h3 { color: #60a5fa; border-bottom-color: rgba(255,255,255,0.1); }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: all 0.25s;
+    }
 
-        .transform-card ul {
-            list-style: none;
-            font-size: 0.9rem;
-        }
+    .card:hover {
+      border-color: var(--border-accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
 
-        .transform-card li {
-            margin-bottom: 12px;
-            position: relative;
-            padding-left: 16px;
-        }
+    .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
 
-        .transform-card li::before {
-            content: '•';
-            position: absolute;
-            left: 0;
-            color: inherit;
-            opacity: 0.5;
-        }
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
 
-        /* Simple Progress */
-        .progress-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-        }
+    .card p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
 
-        .progress-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
+    /* === COMPARISON === */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
 
-        .icon-check {
-            color: var(--success);
-            font-weight: bold;
-        }
+    .comp-col {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      position: relative;
+    }
 
-        /* Dataset Cards */
-        .dataset-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
+    .comp-col.before {
+      border-top: 3px solid var(--amber);
+    }
 
-        .data-card {
-            text-align: center;
-            padding: 24px;
-        }
+    .comp-col.after {
+      border-top: 3px solid var(--teal);
+    }
 
-        .data-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 12px 0 4px;
-            line-height: 1;
-        }
+    .comp-col h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
 
-        .data-label {
-            font-weight: 600;
-            color: var(--secondary);
-            margin-bottom: 8px;
-        }
+    .comp-col.before h3 {
+      color: var(--amber);
+    }
 
-        .data-desc {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
+    .comp-col.after h3 {
+      color: var(--teal);
+    }
 
-        /* Document Cards */
-        .doc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
+    .comp-col ul {
+      list-style: none;
+      padding: 0;
+    }
 
-        .doc-item {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--accent);
-        }
+    .comp-col ul li {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      padding: 0.4rem 0;
+      padding-left: 1.4rem;
+      position: relative;
+      line-height: 1.6;
+    }
 
-        .doc-item h4 {
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: var(--accent);
-            margin-bottom: 8px;
-        }
+    .comp-col ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.75rem;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
 
-        .doc-item p {
-            font-size: 0.9rem;
-            color: var(--secondary);
-            margin: 0;
-        }
+    .comp-col.before ul li::before {
+      background: var(--amber-dim);
+    }
 
-        /* System Flow */
-        .flow-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: space-between;
-            align-items: stretch;
-        }
+    .comp-col.after ul li::before {
+      background: var(--teal-dim);
+    }
 
-        .flow-step {
-            flex: 1;
-            min-width: 140px;
-            background: white;
-            border: 1px solid var(--border);
-            padding: 16px;
-            border-radius: 8px;
-            text-align: center;
-            position: relative;
-        }
+    /* === TABLE === */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-top: 1.5rem;
+    }
 
-        .flow-step .step-num {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            background: var(--accent);
-            color: white;
-            border-radius: 50%;
-            font-size: 0.8rem;
-            line-height: 24px;
-            font-weight: bold;
-            margin-bottom: 12px;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
 
-        .flow-step p {
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin: 0;
-        }
+    thead th {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-weight: 600;
+      text-align: left;
+      padding: 1rem 1.25rem;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
 
-        /* Info Box */
-        .info-box {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-left: 4px solid var(--warning);
-            padding: 24px;
-            border-radius: 8px;
-        }
+    thead th:first-child {
+      border-radius: var(--radius) 0 0 0;
+    }
 
-        .info-box h3 {
-            color: #92400e;
-            margin-bottom: 12px;
-            font-size: 1.1rem;
-        }
+    thead th:last-child {
+      border-radius: 0 var(--radius) 0 0;
+    }
 
-        /* Timeline */
-        .timeline {
-            position: relative;
-            padding-left: 24px;
-        }
+    tbody td {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      line-height: 1.6;
+      vertical-align: top;
+    }
 
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 8px;
-            bottom: 0;
-            width: 2px;
-            background: var(--border);
-        }
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
 
-        .tl-item {
-            position: relative;
-            margin-bottom: 24px;
-        }
+    tbody tr:hover {
+      background: var(--bg-card-hover);
+    }
 
-        .tl-item::before {
-            content: '';
-            position: absolute;
-            left: -29px;
-            top: 6px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--border);
-            border: 2px solid white;
-        }
+    td .verdict {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
 
-        .tl-item.active::before { background: var(--accent); }
-        .tl-item.future::before { background: white; border-color: var(--border); }
+    .verdict.recommended {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
 
-        .tl-item h4 {
-            font-size: 1rem;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
+    .verdict.not-recommended {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
 
-        .tl-item p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin: 0;
-        }
+    /* === TIMELINE === */
+    .timeline {
+      position: relative;
+      margin-top: 2rem;
+      padding-left: 2rem;
+    }
 
-        /* Grid 2 Column for Phase 0 */
-        .grid-2-col {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--teal), var(--amber), var(--teal));
+      border-radius: 2px;
+    }
 
-        /* Decision Box */
-        .decision-box {
-            background: var(--primary);
-            color: white;
-            padding: 32px;
-            border-radius: 12px;
-        }
+    .tl-item {
+      position: relative;
+      padding-bottom: 2rem;
+    }
 
-        .decision-box h2 {
-            color: white;
-            border: none;
-            margin-bottom: 16px;
-        }
+    .tl-item:last-child {
+      padding-bottom: 0;
+    }
 
-        .decision-box h2::before { background: white; }
+    .tl-dot {
+      position: absolute;
+      left: -2rem;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-deep);
+      border: 3px solid var(--teal);
+      z-index: 1;
+    }
 
-        .decision-list {
-            list-style: none;
-            margin-top: 24px;
-        }
+    .tl-phase {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--teal-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
 
-        .decision-list li {
-            background: rgba(255,255,255,0.1);
-            margin-bottom: 12px;
-            padding: 16px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 1.05rem;
-            font-weight: 500;
-        }
+    .tl-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0.3rem 0 0.4rem;
+    }
 
-        .decision-list input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            accent-color: var(--accent);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
+    .tl-duration {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--amber);
+      background: var(--amber-bg);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
 
-        /* Animation Delays */
-        section:nth-child(1) { animation-delay: 0.1s; }
-        section:nth-child(2) { animation-delay: 0.2s; }
-        section:nth-child(3) { animation-delay: 0.3s; }
-        section:nth-child(4) { animation-delay: 0.4s; }
+    .tl-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
 
-        @media (max-width: 768px) {
-            .transform-grid, .dataset-grid { grid-template-columns: 1fr; }
-            h1 { font-size: 1.75rem; }
-            .flow-container { flex-direction: column; }
-            .flow-step { text-align: left; display: flex; align-items: center; gap: 16px; }
-            .flow-step .step-num { margin-bottom: 0; }
-        }
+    .tl-desc ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 0.3rem;
+    }
 
-        @keyframes fadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    .tl-desc ul li {
+      padding: 0.15rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+
+    .tl-desc ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    /* === DATA FLOW DIAGRAM === */
+    .flow-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .flow-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .flow-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .flow-box.accent-teal {
+      border-color: rgba(45, 212, 191, 0.3);
+      background: var(--teal-bg);
+      color: var(--teal);
+    }
+
+    .flow-box.accent-amber {
+      border-color: rgba(245, 158, 11, 0.3);
+      background: var(--amber-bg);
+      color: var(--amber);
+    }
+
+    .flow-box.accent-blue {
+      border-color: rgba(96, 165, 250, 0.3);
+      background: var(--blue-bg);
+      color: var(--blue);
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .flow-arrow.down {
+      display: block;
+      text-align: center;
+      margin: 0.5rem auto;
+      font-size: 1.4rem;
+    }
+
+    /* === CALLOUT === */
+    .callout {
+      background: var(--teal-bg);
+      border: 1px solid rgba(45, 212, 191, 0.15);
+      border-left: 4px solid var(--teal);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 1.25rem 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .callout p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .callout strong {
+      color: var(--teal);
+    }
+
+    /* === EXEC SUMMARY ITEMS === */
+    .exec-list {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .exec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.25rem;
+    }
+
+    .exec-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: var(--teal-bg);
+      color: var(--teal);
+      border: 1px solid rgba(45, 212, 191, 0.2);
+    }
+
+    .exec-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .exec-text strong {
+      color: var(--text-primary);
+    }
+
+    /* === RECOMMENDATION CARD === */
+    .rec-card {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(45, 212, 191, 0.04) 100%);
+      border: 1px solid rgba(45, 212, 191, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .rec-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 1rem;
+    }
+
+    .rec-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      max-width: 650px;
+      margin: 0 auto 1rem;
+    }
+
+    .rec-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+
+    .rec-pill {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      border: 1px solid var(--border-accent);
+      color: var(--text-secondary);
+      background: var(--bg-elevated);
+      letter-spacing: 0.02em;
+    }
+
+    /* === TAG === */
+    .tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tag.low {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+
+    .tag.med {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .tag.high {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+
+    /* === ACCORDION FAQ === */
+    .accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .accordion-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.25s;
+    }
+
+    .accordion-item.open {
+      border-color: var(--border-accent);
+    }
+
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.35rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .accordion-header:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .accordion-num {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--teal-bg);
+      color: var(--teal);
+      border: 1px solid rgba(45, 212, 191, 0.2);
+    }
+
+    .accordion-question {
+      flex: 1;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .accordion-chevron {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      transition: transform 0.3s ease;
+    }
+
+    .accordion-item.open .accordion-chevron {
+      transform: rotate(180deg);
+    }
+
+    .accordion-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.25s ease;
+    }
+
+    .accordion-item.open .accordion-body {
+      max-height: 500px;
+    }
+
+    .accordion-answer {
+      padding: 0 1.35rem 1.25rem;
+      padding-left: calc(1.35rem + 26px + 1rem);
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
+
+    /* === DECISION BOX === */
+    .decision-box {
+      background: var(--bg-card);
+      border: 1px solid rgba(45, 212, 191, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .decision-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.15rem 1.25rem;
+      border-radius: var(--radius-sm);
+      transition: background 0.2s;
+    }
+
+    .decision-item:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .decision-item+.decision-item {
+      border-top: 1px solid var(--border);
+    }
+
+    .decision-check {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 2px solid var(--teal-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+      margin-top: 2px;
+      background: var(--teal-bg);
+    }
+
+    .decision-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .decision-content strong {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .decision-content span {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* === FOOTER === */
+    .footer {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 700px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+
+      .topnav {
+        padding: 0 1rem;
+      }
+
+      .topnav-brand {
+        font-size: 0.95rem;
+      }
+
+      main {
+        padding: 80px 1rem 4rem;
+      }
+
+      .rec-card {
+        padding: 1.5rem;
+      }
+
+      .flow-row {
+        gap: 0.5rem;
+      }
+
+      .flow-box {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+      }
+    }
+
+    /* === ANIMATION === */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    section {
+      animation: fadeUp 0.5s ease both;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
-    <header>
-        <div style="margin-bottom: 16px;">
-            <span class="badge badge-slate">Handover Document</span>
-            <span class="badge badge-blue" style="margin-left: 8px;">Review Stakeholder</span>
-        </div>
-        <h1>Laporan Progres & Kesiapan Implementasi Sistem Baru</h1>
-        <p class="subtitle">Pembaruan status proyek mengenai peralihan peran sistem lama (Yukinyan) dan persiapan pembangunan arsitektur bot yang baru.</p>
-        
-        <div class="meta-grid">
-            <div class="meta-item">
-                <label>Proyek</label>
-                <span>Transisi Yukinyan ke Sistem Baru</span>
-            </div>
-            <div class="meta-item">
-                <label>Fase Saat Ini</label>
-                <span>Review Persiapan Implementasi</span>
-            </div>
-            <div class="meta-item">
-                <label>Status Dokumen</label>
-                <span>Selesai (Finalized)</span>
-            </div>
-        </div>
-    </header>
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="topnav-brand">⬡ Migration Strategy</div>
+    <div class="topnav-links">
+      <a href="#summary">Summary</a>
+      <a href="#current">Kondisi</a>
+      <a href="#why-new">Arsitektur Baru</a>
+      <a href="#why-not-rewrite">Kenapa Tidak Rombak</a>
+      <a href="#role-shift">Perubahan Fungsi</a>
+      <a href="#data-use">Pemanfaatan Data</a>
+      <a href="#options">Opsi</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#decision">Keputusan</a>
+      <a href="#faq">FAQ</a>
+      <a href="#recommendation">Rekomendasi</a>
+    </div>
+  </nav>
 
-    <section>
-        <h2>1. Ringkasan Eksekutif</h2>
-        <div class="exec-summary">
-            <p>Proyek saat ini telah menyelesaikan tahap krusial persiapan sebelum penulisan kode sistem baru dimulai. Secara garis besar:</p>
-            <ul>
-                <li>Sistem lama (Yukinyan) telah berhasil <strong>diposisikan ulang</strong> hanya sebagai pengumpul data dan pembanding, bukan lagi sebagai pengambil keputusan.</li>
-                <li><strong>Data acuan (baseline)</strong> historis sudah dibersihkan dan siap digunakan untuk menguji keakuratan sistem baru kelak.</li>
-                <li>Seluruh <strong>dokumen perencanaan dan aturan main</strong> implementasi telah diselesaikan.</li>
-                <li>Proyek kini <strong>siap memasuki tahap awal pembangunan</strong> (Phase 0) setelah mendapat persetujuan dari stakeholder.</li>
-            </ul>
+  <main>
+
+    <!-- HERO -->
+    <div class="hero">
+      <span class="hero-badge">Strategy Document · Q2 2026</span>
+      <h1>Dari Yukinyan ke <em>Arsitektur Baru</em></h1>
+      <p class="hero-sub">
+        Dokumen strategi migrasi bot trading Polymarket —
+        membangun fondasi baru tanpa kehilangan aset yang sudah ada.
+      </p>
+    </div>
+
+    <!-- 1. EXECUTIVE SUMMARY -->
+    <section id="summary">
+      <div class="section-label">01 — Ringkasan</div>
+      <div class="section-title">Executive Summary</div>
+      <div class="section-desc">
+        Keputusan inti dan poin-poin utama yang perlu dipahami sebelum membaca detail.
+      </div>
+
+      <div class="exec-list">
+        <div class="exec-item">
+          <div class="exec-num">1</div>
+          <div class="exec-text"><strong>Bangun bot baru dengan arsitektur baru.</strong> Fondasi yang lebih modular,
+            stabil, dan siap dikembangkan untuk jangka panjang.</div>
         </div>
+        <div class="exec-item">
+          <div class="exec-num">2</div>
+          <div class="exec-text"><strong>Yukinyan tetap dipakai — bukan dibuang.</strong> Fungsinya dialihkan dari
+            trading aktif menjadi data collector, observer, dan baseline.</div>
+        </div>
+        <div class="exec-item">
+          <div class="exec-num">3</div>
+          <div class="exec-text"><strong>Data lama tidak hilang.</strong> Seluruh log, telemetry, dan observasi Yukinyan
+            akan dimanfaatkan untuk memvalidasi dan mempercepat pengembangan bot baru.</div>
+        </div>
+        <div class="exec-item">
+          <div class="exec-num">4</div>
+          <div class="exec-text"><strong>Migrasi bertahap, bukan big bang.</strong> Risiko lebih rendah karena data
+            collection tetap berjalan dan pembanding selalu tersedia.</div>
+        </div>
+        <div class="exec-item">
+          <div class="exec-num">5</div>
+          <div class="exec-text"><strong>Target akhir:</strong> bot yang lebih andal (reliability), lebih mudah dipantau
+            (observability), lebih mudah dikelola (maintainability), dan lebih siap untuk scale-up (scalability).</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <p>
+          <strong>Tujuan inti migrasi dalam satu kalimat:</strong> Membangun fondasi yang lebih andal, lebih mudah
+          dipantau, lebih mudah dikelola, dan lebih siap untuk dikembangkan — tanpa kehilangan aset dan data yang sudah
+          ada.
+        </p>
+      </div>
+
+      <div class="callout" style="margin-top:0.75rem;">
+        <p>
+          <strong>Framing utama:</strong> "Freeze strategy, expand telemetry" — Yukinyan menjadi collector + observer +
+          benchmark. Bot baru menjadi future execution engine.
+        </p>
+      </div>
     </section>
 
-    <section>
-        <h2>2. Apa yang Berubah dari Yukinyan?</h2>
-        <p>Kita mengubah peran Yukinyan agar kita bisa membangun sistem baru yang lebih aman, dapat diaudit, dan dirancang khusus untuk eksekusi jangka panjang.</p>
-        <div class="transform-grid">
-            <div class="transform-card past">
-                <h3>Masa Lalu</h3>
-                <ul>
-                    <li>Yukinyan dipakai sebagai bot uji coba (paper trading).</li>
-                    <li>Sistem pembaca data, strategi, dan risiko masih terlalu bercampur dalam satu tempat.</li>
-                    <li>Sulit dilacak jika terjadi kesalahan keputusan.</li>
-                </ul>
-            </div>
-            <div class="transform-card present">
-                <h3>Saat Ini</h3>
-                <ul>
-                    <li>Yukinyan diubah fungsinya menjadi <strong>Pengamat (Observer)</strong>.</li>
-                    <li>Fokus utamanya hanya mengumpulkan data pasar secara stabil.</li>
-                    <li>Menjadi sumber acuan data historis yang tepercaya.</li>
-                </ul>
-            </div>
-            <div class="transform-card future">
-                <h3>Masa Depan</h3>
-                <ul>
-                    <li>Bot baru dibangun terpisah secara modular.</li>
-                    <li>Setiap keputusan bisa disimulasikan dan diputar ulang (replay).</li>
-                    <li>Diuji ketat secara "bayangan" sebelum diberi akses dana sesungguhnya.</li>
-                </ul>
-            </div>
-        </div>
-    </section>
+    <!-- 2. KONDISI SAAT INI -->
+    <section id="current">
+      <div class="section-label">02 — Status Quo</div>
+      <div class="section-title">Kondisi Saat Ini</div>
+      <div class="section-desc">
+        Yukinyan sudah berjalan, menghasilkan data, dan berhasil membuktikan konsep strategi — tetapi bukan fondasi
+        ideal untuk langkah berikutnya.
+      </div>
 
-    <section>
-        <h2>3. Apa yang Sudah Diselesaikan?</h2>
-        <div class="progress-list">
-            <div class="progress-item">
-                <span class="icon-check">✓</span>
-                <span>Infrastruktur sistem lama (Yukinyan) telah distabilkan.</span>
-            </div>
-            <div class="progress-item">
-                <span class="icon-check">✓</span>
-                <span>Mode pengumpulan data (Collector Mode) aktif dan berjalan baik.</span>
-            </div>
-            <div class="progress-item">
-                <span class="icon-check">✓</span>
-                <span>Pemisahan lingkungan kerja agar tidak tumpang tindih.</span>
-            </div>
-            <div class="progress-item">
-                <span class="icon-check">✓</span>
-                <span>Data pembanding (baseline) sudah dibersihkan dari anomali.</span>
-            </div>
-            <div class="progress-item">
-                <span class="icon-check">✓</span>
-                <span>Dokumen acuan implementasi bot baru sudah final.</span>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>4. Kesiapan Data Pembanding (Baseline)</h2>
-        <p>Sebelum bot baru diaktifkan, performanya harus dibandingkan dengan data historis Yukinyan. Kami telah menyaring dataset ini untuk memastikan pembanding yang kita gunakan benar-benar akurat.</p>
-        <div class="dataset-grid">
-            <div class="card data-card">
-                <div class="data-label">Seluruh Catatan (Full Record)</div>
-                <div class="data-number">2.428</div>
-                <div class="data-desc">Total transaksi mentah yang berhasil dikumpulkan dan diseragamkan formatnya.</div>
-            </div>
-            <div class="card data-card">
-                <div class="data-label">Siap Analisis (Analysis-Ready)</div>
-                <div class="data-number">2.346</div>
-                <div class="data-desc">Data yang sudah dibersihkan dari transaksi transisi yang tidak relevan.</div>
-            </div>
-            <div class="card data-card" style="border: 2px solid var(--success);">
-                <span class="badge badge-green" style="margin-bottom: 8px;">Final Data</span>
-                <div class="data-label">Acuan Tepercaya (Trusted Baseline)</div>
-                <div class="data-number">2.128</div>
-                <div class="data-desc">Data paling bersih dan ketat yang akan menjadi standar kelulusan sistem baru nanti.</div>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>5. Dokumen Acuan yang Telah Disiapkan</h2>
-        <p>Berikut adalah dokumen panduan yang telah diselesaikan. Dokumen ini memastikan tim teknis bekerja dengan arah yang jelas dan terkendali.</p>
-        <div class="doc-grid">
-            <div class="doc-item">
-                <h4>policy_parity_v1.md</h4>
-                <p>Memastikan strategi sistem baru pada tahap awal sama persis dengan sistem lama. Ini mencegah proyek berubah arah terlalu cepat sebelum sistem stabil.</p>
-            </div>
-            <div class="doc-item">
-                <h4>architecture_v2.md</h4>
-                <p>Menjelaskan bentuk akhir sistem yang akan dibangun, memisahkan bagian yang mengambil keputusan real-time dan bagian evaluasi analitik.</p>
-            </div>
-            <div class="doc-item">
-                <h4>service_contracts_v2.md</h4>
-                <p>Memastikan setiap bagian di dalam sistem baru (pembaca data, pengambil keputusan, dll) memiliki tugas dan batasan yang sangat jelas.</p>
-            </div>
-            <div class="doc-item">
-                <h4>event_schema_v2.md</h4>
-                <p>Mengatur format pencatatan aktivitas sistem. Bertujuan agar semua keputusan bot nantinya bisa dibaca, dievaluasi, dan disimulasikan ulang dengan mudah.</p>
-            </div>
-            <div class="doc-item">
-                <h4>implementation_roadmap_v2.md</h4>
-                <p>Peta jalan pengerjaan yang terbagi dalam tahapan yang jelas, dari awal persiapan hingga pengujian keamanan sistem.</p>
-            </div>
-            <div class="doc-item">
-                <h4>risk_register_v2.md</h4>
-                <p>Mencatat risiko-risiko utama dalam proyek (seperti bahaya membuat sistem terlalu rumit) beserta cara tim mengendalikannya.</p>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>6. Bagaimana Sistem Baru Akan Bekerja</h2>
-        <p>Nantinya, sistem baru dirancang bekerja secara sistematis dan tercatat penuh tanpa melibatkan campur tangan AI pada jalur keputusan utama yang butuh kecepatan.</p>
-        <div class="flow-container">
-            <div class="flow-step">
-                <span class="step-num">1</span>
-                <p>Sistem membaca data pasar secara langsung.</p>
-            </div>
-            <div class="flow-step">
-                <span class="step-num">2</span>
-                <p>Sistem merangkum kondisi & pergerakan pasar saat itu.</p>
-            </div>
-            <div class="flow-step">
-                <span class="step-num">3</span>
-                <p>Sistem mengambil keputusan berdasarkan aturan baku.</p>
-            </div>
-            <div class="flow-step">
-                <span class="step-num">4</span>
-                <p>Sistem mencatat seluruh proses ke dalam "buku log" permanen.</p>
-            </div>
-            <div class="flow-step">
-                <span class="step-num">5</span>
-                <p>AI dan alat evaluasi menganalisis buku log secara terpisah.</p>
-            </div>
-            <div class="flow-step">
-                <span class="step-num">6</span>
-                <p>Operator mengevaluasi hasil sebelum pembaruan strategi.</p>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>7. Peran Yukinyan Selama Masa Transisi</h2>
-        <div class="info-box">
-            <h3>Penting: Yukinyan Tidak Langsung Dimatikan</h3>
-            <p style="margin-bottom: 0;">Meskipun kita beralih ke sistem baru, <strong>Yukinyan tidak akan di-shutdown saat ini</strong>. Yukinyan akan tetap dibiarkan hidup dan berjalan dengan peran barunya sebagai pengumpul data historis secara real-time. Hal ini krusial agar kita memiliki data pembanding saat sistem baru sedang dibangun dan diuji.</p>
-        </div>
-    </section>
-
-    <section>
-        <h2>8. Tahap Peralihan ke Sistem Baru</h2>
-        <div class="timeline">
-            <div class="tl-item active">
-                <h4>Tahap Sekarang (Persiapan)</h4>
-                <p>Yukinyan aktif sebagai pengumpul data utama. Bot baru belum mulai dibangun. Desain dikunci.</p>
-            </div>
-            <div class="tl-item future">
-                <h4>Tahap Transisi (Pembangunan)</h4>
-                <p>Bot baru mulai dibangun tahap demi tahap. Yukinyan tetap hidup tanpa gangguan.</p>
-            </div>
-            <div class="tl-item future">
-                <h4>Tahap Validasi (Shadow Testing)</h4>
-                <p>Bot baru berjalan secara bayangan. Keputusannya dibandingkan 1-lawan-1 dengan data dari Yukinyan untuk memastikan tidak ada cacat logika.</p>
-            </div>
-            <div class="tl-item future">
-                <h4>Tahap Target (Mandiri)</h4>
-                <p>Bot baru terbukti akurat dan mulai beroperasi secara mandiri sebagai eksekutor utama.</p>
-            </div>
-            <div class="tl-item future">
-                <h4>Tahap Akhir</h4>
-                <p>Yukinyan masuk ke mode perawatan saja (archive/reference) dan perlahan pensiun sepenuhnya.</p>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>9. Risiko yang Sudah Dikendalikan</h2>
+      <div class="card-grid">
         <div class="card">
-            <ul style="padding-left: 20px; color: var(--secondary);">
-                <li style="margin-bottom: 8px;"><strong>Arah proyek lebih jelas:</strong> Dengan adanya dokumen Roadmap dan Arsitektur, kita tahu pasti apa yang dibangun bulan ini dan apa yang tidak.</li>
-                <li style="margin-bottom: 8px;"><strong>Cegah inovasi berlebihan:</strong> Aturan proyek melarang modifikasi strategi selama tahap pembangunan pondasi. Kita fokus membuat sistem bekerja secara mekanis dulu.</li>
-                <li style="margin-bottom: 8px;"><strong>Data evaluasi terjamin:</strong> Karena Yukinyan sudah stabil sebagai "CCTV" pengumpul data, kita tidak akan kekurangan data untuk mengetes bot baru nantinya.</li>
+          <span class="card-icon">✅</span>
+          <h3>Sudah Berjalan & Menghasilkan Data</h3>
+          <p>Yukinyan aktif di market BTC 5-min dan telah mengumpulkan ratusan data trade yang sangat berharga.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">✅</span>
+          <h3>Konsep Strategy Terbukti</h3>
+          <p>Dari data 834+ trade, kita sudah tahu exit mechanism mana yang profitable dan mana yang perlu diperbaiki.
+          </p>
+        </div>
+        <div class="card">
+          <span class="card-icon">⚠️</span>
+          <h3>Logic Masih Hardcoded</h3>
+          <p>Strategi trading masih tertanam langsung di kode utama, sulit untuk diubah atau diuji secara terpisah.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">⚠️</span>
+          <h3>Arsitektur Kurang Ideal</h3>
+          <p>Menambahkan fitur baru di atas sistem yang ada akan semakin sulit dan berisiko merusak bagian yang sudah
+            jalan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. KENAPA ARSITEKTUR BARU -->
+    <section id="why-new">
+      <div class="section-label">03 — Visi</div>
+      <div class="section-title">Mengapa Perlu Arsitektur Baru</div>
+      <div class="section-desc">
+        Arsitektur baru dirancang agar setiap bagian sistem bisa dikembangkan, diuji, dan diperbaiki secara independen —
+        tanpa mengganggu bagian lain. Secara bisnis, ini berarti: sistem lebih andal saat dijalankan, lebih mudah
+        dipantau saat ada masalah, lebih mudah dikelola oleh tim, dan lebih siap untuk dikembangkan ke skala yang lebih
+        besar.
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-icon">🧩</span>
+          <h3>Pemisahan Concern yang Jelas</h3>
+          <p>Data ingestion, feature calculation, strategy, execution, storage, dan diagnostics — masing-masing berdiri
+            sendiri dan saling terhubung dengan rapi.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔍</span>
+          <h3>Lebih Mudah di-Debug</h3>
+          <p>Saat ada masalah, kita bisa langsung mengisolasi komponen mana yang bermasalah tanpa harus membongkar
+            seluruh sistem.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔁</span>
+          <h3>Bisa Diuji Ulang dengan Data Nyata</h3>
+          <p>Bisa memutar ulang data historis untuk menguji strategi baru — memvalidasi keputusan sebelum dijalankan
+            dengan uang sungguhan.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🧪</span>
+          <h3>Lebih Mudah di-Test</h3>
+          <p>Setiap komponen bisa diuji secara terpisah. Perubahan di satu tempat tidak merusak tempat lain.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🛡️</span>
+          <h3>Lebih Aman untuk Live Execution</h3>
+          <p>Fondasi yang lebih kokoh untuk menjalankan bot dengan uang sungguhan di tahap produksi.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">📋</span>
+          <h3>Siap untuk Verifikasi & Investigasi</h3>
+          <p>Setiap keputusan trading bisa dilacak dan diverifikasi — penting untuk membangun kepercayaan, menemukan
+            masalah, dan perbaikan berkelanjutan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. KENAPA TIDAK ROMBAK YUKINYAN -->
+    <section id="why-not-rewrite">
+      <div class="section-label">04 — Pertimbangan Risiko</div>
+      <div class="section-title">Kenapa Tidak Merombak Yukinyan Total Sekarang</div>
+      <div class="section-desc">
+        Full rewrite terhadap Yukinyan terdengar menarik, tetapi justru membawa risiko lebih besar dibanding membangun
+        baru secara terpisah.
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-icon">🚫</span>
+          <h3>Risiko Putusnya Data Collection</h3>
+          <p>Merombak total bisa mematikan aliran data selama proses rewrite — data yang sedang dikumpulkan akan
+            terganggu.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔀</span>
+          <h3>Masalah Lama & Baru Tercampur</h3>
+          <p>Saat refactor, sulit membedakan apakah bug datang dari logic lama, kode baru, atau interaksi keduanya.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🎯</span>
+          <h3>Risiko Refactor & Risiko Strategi Tercampur</h3>
+          <p>Jika terjadi kegagalan, akan sangat sulit menentukan: apakah masalahnya di strategi trading, di arsitektur,
+            atau di proses rewrite itu sendiri. Memisahkan keduanya jauh lebih aman.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">⏳</span>
+          <h3>Waktu & Risiko Lebih Besar</h3>
+          <p>Full rewrite cenderung memakan waktu lebih lama dari estimasi dan membawa ketidakpastian yang tinggi.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">📊</span>
+          <h3>Kehilangan Baseline Pembanding</h3>
+          <p>Tanpa Yukinyan yang tetap jalan, kita kehilangan acuan untuk memvalidasi apakah bot baru benar-benar lebih
+            baik.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <p>
+          <strong>Prinsip utama:</strong> Dengan mempertahankan Yukinyan sebagai penghasil data dan baseline pembanding,
+          kita bisa membangun yang baru tanpa tekanan dan tanpa kehilangan informasi berharga.
+        </p>
+      </div>
+    </section>
+
+    <!-- 5. PERUBAHAN FUNGSI YUKINYAN -->
+    <section id="role-shift">
+      <div class="section-label">05 — Transformasi Peran</div>
+      <div class="section-title">Perubahan Fungsi Yukinyan</div>
+      <div class="section-desc">
+        Yukinyan tidak dibuang — fungsinya digeser ke peran yang justru memaksimalkan nilai terbesarnya saat ini: data
+        dan baseline behavior.
+      </div>
+
+      <div class="comparison">
+        <div class="comp-col before">
+          <h3>⬡ Sebelum — Trading Engine</h3>
+          <ul>
+            <li>Bot trading aktif / research engine</li>
+            <li>Menjalankan strategi dan eksekusi order</li>
+            <li>Mengambil keputusan entry dan exit</li>
+            <li>Fokus pada profit dari eksekusi langsung</li>
+            <li>Menerima tekanan pengembangan logic baru</li>
+          </ul>
+        </div>
+        <div class="comp-col after">
+          <h3>⬡ Sesudah — Collector & Observer</h3>
+          <ul>
+            <li>Data collector — menangkap data pasar</li>
+            <li>Observer — menghasilkan telemetry dan log</li>
+            <li>Benchmark baseline untuk pembanding performa</li>
+            <li>Tidak lagi menanggung pengembangan fitur baru</li>
+            <li>Stabil, ringan, dan fokus pada perannya</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <p>
+          <strong>Manfaat pergeseran ini:</strong> Yukinyan tetap berjalan tanpa modifikasi berat, data collection tidak
+          terputus, dan bot baru mendapatkan baseline yang solid untuk perbandingan performa.
+        </p>
+      </div>
+    </section>
+
+    <!-- 6. PEMANFAATAN DATA -->
+    <section id="data-use">
+      <div class="section-label">06 — Pemanfaatan Aset</div>
+      <div class="section-title">Bagaimana Data Yukinyan Akan Dimanfaatkan</div>
+      <div class="section-desc">
+        Data yang sudah dikumpulkan Yukinyan adalah aset paling berharga — dan akan terus dimanfaatkan sepenuhnya.
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-icon">📦</span>
+          <h3>Historical Feed</h3>
+          <p>Data lama menjadi sumber utama untuk membangun dan menguji strategi baru sejak hari pertama.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔁</span>
+          <h3>Replay & Validasi</h3>
+          <p>Memutar ulang keputusan historis untuk memvalidasi apakah logika baru menghasilkan keputusan yang lebih
+            baik.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">⚖️</span>
+          <h3>Shadow Testing</h3>
+          <p>Bot baru berjalan berdampingan dengan Yukinyan — keputusannya dibandingkan secara real-time.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🧠</span>
+          <h3>Market Behavior Insights</h3>
+          <p>Data observasi memperkaya pemahaman perilaku market dan mempercepat pengembangan strategi.</p>
+        </div>
+      </div>
+
+      <!-- DATA FLOW DIAGRAM -->
+      <div class="flow-diagram" style="margin-top:2rem;">
+        <div
+          style="font-size:0.78rem; color:var(--text-muted); margin-bottom:1.5rem; text-transform:uppercase; letter-spacing:0.08em; font-family:var(--font-mono);">
+          Data Flow</div>
+
+        <div class="flow-row">
+          <div class="flow-box accent-amber">⬡ Yukinyan (Collector)</div>
+        </div>
+
+        <div class="flow-arrow down">↓</div>
+
+        <div class="flow-row">
+          <div class="flow-box">Logs</div>
+          <div class="flow-box">Telemetry</div>
+          <div class="flow-box">Market Observations</div>
+        </div>
+
+        <div class="flow-arrow down">↓</div>
+
+        <div class="flow-row">
+          <div class="flow-box accent-teal">⬢ New Architecture</div>
+        </div>
+
+        <div class="flow-arrow down">↓</div>
+
+        <div class="flow-row">
+          <div class="flow-box accent-blue">Replay</div>
+          <div class="flow-box accent-blue">Validation</div>
+          <div class="flow-box accent-blue">Strategy Dev</div>
+          <div class="flow-box accent-blue">Shadow Testing</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <p>
+          <strong>Poin penting:</strong> Bot baru tidak mulai dari nol. Data dari Yukinyan memberi head start yang
+          signifikan — mengurangi waktu pengembangan dan meningkatkan kualitas keputusan strategi sejak awal.
+        </p>
+      </div>
+
+      <div class="callout" style="margin-top:0.75rem; border-left-color: var(--amber);">
+        <p>
+          <strong style="color:var(--amber);">Catatan penting tentang data:</strong> Data Yukinyan sangat berharga,
+          tetapi perlu dipahami bahwa data tersebut dibentuk oleh strategi lama yang bersifat hardcoded. Karena itu,
+          data Yukinyan diposisikan sebagai <strong style="color:var(--text-primary);">baseline, referensi historis, dan
+            input untuk shadow comparison</strong> — bukan sebagai satu-satunya sumber kebenaran untuk bot baru. Bot
+          baru akan membangun pemahaman sendiri di atas fondasi data ini.
+        </p>
+      </div>
+    </section>
+
+    <!-- 7. OPSI -->
+    <section id="options">
+      <div class="section-label">07 — Analisa Opsi</div>
+      <div class="section-title">Opsi yang Dipertimbangkan</div>
+      <div class="section-desc">
+        Perbandingan dua pendekatan yang dipertimbangkan untuk langkah selanjutnya.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:22%">Kriteria</th>
+              <th style="width:39%">Opsi 1 — Bangun Baru + Yukinyan Jadi Collector</th>
+              <th style="width:39%">Opsi 2 — Rombak Yukinyan Sepenuhnya</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Risiko</strong></td>
+              <td><span class="tag low">Rendah</span> — migrasi bertahap, rollback mudah</td>
+              <td><span class="tag high">Tinggi</span> — satu kesalahan bisa berdampak luas</td>
+            </tr>
+            <tr>
+              <td><strong>Continuity Data</strong></td>
+              <td>Tidak terputus — Yukinyan tetap jalan</td>
+              <td>Berisiko terputus selama proses rewrite</td>
+            </tr>
+            <tr>
+              <td><strong>Kecepatan Implementasi</strong></td>
+              <td><span class="tag low">Lebih cepat</span> — fokus tanpa beban legacy</td>
+              <td><span class="tag med">Lebih lambat</span> — harus navigasi kode lama</td>
+            </tr>
+            <tr>
+              <td><strong>Kemudahan Validasi</strong></td>
+              <td>Mudah — ada baseline pembanding langsung</td>
+              <td>Sulit — tidak ada referensi pembanding</td>
+            </tr>
+            <tr>
+              <td><strong>Maintainability</strong></td>
+              <td><span class="tag low">Baik</span> — arsitektur bersih dari awal</td>
+              <td><span class="tag med">Campuran</span> — legacy tetap ada</td>
+            </tr>
+            <tr>
+              <td><strong>Verdict</strong></td>
+              <td><span class="verdict recommended">✓ Direkomendasikan</span></td>
+              <td><span class="verdict not-recommended">✕ Tidak Direkomendasikan</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 8. TIMELINE -->
+    <section id="timeline">
+      <div class="section-label">08 — Roadmap</div>
+      <div class="section-title">Estimasi Waktu Pengerjaan</div>
+      <div class="section-desc">
+        Timeline berikut adalah estimasi realistis, bukan janji pasti. Durasi bisa berubah tergantung manpower dan scope
+        yang berkembang.
+      </div>
+
+      <div class="timeline">
+
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">Fase 1</div>
+          <div class="tl-title">Stabilize Yukinyan as Collector</div>
+          <span class="tl-duration">~1 minggu</span>
+          <div class="tl-desc">
+            <ul>
+              <li>Freeze strategi trading lama — tidak ada perubahan logic baru</li>
+              <li>Rapikan logging dan telemetry yang sudah ada</li>
+              <li>Tetapkan peran resmi Yukinyan sebagai collector / observer / baseline</li>
             </ul>
-        </div>
-    </section>
-
-    <section>
-        <h2>10. Apa yang Dimaksud dengan Phase 0?</h2>
-        <p>Sebelum membangun sistem utama, kita perlu meletakkan fondasi yang kuat. <strong>Phase 0 (Setup Proyek)</strong> adalah langkah penyiapan infrastruktur dasar, struktur folder, dan lingkungan kerja agar proses penulisan kode nantinya berjalan rapi, teratur, dan terarah.</p>
-
-        <div class="grid-2-col" style="margin-bottom: 24px;">
-            <div class="card">
-                <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 16px;">Yang Dikerjakan di Phase 0</h3>
-                <ul style="padding-left: 20px; color: var(--secondary); font-size: 0.95rem;">
-                    <li style="margin-bottom: 8px;">Membuat repositori proyek baru yang terpisah.</li>
-                    <li style="margin-bottom: 8px;">Menyiapkan kerangka dasar (skeleton) proyek beserta struktur foldernya.</li>
-                    <li style="margin-bottom: 8px;">Menyiapkan file konfigurasi acuan awal.</li>
-                    <li style="margin-bottom: 8px;">Menyiapkan lingkungan kerja (Docker dan environment dasar).</li>
-                    <li style="margin-bottom: 8px;">Membuat dokumen panduan awal bagi pengembang (README).</li>
-                </ul>
-            </div>
-            <div class="card" style="border-top: 4px solid var(--warning);">
-                <h3 style="font-size: 1.1rem; color: var(--warning); margin-bottom: 16px;">Yang BELUM Dilakukan</h3>
-                <ul style="padding-left: 20px; color: var(--secondary); font-size: 0.95rem;">
-                    <li style="margin-bottom: 8px;">Belum ada penulisan logika trading utama.</li>
-                    <li style="margin-bottom: 8px;">Belum ada sistem pengambilan keputusan secara real-time.</li>
-                    <li style="margin-bottom: 8px;">Belum ada eksekusi transaksi (order) ke pasar.</li>
-                    <li style="margin-bottom: 8px;">Sistem sama sekali belum menggantikan Yukinyan.</li>
-                </ul>
-            </div>
+          </div>
         </div>
 
-        <div class="info-box" style="margin-bottom: 24px;">
-            <h3>Hubungan dengan Yukinyan Selama Phase 0</h3>
-            <p style="margin-bottom: 0;">Selama fase fondasi ini berjalan, <strong>Yukinyan akan tetap beroperasi penuh</strong> seperti biasa sebagai pengumpul data dan pembanding. Pengerjaan Phase 0 sama sekali tidak akan mengganggu atau mematikan Yukinyan. Rencana penonaktifan Yukinyan baru akan dibahas jauh di masa depan setelah bot baru tervalidasi matang.</p>
-        </div>
-
-        <div class="card" style="background: #f8fafc;">
-            <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 16px;">Indikator Phase 0 Selesai (Target Output)</h3>
-            <div class="progress-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                <div class="progress-item" style="padding: 12px;"><span class="icon-check">✓</span> <span style="font-size: 0.85rem; font-weight: 500;">Repositori baru aktif</span></div>
-                <div class="progress-item" style="padding: 12px;"><span class="icon-check">✓</span> <span style="font-size: 0.85rem; font-weight: 500;">Kerangka proyek bisa dijalankan</span></div>
-                <div class="progress-item" style="padding: 12px;"><span class="icon-check">✓</span> <span style="font-size: 0.85rem; font-weight: 500;">File konfigurasi dasar terbaca</span></div>
-                <div class="progress-item" style="padding: 12px;"><span class="icon-check">✓</span> <span style="font-size: 0.85rem; font-weight: 500;">Lingkungan kerja dasar siap</span></div>
-                <div class="progress-item" style="padding: 12px;"><span class="icon-check">✓</span> <span style="font-size: 0.85rem; font-weight: 500;">Siap masuk ke penulisan inti (Fase 1)</span></div>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <div class="decision-box">
-            <h2>11. Keputusan yang Dibutuhkan dari Stakeholder</h2>
-            <p style="opacity: 0.9; font-size: 1.05rem;">Seluruh dokumen perencanaan, data pembanding, dan persiapan infrastruktur telah tuntas. Keputusan operasional utama yang kami butuhkan saat ini adalah persetujuan Anda untuk mulai melangkah ke tahap awal pembangunan.</p>
-            
-            <ul class="decision-list">
-                <li>
-                    <input type="checkbox" id="dec-final">
-                    <label for="dec-final">Menyetujui proyek untuk memasuki Phase 0 (Setup Proyek / Implementasi Awal).</label>
-                </li>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">Fase 2</div>
+          <div class="tl-title">Build Core New Architecture</div>
+          <span class="tl-duration">~2 minggu</span>
+          <div class="tl-desc">
+            <ul>
+              <li>Bootstrap project baru dengan struktur modular</li>
+              <li>Bangun feed ingestion dan data pipeline</li>
+              <li>Implementasi normalizer, clock, dan window map</li>
+              <li>Bangun event storage layer</li>
             </ul>
+          </div>
         </div>
+
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">Fase 3</div>
+          <div class="tl-title">Build Strategy & Diagnostics Layer</div>
+          <span class="tl-duration">~2 minggu</span>
+          <div class="tl-desc">
+            <ul>
+              <li>Bangun feature engine untuk kalkulasi sinyal</li>
+              <li>Implementasi strategy state machine</li>
+              <li>Bangun replay, diagnostics, dan validation layer</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">Fase 4</div>
+          <div class="tl-title">Shadow Run & Comparison</div>
+          <span class="tl-duration">~1–2 minggu</span>
+          <div class="tl-desc">
+            <ul>
+              <li>Jalankan bot baru secara paralel dengan Yukinyan (shadow mode)</li>
+              <li>Bandingkan output dan keputusan kedua bot</li>
+              <li>Validasi akurasi dan lakukan tuning awal</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">Fase 5</div>
+          <div class="tl-title">Hardening & Readiness</div>
+          <span class="tl-duration">~1–2 minggu</span>
+          <div class="tl-desc">
+            <ul>
+              <li>Perkuat execution layer untuk kesiapan live</li>
+              <li>Stability fixes dan edge case handling</li>
+              <li>Susun operational checklist untuk deployment</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="callout" style="margin-top:2rem;">
+        <p>
+          <strong>Total estimasi MVP & shadow validation: sekitar 6–8 minggu.</strong><br>
+          Angka ini adalah <em>approximation</em>, bukan komitmen pasti.
+        </p>
+      </div>
+
+      <div class="callout" style="margin-top:0.75rem; border-left-color: var(--amber);">
+        <p>
+          <strong style="color:var(--amber);">Asumsi yang mendasari estimasi ini:</strong> Tim kecil yang fokus penuh,
+          scope tetap terkendali sesuai rencana di atas, dan tidak ada perubahan arah besar di tengah jalan. Jika salah
+          satu asumsi berubah, durasi akan menyesuaikan.
+        </p>
+      </div>
     </section>
 
-    <footer style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0;">
-        &copy; 2026 Tim Transisi Proyek. Dokumen internal untuk peninjauan pemangku kepentingan.
-    </footer>
-</div>
+    <!-- 9. KEPUTUSAN STAKEHOLDER -->
+    <section id="decision">
+      <div class="section-label">09 — Keputusan</div>
+      <div class="section-title">Keputusan yang Diharapkan dari Stakeholder</div>
+      <div class="section-desc">
+        Untuk melanjutkan ke tahap eksekusi, kami memerlukan persetujuan terhadap empat poin berikut.
+      </div>
+
+      <div class="decision-box">
+        <div class="decision-item">
+          <div class="decision-check">☐</div>
+          <div class="decision-content">
+            <strong>Menyetujui pendekatan Opsi 1</strong>
+            <span>Membangun bot baru secara terpisah, sambil mempertahankan Yukinyan sebagai data collector — bukan
+              merombak total Yukinyan.</span>
+          </div>
+        </div>
+        <div class="decision-item">
+          <div class="decision-check">☐</div>
+          <div class="decision-content">
+            <strong>Menyetujui pengalihan fungsi Yukinyan</strong>
+            <span>Yukinyan resmi dialihkan dari trading engine menjadi collector, observer, dan baseline
+              pembanding.</span>
+          </div>
+        </div>
+        <div class="decision-item">
+          <div class="decision-check">☐</div>
+          <div class="decision-content">
+            <strong>Menyetujui pembangunan bot baru dengan arsitektur baru</strong>
+            <span>Tim mulai membangun arsitektur baru yang modular, dengan target MVP sekitar 6–8 minggu.</span>
+          </div>
+        </div>
+        <div class="decision-item">
+          <div class="decision-check">☐</div>
+          <div class="decision-content">
+            <strong>Menyetujui pendekatan shadow run sebelum transisi penuh</strong>
+            <span>Bot baru akan dijalankan secara paralel dengan Yukinyan untuk validasi, sebelum menggantikan eksekusi
+              secara penuh.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. FAQ STAKEHOLDER -->
+    <section id="faq">
+      <div class="section-label">10 — FAQ</div>
+      <div class="section-title">FAQ Stakeholder</div>
+      <div class="section-desc">
+        Jawaban singkat atas pertanyaan yang paling mungkin muncul saat pembahasan strategi migrasi.
+      </div>
+
+      <div class="accordion">
+
+        <div class="accordion-item open">
+          <div class="accordion-header" onclick="toggleFaq(this)">
+            <div class="accordion-num">1</div>
+            <div class="accordion-question">Apakah bot baru akan memakai AI untuk membaca log lama?</div>
+            <div class="accordion-chevron">▾</div>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-answer">
+              Ya, AI bisa dimanfaatkan untuk menganalisa log lama — misalnya untuk menemukan pola, membuat laporan
+              diagnostik, atau memberikan rekomendasi evaluasi. Namun AI tidak ditempatkan di jalur eksekusi utama
+              (entry/exit real-time). Arsitektur baru secara sadar memisahkan jalur analisa dan jalur eksekusi, sehingga
+              AI bekerja di sisi evaluasi tanpa menambah risiko pada kecepatan pengambilan keputusan trading.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggleFaq(this)">
+            <div class="accordion-num">2</div>
+            <div class="accordion-question">Apakah bot baru akan lebih adaptif dibanding rule hardcoded lama?</div>
+            <div class="accordion-chevron">▾</div>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-answer">
+              Bot baru dirancang lebih adaptif karena memanfaatkan fitur pasar yang lebih kaya — bukan sekadar aturan
+              statis "jika A maka B". Keputusan dibangun dari kombinasi feature calculation dan proses validasi yang
+              lebih terstruktur. Meski demikian, akurasi yang lebih baik adalah target yang harus dibuktikan melalui
+              replay data historis, perbandingan dengan Yukinyan, dan shadow run — bukan sesuatu yang diasumsikan dari
+              awal.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggleFaq(this)">
+            <div class="accordion-num">3</div>
+            <div class="accordion-question">Apakah deployment bisa dipercepat?</div>
+            <div class="accordion-chevron">▾</div>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-answer">
+              Bisa, jika target dibatasi ke MVP atau shadow-only — artinya bot baru berjalan paralel tanpa eksekusi uang
+              sungguhan lebih dulu. Namun percepatan selalu membawa trade-off: semakin cepat target, semakin sempit
+              cakupan fitur dan validasi. Risiko terbesar dari pendekatan ini justru bukan lambatnya deployment,
+              melainkan scope yang melebar jika terlalu banyak fitur dimasukkan terlalu cepat. Disiplin menjaga scope
+              tetap terkendali adalah kunci.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggleFaq(this)">
+            <div class="accordion-num">4</div>
+            <div class="accordion-question">Bagaimana isu latency AI pada market BTC 5 menit?</div>
+            <div class="accordion-chevron">▾</div>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-answer">
+              Arsitektur baru tidak menghilangkan latency AI — yang berubah adalah penempatannya. Jalur eksekusi utama
+              (hot path) tetap bersifat deterministik dan cepat, tanpa AI di dalamnya. AI ditempatkan di jalur analisa
+              (off-path / cold-path) untuk evaluasi dan insight. Justru inilah alasan utama kenapa arsitektur baru lebih
+              cocok: memisahkan kecepatan eksekusi dari kedalaman analisa.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggleFaq(this)">
+            <div class="accordion-num">5</div>
+            <div class="accordion-question">Bagaimana gambaran entry dan exit logic di bot baru?</div>
+            <div class="accordion-chevron">▾</div>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-answer">
+              Logika entry dan exit dari Yukinyan tidak dibuang mentah-mentah — ia dipindahkan ke bentuk yang lebih
+              modular. Entry dibangun dari feature layer yang membaca kondisi pasar, keputusan dikelola oleh state
+              machine, dan eksekusi dilakukan oleh execution layer yang terpisah. Exit tetap memiliki prioritas dan risk
+              control. Penting dicatat: Yukinyan tetap dijalankan sampai bot baru lolos shadow run dan tervalidasi —
+              jadi tidak ada jeda operasional.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" onclick="toggleFaq(this)">
+            <div class="accordion-num">6</div>
+            <div class="accordion-question">Apakah bot baru memberi kontrol data trade yang lebih baik?</div>
+            <div class="accordion-chevron">▾</div>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-answer">
+              Ya, jauh lebih baik. Bot baru memisahkan data pasar, sinyal, order, eksekusi, alasan exit, dan diagnostik
+              ke dalam lapisan yang terpisah. Ini membuat replay dan investigasi jauh lebih mudah. Dan yang penting:
+              keberhasilan migrasi ini tidak diukur hanya dari profit, tetapi juga dari stabilitas sistem, kualitas data
+              dan telemetry, kemudahan validasi, serta kesiapan untuk transisi penuh.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 11. REKOMENDASI -->
+    <section id="recommendation">
+      <div class="section-label">11 — Penutup</div>
+      <div class="section-title">Rekomendasi Akhir</div>
+
+      <div class="rec-card">
+        <h3>Bangun Fondasi Baru, Manfaatkan Aset yang Ada</h3>
+        <p>
+          Bangun bot baru dengan arsitektur baru yang modular dan auditable.
+          Pertahankan Yukinyan sebagai data collector, observer, dan baseline pembanding.
+          Gunakan seluruh data Yukinyan untuk mempercepat pengembangan dan menurunkan risiko migrasi.
+        </p>
+        <p>
+          Lakukan migrasi bertahap — bukan big bang.
+          Pendekatan ini memberi manfaat jangka pendek (data tetap mengalir, baseline tersedia)
+          sekaligus jangka panjang (arsitektur siap untuk pengembangan selanjutnya).
+        </p>
+        <div class="rec-pills">
+          <span class="rec-pill">Freeze Strategy</span>
+          <span class="rec-pill">Expand Telemetry</span>
+          <span class="rec-pill">Collector + Observer + Benchmark</span>
+          <span class="rec-pill">Future Execution Engine</span>
+          <span class="rec-pill">Migrasi Bertahap</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="footer">
+    Migration Strategy Document · Yukinyan → New Architecture · April 2026
+  </div>
+
+  <!-- NAV ACTIVE STATE -->
+  <script>
+    (function () {
+      const links = document.querySelectorAll('.topnav-links a');
+      const sections = [];
+      links.forEach(a => {
+        const id = a.getAttribute('href').replace('#', '');
+        const el = document.getElementById(id);
+        if (el) sections.push({ el, a });
+      });
+
+      function update() {
+        let current = sections[0];
+        const scrollY = window.scrollY + 120;
+        sections.forEach(s => {
+          if (s.el.offsetTop <= scrollY) current = s;
+        });
+        links.forEach(a => a.classList.remove('active'));
+        if (current) current.a.classList.add('active');
+      }
+
+      window.addEventListener('scroll', update);
+      update();
+    })();
+
+    // Accordion FAQ
+    function toggleFaq(header) {
+      const item = header.parentElement;
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.accordion-item.open').forEach(el => el.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    }
+  </script>
 
 </body>
 </html>
