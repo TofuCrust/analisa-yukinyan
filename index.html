@@ -61,7 +61,6 @@
       }
     }
 
-    /* ── Premium Slider ── */
     input[type=range] {
       -webkit-appearance: none;
       appearance: none;
@@ -123,6 +122,28 @@
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
     }
+
+    .qna-item summary {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .qna-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .qna-item summary::before {
+      content: '+';
+      display: inline-block;
+      width: 20px;
+      font-weight: 700;
+      color: #2563eb;
+      font-size: 16px;
+    }
+
+    .qna-item[open] summary::before {
+      content: '−';
+    }
   </style>
 </head>
 
@@ -166,7 +187,6 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Haiku -->
         <div
           class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden hover:shadow-md transition-all">
           <div class="absolute top-0 right-0 bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-bl-lg">PALING
@@ -181,13 +201,9 @@
             <div class="flex justify-between"><span class="text-slate-500">Output:</span> <span
                 class="font-mono font-semibold">$5.00 / MTok</span></div>
           </div>
-          <div class="text-xs text-slate-500">
-            <strong class="text-slate-700">Untuk NekoSport:</strong> Membaca dan meringkas data standings, memformat
-            data mentah menjadi ringkasan terstruktur.
-          </div>
+          <div class="text-xs text-slate-500"><strong class="text-slate-700">Untuk NekoSport:</strong> Membaca dan
+            meringkas data standings, memformat data mentah menjadi ringkasan terstruktur.</div>
         </div>
-
-        <!-- Sonnet -->
         <div
           class="bg-white rounded-xl shadow-sm border border-blue-200 p-6 flex flex-col relative overflow-hidden hover:shadow-md transition-all ring-2 ring-blue-500 ring-opacity-20">
           <div class="absolute top-0 right-0 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-bl-lg">
@@ -202,13 +218,10 @@
             <div class="flex justify-between"><span class="text-slate-500">Output:</span> <span
                 class="font-mono font-semibold">$15.00 / MTok</span></div>
           </div>
-          <div class="text-xs text-emerald-700 bg-emerald-50 p-2 rounded">
-            <strong>Kandidat utama NekoSport:</strong> Analisis data pertandingan — menimbang ranking, performa terkini,
-            cedera, dan jadwal untuk menghasilkan perkiraan peluang dan alasan keputusan.
-          </div>
+          <div class="text-xs text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Kandidat utama NekoSport:</strong>
+            Analisis data pertandingan — menimbang ranking, performa terkini, cedera, dan jadwal untuk menghasilkan
+            perkiraan peluang dan alasan keputusan.</div>
         </div>
-
-        <!-- Opus -->
         <div
           class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden hover:shadow-md transition-all opacity-70">
           <div class="absolute top-0 right-0 bg-slate-200 text-slate-600 text-xs font-bold px-3 py-1 rounded-bl-lg">
@@ -223,25 +236,18 @@
             <div class="flex justify-between"><span class="text-slate-500">Output:</span> <span
                 class="font-mono font-semibold">$25.00 / MTok</span></div>
           </div>
-          <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded">
-            Hanya untuk eksperimen atau perbandingan kualitas sesekali. Bukan untuk penggunaan harian.
-          </div>
+          <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded">Hanya untuk eksperimen atau perbandingan kualitas
+            sesekali. Bukan untuk penggunaan harian.</div>
         </div>
       </div>
 
-      <!-- Price Chart -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
         <h3 class="text-lg font-bold mb-4 text-center">Perbandingan Biaya per 1 Juta Token</h3>
-        <div class="chart-container">
-          <canvas id="priceComparisonChart"></canvas>
-        </div>
-        <p class="text-center text-sm text-slate-500 mt-4">
-          Token adalah satuan penggunaan API. Jumlah token tergantung pada panjang dan format data yang dikirim serta
-          jawaban yang diterima. Untuk estimasi yang lebih akurat, gunakan alat penghitung token dari Anthropic.
-        </p>
+        <div class="chart-container"><canvas id="priceComparisonChart"></canvas></div>
+        <p class="text-center text-sm text-slate-500 mt-4">Token adalah satuan penggunaan API. Jumlah token tergantung
+          panjang dan format data. Untuk estimasi lebih akurat, gunakan alat penghitung token dari Anthropic.</p>
       </div>
 
-      <!-- Conclusion Box -->
       <div class="bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200 rounded-xl p-6">
         <h3 class="font-bold text-slate-800 mb-3 text-lg">📌 Kesimpulan untuk Fase Sekarang</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -265,7 +271,7 @@
     </section>
 
     <!-- ══════════════════════════════════════════════ -->
-    <!-- SECTION 2: KALKULATOR BIAYA                   -->
+    <!-- SECTION 2: ESTIMASI BIAYA                     -->
     <!-- ══════════════════════════════════════════════ -->
     <section id="calc-section" class="section-view">
       <div class="mb-8">
@@ -275,6 +281,21 @@
             diterima</strong> dari AI (output). Gunakan tombol preset atau atur manual untuk melihat estimasi biaya
           bulanan.
         </p>
+      </div>
+
+      <!-- Project Status Box -->
+      <div class="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-2xl mt-0.5">📍</div>
+        <div>
+          <h4 class="font-bold text-amber-800 text-sm mb-1">Posisi Proyek Saat Ini</h4>
+          <p class="text-sm text-amber-700 leading-relaxed">
+            NekoSport sedang berada di tahap <strong>Intelligence Layer</strong>. Komponen adapter NBA sudah berjalan
+            dan pengujiannya sudah lulus — termasuk mekanisme cadangan untuk sumber data standings. Namun, data performa
+            pertandingan terbaru masih dalam penyempurnaan, sehingga kualitas data masih belum sepenuhnya lengkap dan
+            tahap ini <strong>belum dinyatakan selesai</strong>. Estimasi biaya di bawah ini dihitung berdasarkan pola
+            penggunaan yang direncanakan untuk fase ini.
+          </p>
+        </div>
       </div>
 
       <!-- Presets -->
@@ -306,10 +327,8 @@
       </div>
 
       <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Controls -->
         <div class="w-full lg:w-1/2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           <h3 class="font-bold text-lg mb-5 border-b pb-2">Atur Penggunaan</h3>
-
           <div class="slider-wrap">
             <div class="flex justify-between mb-2">
               <label class="text-sm font-semibold text-slate-700">Jumlah analisis per hari</label>
@@ -319,30 +338,26 @@
             <p class="text-xs text-slate-400 mt-2">Berapa kali AI dipanggil setiap hari untuk menganalisis pertandingan.
             </p>
           </div>
-
           <div class="slider-wrap">
             <div class="flex justify-between mb-2">
               <label class="text-sm font-semibold text-slate-700">Data yang dikirim per analisis</label>
-              <span id="val-input" class="font-mono font-bold text-blue-600 text-lg">6,000</span>
-              <span class="text-xs text-slate-400 ml-1 self-end mb-0.5">token</span>
+              <div><span id="val-input" class="font-mono font-bold text-blue-600 text-lg">6,000</span> <span
+                  class="text-xs text-slate-400">token</span></div>
             </div>
             <input type="range" id="slider-input" min="1000" max="15000" step="500" value="6000">
             <p class="text-xs text-slate-400 mt-2">Instruksi untuk AI + data pertandingan yang sudah diringkas. Umumnya
-              5.000-8.000 token.</p>
+              5.000–8.000 token.</p>
           </div>
-
           <div class="slider-wrap">
             <div class="flex justify-between mb-2">
               <label class="text-sm font-semibold text-slate-700">Jawaban AI per analisis</label>
-              <span id="val-output" class="font-mono font-bold text-blue-600 text-lg">1,000</span>
-              <span class="text-xs text-slate-400 ml-1 self-end mb-0.5">token</span>
+              <div><span id="val-output" class="font-mono font-bold text-blue-600 text-lg">1,000</span> <span
+                  class="text-xs text-slate-400">token</span></div>
             </div>
             <input type="range" id="slider-output" min="200" max="3000" step="100" value="1000">
             <p class="text-xs text-slate-400 mt-2">Hasil analisis AI: perkiraan peluang, alasan utama, dan faktor
-              risiko. Umumnya 600-1.200 token.</p>
+              risiko. Umumnya 600–1.200 token.</p>
           </div>
-
-          <!-- Cache Mode -->
           <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
             <div class="mb-3">
               <span class="font-bold text-slate-700 text-sm">Skenario Cache</span>
@@ -357,56 +372,37 @@
                 class="text-xs px-3 py-2 rounded-lg border font-medium bg-white border-slate-300 text-slate-600 hover:bg-slate-50"
                 onclick="setCacheMode('cached')">Dengan Cache (Stabil)</button>
             </div>
-            <p class="text-xs text-slate-400 mt-2" id="cache-note">Mode "Dengan Cache" mengasumsikan instruksi untuk AI
-              sudah tersimpan dan tidak berubah. Hemat terjadi setelah penggunaan stabil — bukan otomatis dari panggilan
-              pertama.</p>
+            <p class="text-xs text-slate-400 mt-2">"Dengan Cache" mengasumsikan instruksi AI sudah tersimpan dan stabil.
+              Hemat terjadi setelah penggunaan berulang — bukan otomatis dari panggilan pertama.</p>
           </div>
         </div>
-
-        <!-- Results -->
         <div class="w-full lg:w-1/2 flex flex-col gap-4">
-          <!-- Haiku -->
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
             <div class="absolute right-[-20px] top-[-20px] text-8xl opacity-5">⚡</div>
             <h4 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Haiku 4.5</h4>
-            <div class="flex items-baseline gap-2">
-              <span class="text-3xl font-bold text-slate-700" id="cost-haiku-month">$0.00</span>
-              <span class="text-slate-400 text-sm">/ bulan</span>
-            </div>
-            <div class="mt-1 text-sm text-slate-400">
-              <span id="cost-haiku-idr" class="text-slate-500">Rp0</span> ·
-              <span id="cost-haiku-day" class="text-slate-500">$0.00</span>/hari
-            </div>
+            <div class="flex items-baseline gap-2"><span class="text-3xl font-bold text-slate-700"
+                id="cost-haiku-month">$0.00</span><span class="text-slate-400 text-sm">/ bulan</span></div>
+            <div class="mt-1 text-sm text-slate-400"><span id="cost-haiku-idr" class="text-slate-500">Rp0</span> · <span
+                id="cost-haiku-day" class="text-slate-500">$0.00</span>/hari</div>
           </div>
-
-          <!-- Sonnet -->
           <div
             class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-lg p-6 text-white relative overflow-hidden">
             <div class="absolute right-[-20px] top-[-20px] text-8xl opacity-10">🧠</div>
             <h4 class="text-blue-200 text-xs font-bold uppercase tracking-wider mb-2">Sonnet 4.6 — Pilihan Utama</h4>
-            <div class="flex items-baseline gap-2">
-              <span class="text-4xl font-bold text-white" id="cost-sonnet-month">$0.00</span>
-              <span class="text-blue-200 text-sm">/ bulan</span>
-            </div>
-            <div class="mt-1 text-sm text-blue-200">
-              <span id="cost-sonnet-idr" class="text-blue-100">Rp0</span> ·
-              <span id="cost-sonnet-day" class="text-blue-100">$0.00</span>/hari
-            </div>
+            <div class="flex items-baseline gap-2"><span class="text-4xl font-bold text-white"
+                id="cost-sonnet-month">$0.00</span><span class="text-blue-200 text-sm">/ bulan</span></div>
+            <div class="mt-1 text-sm text-blue-200"><span id="cost-sonnet-idr" class="text-blue-100">Rp0</span> · <span
+                id="cost-sonnet-day" class="text-blue-100">$0.00</span>/hari</div>
             <div id="savings-badge"
-              class="mt-3 inline-block bg-emerald-500 text-white text-xs px-3 py-1 rounded-full w-max hidden">
-              Cache menghemat ~<span id="savings-pct">0</span>% vs tanpa cache
-            </div>
+              class="mt-3 inline-block bg-emerald-500 text-white text-xs px-3 py-1 rounded-full w-max hidden">Cache
+              menghemat ~<span id="savings-pct">0</span>% vs tanpa cache</div>
           </div>
-
-          <!-- Opus ref -->
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative overflow-hidden opacity-50">
             <h4 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Opus 4.7 (referensi)</h4>
-            <div class="flex items-baseline gap-2">
-              <span class="text-xl font-bold text-slate-400" id="cost-opus-month">$0.00</span>
-              <span class="text-slate-400 text-xs">/ bulan — tidak direkomendasikan saat ini</span>
-            </div>
+            <div class="flex items-baseline gap-2"><span class="text-xl font-bold text-slate-400"
+                id="cost-opus-month">$0.00</span><span class="text-slate-400 text-xs">/ bulan — tidak direkomendasikan
+                saat ini</span></div>
           </div>
-
           <div class="bg-slate-50 p-4 rounded-xl text-xs text-slate-400 mt-auto border border-slate-200">
             <strong class="text-slate-500">Basis harga (per 1 juta token):</strong><br>
             Haiku 4.5: $1 input / $5 output · Sonnet 4.6: $3 input / $15 output · Opus 4.7: $5 input / $25 output<br>
@@ -423,84 +419,55 @@
     <section id="opt-section" class="section-view">
       <div class="mb-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Menjaga Efisiensi Penggunaan API</h2>
-        <p class="text-slate-600 max-w-3xl leading-relaxed">
-          Biaya API bisa membengkak jika data yang dikirim ke AI tidak efisien. Berikut sumber pemborosan yang paling
-          umum dan cara mengatasinya.
-        </p>
+        <p class="text-slate-600 max-w-3xl leading-relaxed">Biaya API bisa membengkak jika data yang dikirim ke AI tidak
+          efisien. Berikut sumber pemborosan yang paling umum dan cara mengatasinya.</p>
       </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Chart -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center">
           <h3 class="font-bold text-lg mb-2 w-full text-left">Komposisi Data dalam 1 Analisis</h3>
           <p class="text-xs text-slate-500 w-full text-left mb-6">Seberapa besar porsi setiap bagian dari total data
             yang dikirim ke AI.</p>
-          <div class="chart-container">
-            <canvas id="tokenAnatomyChart"></canvas>
-          </div>
+          <div class="chart-container"><canvas id="tokenAnatomyChart"></canvas></div>
         </div>
-
-        <!-- Tactics -->
         <div class="flex flex-col gap-4">
           <div class="bg-white rounded-xl shadow-sm border border-rose-200 p-5 border-l-4 border-l-rose-500">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">🚨</span>
+            <div class="flex items-center gap-2 mb-2"><span class="text-xl">🚨</span>
               <h4 class="font-bold text-slate-800">Data yang Dikirim Terlalu Banyak</h4>
             </div>
-            <p class="text-sm text-slate-600 mb-2">
-              Mengirim seluruh halaman standings mentah atau riwayat pertandingan lengkap akan memakan banyak biaya
-              tanpa meningkatkan kualitas analisis.
-            </p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded">
-              <strong>Solusi:</strong> NekoSport sudah meringkas data pertandingan sebelum dikirim ke AI. Yang dikirim
-              hanya intisarinya — ranking, performa terkini, status cedera, dan jadwal.
-            </p>
+            <p class="text-sm text-slate-600 mb-2">Mengirim seluruh halaman standings mentah atau riwayat pertandingan
+              lengkap akan memakan banyak biaya tanpa meningkatkan kualitas analisis.</p>
+            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> NekoSport sudah
+              meringkas data pertandingan sebelum dikirim ke AI. Yang dikirim hanya intisarinya — ranking, performa
+              terkini, status cedera, dan jadwal.</p>
           </div>
-
           <div class="bg-white rounded-xl shadow-sm border border-orange-200 p-5 border-l-4 border-l-orange-500">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">⚠️</span>
+            <div class="flex items-center gap-2 mb-2"><span class="text-xl">⚠️</span>
               <h4 class="font-bold text-slate-800">Jawaban AI Sulit Dipakai Sistem</h4>
             </div>
-            <p class="text-sm text-slate-600 mb-2">
-              Jika AI menjawab dengan paragraf bebas, sistem tidak bisa membaca hasilnya secara otomatis dan harus
-              meminta ulang (biaya 2×).
-            </p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded">
-              <strong>Solusi:</strong> AI diwajibkan menjawab dalam format terstruktur yang langsung bisa diproses:
-              perkiraan peluang, alasan utama, dan faktor risiko — semua dalam format baku.
-            </p>
+            <p class="text-sm text-slate-600 mb-2">Jika AI menjawab dengan paragraf bebas, sistem tidak bisa membaca
+              hasilnya secara otomatis dan harus meminta ulang (biaya 2×).</p>
+            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> AI diwajibkan
+              menjawab dalam format terstruktur yang langsung bisa diproses: perkiraan peluang, alasan utama, dan faktor
+              risiko.</p>
           </div>
-
           <div class="bg-white rounded-xl shadow-sm border border-amber-200 p-5 border-l-4 border-l-amber-500">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">💰</span>
+            <div class="flex items-center gap-2 mb-2"><span class="text-xl">💰</span>
               <h4 class="font-bold text-slate-800">Salah Memilih Model</h4>
             </div>
-            <p class="text-sm text-slate-600 mb-2">
-              Memakai model paling mahal untuk tugas yang bisa dilakukan model lebih murah sama artinya dengan
-              pemborosan langsung.
-            </p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded">
-              <strong>Solusi:</strong> Sonnet untuk analisis utama. Haiku untuk tugas ringan. Opus hanya untuk
-              eksperimen — bukan operasional harian.
-            </p>
+            <p class="text-sm text-slate-600 mb-2">Memakai model paling mahal untuk tugas yang bisa dilakukan model
+              lebih murah sama artinya dengan pemborosan langsung.</p>
+            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> Sonnet untuk analisis
+              utama. Haiku untuk tugas ringan. Opus hanya untuk eksperimen.</p>
           </div>
-
           <div class="bg-white rounded-xl shadow-sm border border-blue-200 p-5 border-l-4 border-l-blue-500">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">💡</span>
+            <div class="flex items-center gap-2 mb-2"><span class="text-xl">💡</span>
               <h4 class="font-bold text-slate-800">Cache Belum Dimanfaatkan</h4>
             </div>
-            <p class="text-sm text-slate-600 mb-2">
-              Setiap analisis selalu mengirim instruksi yang sama berulang kali — padahal instruksi ini tidak berubah
-              antar pertandingan.
-            </p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded">
-              <strong>Solusi:</strong> Instruksi yang sama bisa disimpan (di-cache) sehingga hanya data pertandingan
-              yang dikirim ulang. Hemat bisa signifikan setelah penggunaan stabil — tapi bukan diskon otomatis dari
-              panggilan pertama.
-            </p>
+            <p class="text-sm text-slate-600 mb-2">Setiap analisis selalu mengirim instruksi yang sama berulang kali —
+              padahal instruksi ini tidak berubah antar pertandingan.</p>
+            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> Instruksi yang sama
+              bisa disimpan (di-cache) sehingga hanya data pertandingan yang dikirim ulang. Hemat bisa signifikan
+              setelah penggunaan stabil — tapi bukan diskon otomatis dari panggilan pertama.</p>
           </div>
         </div>
       </div>
@@ -508,13 +475,72 @@
 
   </main>
 
-  <footer class="max-w-6xl mx-auto px-4 py-6 text-center text-xs text-slate-400 border-t border-slate-200 mt-8">
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- QNA SECTION (di luar tab, sebelum footer)     -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-200 mt-4">
+    <h2 class="text-xl font-bold text-slate-800 mb-6">Pertanyaan yang Mungkin Muncul</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <summary class="font-semibold text-slate-800 text-sm">Model apa yang sebaiknya dipakai sekarang?</summary>
+        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+          <strong>Sonnet 4.6</strong> adalah pilihan utama untuk analisis pertandingan — keseimbangan terbaik antara
+          kualitas dan biaya. <strong>Haiku 4.5</strong> bisa dipakai sebagai pendukung untuk tugas ringan seperti
+          meringkas data. <strong>Opus 4.7</strong> belum diperlukan untuk fase saat ini karena biayanya jauh lebih
+          tinggi tanpa manfaat tambahan yang sebanding untuk operasi rutin.
+        </p>
+      </details>
+
+      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <summary class="font-semibold text-slate-800 text-sm">Berapa perkiraan budget awal yang masuk akal?</summary>
+        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+          Mulai kecil dengan Sonnet 4.6 sebagai model utama. Dengan pola penggunaan saat ini (2 scan per hari, sekitar
+          15 kandidat per scan), estimasi biaya bulanan masih di kisaran <strong>belasan dolar</strong> — sangat
+          terkendali. Tidak perlu menyiapkan budget besar di fase shadow mode. Biaya bisa ditinjau ulang saat penggunaan
+          meningkat.
+        </p>
+      </details>
+
+      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <summary class="font-semibold text-slate-800 text-sm">Kapan caching mulai layak diterapkan?</summary>
+        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+          Caching paling efektif saat <strong>instruksi untuk AI sudah stabil</strong> dan tidak sering berubah —
+          artinya template analisis sudah final dan pola penggunaan sudah berulang secara konsisten. Di tahap awal saat
+          instruksi masih sering direvisi, manfaat cache belum optimal. Sebaiknya aktifkan caching setelah pola
+          operasional harian sudah jelas dan stabil.
+        </p>
+      </details>
+
+      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <summary class="font-semibold text-slate-800 text-sm">Proyek saat ini sudah sampai mana?</summary>
+        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+          NekoSport sedang berada di tahap <strong>Intelligence Layer</strong>. Adapter NBA sudah berjalan dan
+          pengujiannya sudah lulus, termasuk mekanisme cadangan untuk sumber data. Namun, data performa pertandingan
+          terbaru masih dalam penyempurnaan sehingga tahap ini belum dinyatakan selesai. Sistem masih berjalan dalam
+          mode pengamatan (shadow mode) — belum ada transaksi nyata.
+        </p>
+      </details>
+
+      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5 md:col-span-2">
+        <summary class="font-semibold text-slate-800 text-sm">Apakah biaya API saat ini masih wajar?</summary>
+        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+          Ya. Dengan volume penggunaan fase shadow (sekitar 30–40 panggilan per hari), biaya API masih sangat rendah —
+          di bawah $20/bulan untuk Sonnet, atau sekitar Rp250.000–330.000. Ini jauh di bawah biaya infrastruktur
+          lainnya. Biaya API baru menjadi perhatian serius jika volume penggunaan naik signifikan (misalnya ratusan
+          analisis per hari di semua cabang olahraga), dan saat itu caching akan sangat membantu menekan biaya.
+        </p>
+      </details>
+
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 py-6 text-center text-xs text-slate-400 border-t border-slate-200">
     <p>Halaman ini adalah ringkasan kebutuhan AI untuk proyek NekoSport.</p>
     <p>Harga berdasarkan tarif Anthropic per April 2026. Semua angka adalah estimasi.</p>
   </footer>
 
   <script>
-    // ── Tabs ──
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -524,7 +550,6 @@
       });
     });
 
-    // ── Charts ──
     new Chart(document.getElementById('priceComparisonChart'), {
       type: 'bar',
       data: {
@@ -553,7 +578,6 @@
       }
     });
 
-    // ── Calculator ──
     const IDR_RATE = 16500;
     const ui = {
       sliderCalls: document.getElementById('slider-calls'),
@@ -573,32 +597,21 @@
       savingsPct: document.getElementById('savings-pct'),
       cacheLabel: document.getElementById('cache-label'),
     };
-
     const P = {
       haiku: { i: 1, o: 5, ch: 0.10 },
       sonnet: { i: 3, o: 15, ch: 0.30 },
       opus: { i: 5, o: 25, ch: 0.50 },
     };
-
     let cacheMode = 'none';
-
     function setCacheMode(m) {
       cacheMode = m;
-      document.getElementById('btn-no-cache').className = 'text-xs px-3 py-2 rounded-lg border font-medium ' +
-        (m === 'none' ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50');
-      document.getElementById('btn-cached').className = 'text-xs px-3 py-2 rounded-lg border font-medium ' +
-        (m === 'cached' ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50');
+      document.getElementById('btn-no-cache').className = 'text-xs px-3 py-2 rounded-lg border font-medium ' + (m === 'none' ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50');
+      document.getElementById('btn-cached').className = 'text-xs px-3 py-2 rounded-lg border font-medium ' + (m === 'cached' ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50');
       calculateCost();
     }
-
-    function applyPreset(c, i, o) {
-      ui.sliderCalls.value = c; ui.sliderInput.value = i; ui.sliderOutput.value = o;
-      calculateCost();
-    }
-
+    function applyPreset(c, i, o) { ui.sliderCalls.value = c; ui.sliderInput.value = i; ui.sliderOutput.value = o; calculateCost(); }
     function usd(n) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n); }
     function idr(n) { return 'Rp' + Math.round(n * IDR_RATE).toLocaleString('id-ID'); }
-
     function calc(calls, inT, outT, p) {
       let iDay;
       if (cacheMode === 'cached') {
@@ -608,26 +621,17 @@
         iDay = calls * (inT * p.i / 1e6);
       }
       const oDay = calls * (outT * p.o / 1e6);
-      const day = iDay + oDay;
-      return { day, month: day * 30 };
+      return { day: iDay + oDay, month: (iDay + oDay) * 30 };
     }
-
     function calculateCost() {
       const c = +ui.sliderCalls.value, i = +ui.sliderInput.value, o = +ui.sliderOutput.value;
       ui.valCalls.textContent = c.toLocaleString();
       ui.valInput.textContent = i.toLocaleString();
       ui.valOutput.textContent = o.toLocaleString();
-
       const h = calc(c, i, o, P.haiku), s = calc(c, i, o, P.sonnet), op = calc(c, i, o, P.opus);
-
-      ui.haikuMonth.textContent = usd(h.month);
-      ui.haikuDay.textContent = usd(h.day);
-      ui.haikuIdr.textContent = idr(h.month);
-      ui.sonnetMonth.textContent = usd(s.month);
-      ui.sonnetDay.textContent = usd(s.day);
-      ui.sonnetIdr.textContent = idr(s.month);
+      ui.haikuMonth.textContent = usd(h.month); ui.haikuDay.textContent = usd(h.day); ui.haikuIdr.textContent = idr(h.month);
+      ui.sonnetMonth.textContent = usd(s.month); ui.sonnetDay.textContent = usd(s.day); ui.sonnetIdr.textContent = idr(s.month);
       ui.opusMonth.textContent = usd(op.month);
-
       if (cacheMode === 'cached') {
         const nc = calc(c, i, o, { i: P.sonnet.i, o: P.sonnet.o, ch: P.sonnet.i });
         const pct = nc.month > 0 ? Math.round((1 - s.month / nc.month) * 100) : 0;
@@ -639,7 +643,6 @@
         ui.cacheLabel.textContent = 'Mode: Tanpa Cache — estimasi harga penuh.';
       }
     }
-
     [ui.sliderCalls, ui.sliderInput, ui.sliderOutput].forEach(el => el.addEventListener('input', calculateCost));
     setCacheMode('none');
     calculateCost();
