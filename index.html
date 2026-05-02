@@ -4,48 +4,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NekoSport — Kebutuhan AI & Estimasi Biaya API</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Laporan Proyek Gabungan</title>
   <style>
+    /* =================================================================
+           TAB NAVIGATION STYLES (Desain Tambahan untuk Tab)
+           ================================================================= */
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f8fafc;
-      color: #1e293b;
     }
 
-    .chart-container {
-      position: relative;
-      width: 100%;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-      height: 280px;
-      max-height: 340px;
-    }
-
-    @media (min-width: 768px) {
-      .chart-container {
-        height: 340px;
-      }
+    .tabs-header {
+      background-color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
     }
 
     .tab-btn {
-      transition: all 0.2s;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 18px 30px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #1e3a8a;
+      background-color: #f1f5f9;
     }
 
     .tab-btn.active {
-      border-bottom: 3px solid #2563eb;
       color: #2563eb;
-      font-weight: 600;
+      border-bottom-color: #2563eb;
+      background-color: #f8fafc;
     }
 
-    .section-view {
+    .tab-content {
       display: none;
-      animation: fadeIn 0.3s ease-in;
+      animation: fadeIn 0.3s ease-in-out;
     }
 
-    .section-view.active {
+    .tab-content.active {
       display: block;
     }
 
@@ -61,591 +72,1234 @@
       }
     }
 
-    input[type=range] {
-      -webkit-appearance: none;
-      appearance: none;
+    /* =================================================================
+           YUKINEXUS SCOPED STYLES (Diisolasi khusus untuk YukiNexus)
+           ================================================================= */
+    #yuki-tab {
+      --primary: #1e3a8a;
+      --primary-light: #eff6ff;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --neutral: #cbd5e1;
+      --border: #e2e8f0;
+      --radius: 8px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      line-height: 1.6;
+      font-size: 16px;
+      min-height: 100vh;
+    }
+
+    #yuki-tab * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    #yuki-tab .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px 40px;
+    }
+
+    #yuki-tab header {
+      background-color: var(--primary);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+    }
+
+    #yuki-tab h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    #yuki-tab .subtitle {
+      font-size: 1.1rem;
+      color: #bfdbfe;
+      font-weight: 400;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    #yuki-tab section {
+      margin-bottom: 40px;
+    }
+
+    #yuki-tab h2 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #yuki-tab .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      #yuki-tab .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    #yuki-tab .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    #yuki-tab .card h3 {
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    #yuki-tab ul {
+      list-style-position: outside;
+      margin-left: 20px;
+    }
+
+    #yuki-tab li {
+      margin-bottom: 8px;
+    }
+
+    #yuki-tab .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    #yuki-tab .badge-success {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    #yuki-tab .badge-warning {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    #yuki-tab .badge-neutral {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
+
+    #yuki-tab .timeline {
+      position: relative;
+      max-width: 100%;
+      margin: 0 auto;
+      padding-left: 20px;
+    }
+
+    #yuki-tab .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 4px;
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    #yuki-tab .timeline-item {
+      position: relative;
+      padding: 15px 20px;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      margin-left: 15px;
+    }
+
+    #yuki-tab .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -33px;
+      top: 20px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-body);
+      border: 4px solid var(--neutral);
+    }
+
+    #yuki-tab .timeline-item.done::before {
+      border-color: var(--success);
+    }
+
+    #yuki-tab .timeline-item.active::before {
+      border-color: var(--warning);
+      background: var(--warning);
+    }
+
+    #yuki-tab .timeline-item.active {
+      border-left: 4px solid var(--warning);
+    }
+
+    #yuki-tab .timeline-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (max-width: 600px) {
+      #yuki-tab .timeline-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+    }
+
+    #yuki-tab .table-container {
+      overflow-x: auto;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    #yuki-tab table {
       width: 100%;
-      height: 8px;
-      border-radius: 4px;
-      background: #e2e8f0;
-      outline: none;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    #yuki-tab th,
+    #yuki-tab td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #yuki-tab th {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    #yuki-tab tr:last-child td {
+      border-bottom: none;
+    }
+
+    #yuki-tab .alert-box {
+      background-color: #fffbeb;
+      border-left: 4px solid var(--warning);
+      padding: 16px 20px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-bottom: 20px;
+    }
+
+    #yuki-tab .alert-box h4 {
+      color: #92400e;
+      margin-bottom: 5px;
+    }
+
+    #yuki-tab .accordion {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-card);
+      box-shadow: var(--shadow);
+    }
+
+    #yuki-tab .accordion-item {
+      border-bottom: 1px solid var(--border);
+    }
+
+    #yuki-tab .accordion-item:last-child {
+      border-bottom: none;
+    }
+
+    #yuki-tab .accordion-header {
+      width: 100%;
+      text-align: left;
+      padding: 18px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      color: var(--text-main);
       cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
     }
 
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #2563eb;
-      border: 3px solid #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
-      cursor: pointer;
+    #yuki-tab .accordion-header:hover {
+      background-color: var(--primary-light);
     }
 
-    input[type=range]::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #2563eb;
-      border: 3px solid #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
-      cursor: pointer;
+    #yuki-tab .accordion-header::after {
+      content: '+';
+      font-size: 1.5rem;
+      color: var(--primary);
+      transition: transform 0.3s;
     }
 
-    input[type=range]::-webkit-slider-runnable-track {
-      height: 8px;
-      border-radius: 4px;
-      background: #e2e8f0;
+    #yuki-tab .accordion-header.active::after {
+      content: '−';
+      transform: rotate(180deg);
     }
 
-    input[type=range]::-moz-range-track {
-      height: 8px;
-      border-radius: 4px;
-      background: #e2e8f0;
+    #yuki-tab .accordion-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      background-color: #fafafa;
     }
 
-    .slider-wrap {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+    #yuki-tab .accordion-content {
+      padding: 15px 20px 20px;
+      color: var(--text-muted);
+    }
+
+    #yuki-tab footer {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    /* =================================================================
+           NEKOSPORT SCOPED STYLES (Diisolasi khusus untuk NekoSport)
+           ================================================================= */
+    #neko-tab {
+      --bg-color: #f1f5f9;
+      --surface: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --success-bg: #dcfce7;
+      --success-text: #15803d;
+      --warning-bg: #fef3c7;
+      --warning-text: #b45309;
+      --danger-bg: #fee2e2;
+      --danger-text: #b91c1c;
+      --neutral-bg: #f1f5f9;
+      --neutral-text: #475569;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+
+    #neko-tab * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    #neko-tab .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    #neko-tab h1,
+    #neko-tab h2,
+    #neko-tab h3,
+    #neko-tab h4 {
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+
+    #neko-tab p {
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+
+    #neko-tab ul {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    #neko-tab ol {
+      padding-left: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    #neko-tab li {
+      margin-bottom: 0.5rem;
+    }
+
+    #neko-tab .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: var(--surface);
       border-radius: 12px;
-      padding: 16px 18px;
-      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
-    .preset-btn {
-      transition: all 0.15s;
+    #neko-tab .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
     }
 
-    .preset-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    #neko-tab .header p {
+      font-size: 1.125rem;
+      margin-bottom: 1.5rem;
     }
 
-    .qna-item summary {
+    #neko-tab .badges {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    #neko-tab .badge {
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+    }
+
+    #neko-tab .badge-neutral {
+      background: var(--neutral-bg);
+      color: var(--neutral-text);
+    }
+
+    #neko-tab .badge-danger {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    #neko-tab .section {
+      margin-bottom: 2.5rem;
+    }
+
+    #neko-tab .card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    #neko-tab .card-title {
+      font-size: 1.25rem;
+      border-bottom: 2px solid var(--bg-color);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #neko-tab .summary-box {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    #neko-tab .summary-box ul {
+      margin-bottom: 0;
+      color: #1e3a8a;
+    }
+
+    #neko-tab .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    #neko-tab .status-item {
+      background: var(--bg-color);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border: 1px solid var(--border);
+    }
+
+    #neko-tab .status-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    #neko-tab .status-tag {
+      align-self: flex-start;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    #neko-tab .tag-success {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    #neko-tab .tag-warning {
+      background: var(--warning-bg);
+      color: var(--warning-text);
+    }
+
+    #neko-tab .tag-danger {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    #neko-tab .obstacle-box {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-left: 4px solid #f59e0b;
+    }
+
+    #neko-tab .obstacle-box .card-title {
+      color: #b45309;
+      border-bottom-color: #fde68a;
+    }
+
+    #neko-tab .check-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    #neko-tab .check-list li {
+      position: relative;
+      padding-left: 1.75rem;
+    }
+
+    #neko-tab .check-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success-text);
+      font-weight: bold;
+    }
+
+    #neko-tab .timeline-container {
+      margin-top: 1.5rem;
+    }
+
+    #neko-tab .timeline-item {
+      display: flex;
+      margin-bottom: 1rem;
+      background: var(--bg-color);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      align-items: center;
+    }
+
+    #neko-tab .timeline-duration {
+      min-width: 100px;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+
+    #neko-tab .timeline-desc {
+      flex-grow: 1;
+    }
+
+    #neko-tab .timeline-desc strong {
+      display: block;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+    }
+
+    #neko-tab .timeline-desc span {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    #neko-tab .conclusion-highlight {
+      background: var(--text-main);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    #neko-tab .conclusion-highlight h3 {
+      color: white;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
+
+    #neko-tab .conclusion-highlight p {
+      color: #cbd5e1;
+      margin-bottom: 0;
+      font-size: 1.1rem;
+    }
+
+    #neko-tab .risk-note {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--danger-text);
+      margin-top: 0.75rem;
+      font-weight: 500;
+    }
+
+    #neko-tab .qna-section {
+      margin-top: 3rem;
+      border-top: 2px dashed var(--border);
+      padding-top: 2.5rem;
+    }
+
+    #neko-tab details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    #neko-tab details[open] {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border-color: #cbd5e1;
+    }
+
+    #neko-tab summary {
+      padding: 1.25rem;
+      font-weight: 600;
       cursor: pointer;
       list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      color: var(--text-main);
     }
 
-    .qna-item summary::-webkit-details-marker {
+    #neko-tab summary:hover {
+      background: #f1f5f9;
+    }
+
+    #neko-tab summary::-webkit-details-marker {
       display: none;
     }
 
-    .qna-item summary::before {
-      content: '+';
-      display: inline-block;
-      width: 20px;
-      font-weight: 700;
-      color: #2563eb;
-      font-size: 16px;
+    #neko-tab summary::after {
+      content: "+";
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
     }
 
-    .qna-item[open] summary::before {
-      content: '−';
+    #neko-tab details[open] summary::after {
+      content: "−";
+      transform: rotate(180deg);
+    }
+
+    #neko-tab details[open] summary {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    #neko-tab .details-content {
+      padding: 1.25rem;
+      color: var(--text-muted);
+      background: var(--surface);
+    }
+
+    #neko-tab .details-content p:last-child {
+      margin-bottom: 0;
     }
   </style>
 </head>
 
-<body class="antialiased">
+<body>
 
-  <header class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row justify-between items-center py-4 border-b border-slate-100">
-        <div class="flex items-center gap-3">
-          <span class="text-3xl">🤖</span>
-          <div>
-            <h1 class="text-xl font-bold text-slate-900">NekoSport — Kebutuhan AI & Biaya API</h1>
-            <p class="text-xs text-slate-500">Pilihan Model, Estimasi Biaya, dan Efisiensi Penggunaan</p>
-          </div>
-        </div>
-        <div class="mt-4 md:mt-0 flex space-x-1 sm:space-x-4">
-          <button class="tab-btn active px-3 py-2 text-sm text-slate-600 hover:text-blue-600"
-            data-target="model-section">1. Pilihan Model</button>
-          <button class="tab-btn px-3 py-2 text-sm text-slate-600 hover:text-blue-600" data-target="calc-section">2.
-            Estimasi Biaya</button>
-          <button class="tab-btn px-3 py-2 text-sm text-slate-600 hover:text-blue-600" data-target="opt-section">3.
-            Efisiensi</button>
-        </div>
-      </div>
-    </div>
-  </header>
+  <!-- NAVIGASI TAB -->
+  <div class="tabs-header">
+    <button class="tab-btn active" onclick="openTab(event, 'yuki-tab')">Laporan YukiNexus</button>
+    <button class="tab-btn" onclick="openTab(event, 'neko-tab')">Laporan NekoSport</button>
+  </div>
 
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-    <!-- ══════════════════════════════════════════════ -->
-    <!-- SECTION 1: PILIHAN MODEL                      -->
-    <!-- ══════════════════════════════════════════════ -->
-    <section id="model-section" class="section-view active">
-      <div class="mb-8">
-        <h2 class="text-2xl font-bold text-slate-800 mb-2">Model AI: Mana yang Cocok untuk NekoSport?</h2>
-        <p class="text-slate-600 max-w-3xl leading-relaxed">
-          NekoSport membutuhkan model AI untuk menganalisis data pertandingan dan menghasilkan perkiraan peluang.
-          Pilihan model menentukan kualitas analisis, kecepatan, dan biaya. Berikut perbandingan tiga model yang
-          tersedia.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div
-          class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden hover:shadow-md transition-all">
-          <div class="absolute top-0 right-0 bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-bl-lg">PALING
-            HEMAT</div>
-          <div class="text-4xl mb-3">⚡</div>
-          <h3 class="text-lg font-bold mb-1">Haiku 4.5</h3>
-          <p class="text-sm text-slate-500 mb-4 flex-grow">Model tercepat dan termurah. Cocok untuk tugas sederhana
-            seperti membaca data pertandingan, meringkas informasi, atau memformat hasil.</p>
-          <div class="bg-slate-50 p-3 rounded-lg text-sm mb-4">
-            <div class="flex justify-between mb-1"><span class="text-slate-500">Input:</span> <span
-                class="font-mono font-semibold">$1.00 / MTok</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Output:</span> <span
-                class="font-mono font-semibold">$5.00 / MTok</span></div>
-          </div>
-          <div class="text-xs text-slate-500"><strong class="text-slate-700">Untuk NekoSport:</strong> Membaca dan
-            meringkas data standings, memformat data mentah menjadi ringkasan terstruktur.</div>
-        </div>
-        <div
-          class="bg-white rounded-xl shadow-sm border border-blue-200 p-6 flex flex-col relative overflow-hidden hover:shadow-md transition-all ring-2 ring-blue-500 ring-opacity-20">
-          <div class="absolute top-0 right-0 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-bl-lg">
-            ✦ PILIHAN UTAMA</div>
-          <div class="text-4xl mb-3">🧠</div>
-          <h3 class="text-lg font-bold mb-1">Sonnet 4.6</h3>
-          <p class="text-sm text-slate-500 mb-4 flex-grow">Keseimbangan optimal antara kecerdasan dan biaya. Mampu
-            menganalisis banyak faktor pertandingan sekaligus dan menghasilkan perkiraan peluang yang terstruktur.</p>
-          <div class="bg-slate-50 p-3 rounded-lg text-sm mb-4">
-            <div class="flex justify-between mb-1"><span class="text-slate-500">Input:</span> <span
-                class="font-mono font-semibold">$3.00 / MTok</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Output:</span> <span
-                class="font-mono font-semibold">$15.00 / MTok</span></div>
-          </div>
-          <div class="text-xs text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Kandidat utama NekoSport:</strong>
-            Analisis data pertandingan — menimbang ranking, performa terkini, cedera, dan jadwal untuk menghasilkan
-            perkiraan peluang dan alasan keputusan.</div>
-        </div>
-        <div
-          class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col relative overflow-hidden hover:shadow-md transition-all opacity-70">
-          <div class="absolute top-0 right-0 bg-slate-200 text-slate-600 text-xs font-bold px-3 py-1 rounded-bl-lg">
-            BELUM DIPERLUKAN</div>
-          <div class="text-4xl mb-3">👑</div>
-          <h3 class="text-lg font-bold mb-1">Opus 4.7</h3>
-          <p class="text-sm text-slate-500 mb-4 flex-grow">Model paling canggih, tetapi paling mahal dan lambat. Tidak
-            diperlukan untuk operasi rutin NekoSport saat ini.</p>
-          <div class="bg-slate-50 p-3 rounded-lg text-sm mb-4">
-            <div class="flex justify-between mb-1"><span class="text-slate-500">Input:</span> <span
-                class="font-mono font-semibold">$5.00 / MTok</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Output:</span> <span
-                class="font-mono font-semibold">$25.00 / MTok</span></div>
-          </div>
-          <div class="text-xs text-slate-500 bg-slate-50 p-2 rounded">Hanya untuk eksperimen atau perbandingan kualitas
-            sesekali. Bukan untuk penggunaan harian.</div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-        <h3 class="text-lg font-bold mb-4 text-center">Perbandingan Biaya per 1 Juta Token</h3>
-        <div class="chart-container"><canvas id="priceComparisonChart"></canvas></div>
-        <p class="text-center text-sm text-slate-500 mt-4">Token adalah satuan penggunaan API. Jumlah token tergantung
-          panjang dan format data. Untuk estimasi lebih akurat, gunakan alat penghitung token dari Anthropic.</p>
-      </div>
-
-      <div class="bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200 rounded-xl p-6">
-        <h3 class="font-bold text-slate-800 mb-3 text-lg">📌 Kesimpulan untuk Fase Sekarang</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div class="bg-white rounded-lg p-4 border border-blue-100">
-            <div class="font-bold text-blue-700 mb-1">Model Utama</div>
-            <div class="text-slate-700"><strong>Sonnet 4.6</strong> — untuk analisis pertandingan dan perkiraan peluang.
-              Keseimbangan terbaik antara kualitas dan biaya.</div>
-          </div>
-          <div class="bg-white rounded-lg p-4 border border-slate-100">
-            <div class="font-bold text-slate-600 mb-1">Pendukung (Opsional)</div>
-            <div class="text-slate-700"><strong>Haiku 4.5</strong> — jika ada tugas ringan seperti meringkas atau
-              memformat data. Biaya 3× lebih murah dari Sonnet.</div>
-          </div>
-          <div class="bg-white rounded-lg p-4 border border-slate-100">
-            <div class="font-bold text-slate-600 mb-1">Biaya Terkendali</div>
-            <div class="text-slate-700">Dengan pola penggunaan saat ini (2 scan/hari, 15-20 kandidat), biaya API masih
-              di kisaran <strong>belasan dolar per bulan</strong>.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════ -->
-    <!-- SECTION 2: ESTIMASI BIAYA                     -->
-    <!-- ══════════════════════════════════════════════ -->
-    <section id="calc-section" class="section-view">
-      <div class="mb-8">
-        <h2 class="text-2xl font-bold text-slate-800 mb-2">Estimasi Biaya API — NekoSport</h2>
-        <p class="text-slate-600 max-w-3xl leading-relaxed">
-          Biaya API dihitung dari dua hal: <strong>data yang dikirim</strong> ke AI (input) dan <strong>jawaban yang
-            diterima</strong> dari AI (output). Gunakan tombol preset atau atur manual untuk melihat estimasi biaya
-          bulanan.
-        </p>
-      </div>
-
-      <!-- Project Status Box -->
-      <div class="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-4 items-start">
-        <div class="text-2xl mt-0.5">📍</div>
-        <div>
-          <h4 class="font-bold text-amber-800 text-sm mb-1">Posisi Proyek Saat Ini</h4>
-          <p class="text-sm text-amber-700 leading-relaxed">
-            NekoSport sedang berada di tahap <strong>Intelligence Layer</strong>. Komponen adapter NBA sudah berjalan
-            dan pengujiannya sudah lulus — termasuk mekanisme cadangan untuk sumber data standings. Namun, data performa
-            pertandingan terbaru masih dalam penyempurnaan, sehingga kualitas data masih belum sepenuhnya lengkap dan
-            tahap ini <strong>belum dinyatakan selesai</strong>. Estimasi biaya di bawah ini dihitung berdasarkan pola
-            penggunaan yang direncanakan untuk fase ini.
+  <!-- TAB 1: YUKINEXUS -->
+  <div id="yuki-tab" class="tab-content active">
+    <header>
+      <h1>Laporan Perkembangan Proyek YukiNexus</h1>
+      <p class="subtitle">Posisi proyek saat ini,
+        langkah berikutnya,
+        dan estimasi kesiapan menuju live</p>
+    </header>
+    <div class="container"><!-- 1. Ringkasan Eksekutif -->
+      <section>
+        <h2>Ringkasan Eksekutif</h2>
+        <div class="card">
+          <p style="margin-bottom: 10px;"><strong>YukiNexus</strong>adalah sistem baru yang dibangun secara terpisah dan
+            independen dari sistem <strong>Yukinyan</strong>saat ini. Selama proses ini berlangsung,
+            Yukinyan tetap beroperasi normal sebagai pengumpul data (collector) dan baseline referensi kita.</p>
+          <p style="margin-bottom: 10px;">Secara keseluruhan,
+            <strong>proyek sudah berhasil melewati fase fondasi</strong>. Sistem baru sudah bisa berdiri sendiri. Saat
+            ini,
+            kita berada di tahap validasi operasional (memastikan data yang masuk sudah rapi dan akurat). Terdapat
+            beberapa penyesuaian kecil yang perlu diselesaikan sebelum kita secara resmi menutup fase ini dan beralih ke
+            pembuatan fitur-fitur inti.
           </p>
         </div>
-      </div>
-
-      <!-- Presets -->
-      <div class="mb-6">
-        <h3 class="text-sm font-bold text-slate-700 mb-3">Pilih Skenario Penggunaan</h3>
-        <div class="flex flex-wrap gap-3">
-          <button class="preset-btn bg-white border border-slate-200 rounded-lg px-4 py-3 text-sm shadow-sm"
-            onclick="applyPreset(16, 5000, 800)">
-            <span class="font-semibold text-slate-800">Ringan</span>
-            <span class="block text-xs text-slate-500 mt-0.5">2 scan × 8 kandidat</span>
-          </button>
-          <button
-            class="preset-btn bg-white border border-blue-300 rounded-lg px-4 py-3 text-sm shadow-sm ring-1 ring-blue-200"
-            onclick="applyPreset(30, 6000, 1000)">
-            <span class="font-semibold text-blue-700">Sedang ⬅ saat ini</span>
-            <span class="block text-xs text-slate-500 mt-0.5">2 scan × 15 kandidat</span>
-          </button>
-          <button class="preset-btn bg-white border border-slate-200 rounded-lg px-4 py-3 text-sm shadow-sm"
-            onclick="applyPreset(40, 8000, 1200)">
-            <span class="font-semibold text-slate-800">Tinggi</span>
-            <span class="block text-xs text-slate-500 mt-0.5">2 scan × 20 kandidat</span>
-          </button>
-          <button class="preset-btn bg-white border border-slate-200 rounded-lg px-4 py-3 text-sm shadow-sm"
-            onclick="applyPreset(100, 6000, 1000)">
-            <span class="font-semibold text-slate-800">Ekspansi</span>
-            <span class="block text-xs text-slate-500 mt-0.5">Semua cabang olahraga</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="flex flex-col lg:flex-row gap-8">
-        <div class="w-full lg:w-1/2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h3 class="font-bold text-lg mb-5 border-b pb-2">Atur Penggunaan</h3>
-          <div class="slider-wrap">
-            <div class="flex justify-between mb-2">
-              <label class="text-sm font-semibold text-slate-700">Jumlah analisis per hari</label>
-              <span id="val-calls" class="font-mono font-bold text-blue-600 text-lg">30</span>
-            </div>
-            <input type="range" id="slider-calls" min="5" max="200" step="1" value="30">
-            <p class="text-xs text-slate-400 mt-2">Berapa kali AI dipanggil setiap hari untuk menganalisis pertandingan.
-            </p>
+      </section><!-- 2. Status & 3. Pencapaian -->
+      <section>
+        <h2>Status & Pencapaian Saat Ini</h2>
+        <div class="grid-2">
+          <div class="card"><span class="badge badge-success">Sudah Berhasil Dicapai</span>
+            <h3>Fondasi & Operasional Dasar</h3>
+            <ul>
+              <li>Repositori dan struktur arsitektur sistem baru sudah terbentuk sepenuhnya.</li>
+              <li><em>Event Store</em>(pusat penyimpanan kejadian) dan mekanisme <em>Bootstrap</em>sudah stabil.</li>
+              <li>Sistem (service) sudah berhasil hidup dengan sehat di server (VPS).</li>
+              <li>Mode <em>collector</em>(pengumpul data) sudah berhasil dijalankan secara mandiri.</li>
+              <li>Feed utama (Binance) sudah aktif dan berhasil menulis data terstruktur.</li>
+              <li>Reference feed kedua sudah berhasil diperbaiki dan beroperasi.</li>
+              <li>Sistem monitoring dan pencatatan (logging) dasar sudah berjalan baik.</li>
+            </ul>
           </div>
-          <div class="slider-wrap">
-            <div class="flex justify-between mb-2">
-              <label class="text-sm font-semibold text-slate-700">Data yang dikirim per analisis</label>
-              <div><span id="val-input" class="font-mono font-bold text-blue-600 text-lg">6,000</span> <span
-                  class="text-xs text-slate-400">token</span></div>
-            </div>
-            <input type="range" id="slider-input" min="1000" max="15000" step="500" value="6000">
-            <p class="text-xs text-slate-400 mt-2">Instruksi untuk AI + data pertandingan yang sudah diringkas. Umumnya
-              5.000–8.000 token.</p>
-          </div>
-          <div class="slider-wrap">
-            <div class="flex justify-between mb-2">
-              <label class="text-sm font-semibold text-slate-700">Jawaban AI per analisis</label>
-              <div><span id="val-output" class="font-mono font-bold text-blue-600 text-lg">1,000</span> <span
-                  class="text-xs text-slate-400">token</span></div>
-            </div>
-            <input type="range" id="slider-output" min="200" max="3000" step="100" value="1000">
-            <p class="text-xs text-slate-400 mt-2">Hasil analisis AI: perkiraan peluang, alasan utama, dan faktor
-              risiko. Umumnya 600–1.200 token.</p>
-          </div>
-          <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <div class="mb-3">
-              <span class="font-bold text-slate-700 text-sm">Skenario Cache</span>
-              <span class="block text-xs text-slate-400 mt-0.5">Cache menyimpan instruksi yang sama agar tidak perlu
-                dikirim ulang setiap kali.</span>
-            </div>
-            <div class="flex gap-2">
-              <button id="btn-no-cache"
-                class="text-xs px-3 py-2 rounded-lg border font-medium bg-blue-50 border-blue-300 text-blue-700"
-                onclick="setCacheMode('none')">Tanpa Cache</button>
-              <button id="btn-cached"
-                class="text-xs px-3 py-2 rounded-lg border font-medium bg-white border-slate-300 text-slate-600 hover:bg-slate-50"
-                onclick="setCacheMode('cached')">Dengan Cache (Stabil)</button>
-            </div>
-            <p class="text-xs text-slate-400 mt-2">"Dengan Cache" mengasumsikan instruksi AI sudah tersimpan dan stabil.
-              Hemat terjadi setelah penggunaan berulang — bukan otomatis dari panggilan pertama.</p>
+          <div class="card"><span class="badge badge-warning">Posisi Saat Ini</span>
+            <h3>Kondisi Runtime Terbaru</h3>
+            <p>Secara penulisan kode,
+              Fase 2 pada dasarnya <strong>sudah selesai</strong>. Namun,
+              kami sedang melakukan validasi operasional secara langsung (runtime validation).</p><br>
+            <p><strong>Status saat ini:</strong>Sistem sehat,
+              data masuk. Namun,
+              masih ada satu kendala kecil terkait deteksi jadwal pasar (session discovery) yang perlu disesuaikan agar
+              data benar-benar siap pakai.</p>
           </div>
         </div>
-        <div class="w-full lg:w-1/2 flex flex-col gap-4">
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
-            <div class="absolute right-[-20px] top-[-20px] text-8xl opacity-5">⚡</div>
-            <h4 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Haiku 4.5</h4>
-            <div class="flex items-baseline gap-2"><span class="text-3xl font-bold text-slate-700"
-                id="cost-haiku-month">$0.00</span><span class="text-slate-400 text-sm">/ bulan</span></div>
-            <div class="mt-1 text-sm text-slate-400"><span id="cost-haiku-idr" class="text-slate-500">Rp0</span> · <span
-                id="cost-haiku-day" class="text-slate-500">$0.00</span>/hari</div>
+      </section><!-- 4. Yang masih menjadi perhatian -->
+      <section>
+        <h2>Hal yang Masih Menjadi Perhatian (Fokus Saat Ini)</h2>
+        <div class="alert-box">
+          <h4>Penyesuaian Deteksi Sesi Data</h4>
+          <p>Saat sistem diuji di lingkungan <em>live</em>,
+            kami menemukan bahwa mekanisme pencarian sesi aktif untuk pasar <strong>Polymarket</strong>memerlukan
+            penyesuaian. Karena sistem belum berhasil mendeteksi sesi ini,
+            beberapa data yang masuk belum memiliki label waktu (<em>window_id</em>) yang tepat.</p>
+          <p style="margin-top: 10px;"><strong>Dampaknya:</strong>Fase 2 belum bisa dinyatakan 100% selesai secara
+            operasional. Ini adalah hal yang wajar dalam transisi pengujian live dan sedang menjadi prioritas utama
+            untuk diselesaikan secara tenang dan sistematis.</p>
+        </div>
+      </section><!-- 5. Posisi Fase Proyek -->
+      <section>
+        <h2>Peta Jalan Proyek (Roadmap)</h2>
+        <p style="margin-bottom: 20px; color: var(--text-muted);">Posisi kita saat ini berada di penghujung Phase 2.</p>
+        <div class="timeline">
+          <div class="timeline-item done">
+            <div class="timeline-title"><span>Design Freeze v2</span><span class="badge badge-success">Selesai</span>
+            </div>
           </div>
-          <div
-            class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-lg p-6 text-white relative overflow-hidden">
-            <div class="absolute right-[-20px] top-[-20px] text-8xl opacity-10">🧠</div>
-            <h4 class="text-blue-200 text-xs font-bold uppercase tracking-wider mb-2">Sonnet 4.6 — Pilihan Utama</h4>
-            <div class="flex items-baseline gap-2"><span class="text-4xl font-bold text-white"
-                id="cost-sonnet-month">$0.00</span><span class="text-blue-200 text-sm">/ bulan</span></div>
-            <div class="mt-1 text-sm text-blue-200"><span id="cost-sonnet-idr" class="text-blue-100">Rp0</span> · <span
-                id="cost-sonnet-day" class="text-blue-100">$0.00</span>/hari</div>
-            <div id="savings-badge"
-              class="mt-3 inline-block bg-emerald-500 text-white text-xs px-3 py-1 rounded-full w-max hidden">Cache
-              menghemat ~<span id="savings-pct">0</span>% vs tanpa cache</div>
+          <div class="timeline-item done">
+            <div class="timeline-title"><span>Phase 0 — Project Setup</span><span
+                class="badge badge-success">Selesai</span></div>
           </div>
-          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative overflow-hidden opacity-50">
-            <h4 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Opus 4.7 (referensi)</h4>
-            <div class="flex items-baseline gap-2"><span class="text-xl font-bold text-slate-400"
-                id="cost-opus-month">$0.00</span><span class="text-slate-400 text-xs">/ bulan — tidak direkomendasikan
-                saat ini</span></div>
+          <div class="timeline-item done">
+            <div class="timeline-title"><span>Phase 1 — Event Store+Bootstrap</span><span
+                class="badge badge-success">Selesai</span></div>
           </div>
-          <div class="bg-slate-50 p-4 rounded-xl text-xs text-slate-400 mt-auto border border-slate-200">
-            <strong class="text-slate-500">Basis harga (per 1 juta token):</strong><br>
-            Haiku 4.5: $1 input / $5 output · Sonnet 4.6: $3 input / $15 output · Opus 4.7: $5 input / $25 output<br>
-            Cache hit: 0.1× harga input. Asumsi kurs: <strong>Rp16.500 / USD</strong>.<br>
-            <em id="cache-label">Mode: Tanpa Cache — estimasi harga penuh.</em>
+          <div class="timeline-item active">
+            <div class="timeline-title"><span>Phase 2 — Feed Ingestion+Normalizer</span><span
+                class="badge badge-warning">Validasi Runtime Berjalan</span></div>
+            <p style="margin-top: 8px; font-size: 0.9rem; color: var(--text-muted);">Kode selesai,
+              sedang membereskan kendala pencatatan sesi pasar.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-title"><span>Phase 3 — Feature Engine</span><span class="badge badge-neutral">Belum
+                Dimulai</span></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-title"><span>Phase 4 — Strategy State Machine</span><span
+                class="badge badge-neutral">Belum Dimulai</span></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-title"><span>Phase 5 — Execution Gateway</span><span class="badge badge-neutral">Belum
+                Dimulai</span></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-title"><span>Phase 6 — Replay / Shadow Validation</span><span
+                class="badge badge-neutral">Belum Dimulai</span></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-title"><span>Live Readiness</span><span class="badge badge-neutral">Belum
+                Dimulai</span></div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════ -->
-    <!-- SECTION 3: EFISIENSI                          -->
-    <!-- ══════════════════════════════════════════════ -->
-    <section id="opt-section" class="section-view">
-      <div class="mb-8">
-        <h2 class="text-2xl font-bold text-slate-800 mb-2">Menjaga Efisiensi Penggunaan API</h2>
-        <p class="text-slate-600 max-w-3xl leading-relaxed">Biaya API bisa membengkak jika data yang dikirim ke AI tidak
-          efisien. Berikut sumber pemborosan yang paling umum dan cara mengatasinya.</p>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center">
-          <h3 class="font-bold text-lg mb-2 w-full text-left">Komposisi Data dalam 1 Analisis</h3>
-          <p class="text-xs text-slate-500 w-full text-left mb-6">Seberapa besar porsi setiap bagian dari total data
-            yang dikirim ke AI.</p>
-          <div class="chart-container"><canvas id="tokenAnatomyChart"></canvas></div>
+      </section><!-- 6. Estimasi Kesiapan Live -->
+      <section>
+        <h2>Estimasi Target Kesiapan Live</h2>
+        <p style="margin-bottom: 15px;">Estimasi di bawah ini dihitung berdasarkan komitmen kapasitas pengerjaan yang
+          tersedia secara konsisten,
+          yaitu:</p>
+        <ul style="margin-bottom: 20px;">
+          <li><strong>2 jam kerja per hari</strong></li>
+          <li><strong>14 jam kerja per minggu</strong>(7 hari kerja/minggu)</li>
+        </ul>
+        <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted);"><em>Catatan: Estimasi ini adalah
+            proyeksi berbasis beban kerja dan kompleksitas sistem,
+            bukan komitmen tenggat waktu absolut. Asumsi dihitung mulai dari penyelesaian Phase 2 saat ini.</em></p>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Skenario</th>
+                <th>Asumsi Pengerjaan</th>
+                <th>Estimasi Waktu</th>
+                <th>Proyeksi Target Live</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Agresif</strong></td>
+                <td>Validasi Phase 2 cepat selesai,
+                  tidak ada blocker berarti di fase logika inti (Phase 3 & 4),
+                  dan proses integrasi berjalan mulus.</td>
+                <td>~12 - 14 Minggu</td>
+                <td>Agustus 2026</td>
+              </tr>
+              <tr>
+                <td><strong>Base Case (Realistis)</strong></td>
+                <td>Terdapat ruang (buffer) wajar untuk debugging,
+                  penyesuaian desain logika selama Phase 3 & 4,
+                  serta masa observasi bayangan (shadow) yang cukup.</td>
+                <td>~16 - 18 Minggu</td>
+                <td>Akhir September 2026</td>
+              </tr>
+              <tr>
+                <td><strong>Konservatif</strong></td>
+                <td>Terdapat tantangan teknis saat menyatukan seluruh modul (Phase 5),
+                  atau butuh validasi berlapis dan penyesuaian ketat sebelum benar-benar siap pakai secara finansial.
+                </td>
+                <td>~22 - 24 Minggu</td>
+                <td>November 2026</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="flex flex-col gap-4">
-          <div class="bg-white rounded-xl shadow-sm border border-rose-200 p-5 border-l-4 border-l-rose-500">
-            <div class="flex items-center gap-2 mb-2"><span class="text-xl">🚨</span>
-              <h4 class="font-bold text-slate-800">Data yang Dikirim Terlalu Banyak</h4>
-            </div>
-            <p class="text-sm text-slate-600 mb-2">Mengirim seluruh halaman standings mentah atau riwayat pertandingan
-              lengkap akan memakan banyak biaya tanpa meningkatkan kualitas analisis.</p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> NekoSport sudah
-              meringkas data pertandingan sebelum dikirim ke AI. Yang dikirim hanya intisarinya — ranking, performa
-              terkini, status cedera, dan jadwal.</p>
+      </section><!-- 7. Fokus & 8. Risiko -->
+      <section>
+        <div class="grid-2">
+          <div class="card">
+            <h2>Rekomendasi Fokus Jangka Pendek</h2>
+            <ul>
+              <li>Fokus utama saat ini adalah <strong>menyelesaikan deteksi sesi Polymarket di lingkungan live</strong>.
+              </li>
+              <li>Memastikan label waktu (<em>window mapping</em>) pada data sudah konsisten.</li>
+              <li>Menutup masa pengujian operasional Phase 2 secara bersih.</li>
+              <li>Menahan diri untuk tidak berpindah ke Phase 3 (Feature Engine) sebelum integritas data benar-benar
+                dipastikan stabil.</li>
+            </ul>
           </div>
-          <div class="bg-white rounded-xl shadow-sm border border-orange-200 p-5 border-l-4 border-l-orange-500">
-            <div class="flex items-center gap-2 mb-2"><span class="text-xl">⚠️</span>
-              <h4 class="font-bold text-slate-800">Jawaban AI Sulit Dipakai Sistem</h4>
-            </div>
-            <p class="text-sm text-slate-600 mb-2">Jika AI menjawab dengan paragraf bebas, sistem tidak bisa membaca
-              hasilnya secara otomatis dan harus meminta ulang (biaya 2×).</p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> AI diwajibkan
-              menjawab dalam format terstruktur yang langsung bisa diproses: perkiraan peluang, alasan utama, dan faktor
-              risiko.</p>
-          </div>
-          <div class="bg-white rounded-xl shadow-sm border border-amber-200 p-5 border-l-4 border-l-amber-500">
-            <div class="flex items-center gap-2 mb-2"><span class="text-xl">💰</span>
-              <h4 class="font-bold text-slate-800">Salah Memilih Model</h4>
-            </div>
-            <p class="text-sm text-slate-600 mb-2">Memakai model paling mahal untuk tugas yang bisa dilakukan model
-              lebih murah sama artinya dengan pemborosan langsung.</p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> Sonnet untuk analisis
-              utama. Haiku untuk tugas ringan. Opus hanya untuk eksperimen.</p>
-          </div>
-          <div class="bg-white rounded-xl shadow-sm border border-blue-200 p-5 border-l-4 border-l-blue-500">
-            <div class="flex items-center gap-2 mb-2"><span class="text-xl">💡</span>
-              <h4 class="font-bold text-slate-800">Cache Belum Dimanfaatkan</h4>
-            </div>
-            <p class="text-sm text-slate-600 mb-2">Setiap analisis selalu mengirim instruksi yang sama berulang kali —
-              padahal instruksi ini tidak berubah antar pertandingan.</p>
-            <p class="text-sm text-emerald-700 bg-emerald-50 p-2 rounded"><strong>Solusi:</strong> Instruksi yang sama
-              bisa disimpan (di-cache) sehingga hanya data pertandingan yang dikirim ulang. Hemat bisa signifikan
-              setelah penggunaan stabil — tapi bukan diskon otomatis dari panggilan pertama.</p>
+          <div class="card">
+            <h2>Risiko Utama (Pantauan)</h2>
+            <ul>
+              <li><strong>Perbedaan Asumsi vs Realita:</strong>Kadang data di lingkungan live memiliki perilaku berbeda
+                dari asumsi awal desain,
+                yang membutuhkan sedikit waktu ekstra untuk penyesuaian (seperti yang terjadi saat ini).</li>
+              <li><strong>Fase Integrasi:</strong>Menyatukan fase pengolahan data (Phase 3) dan logika strategi (Phase
+                4) biasanya membutuhkan kehati-hatian ekstra.</li>
+              <li>Oleh karena itu,
+                menjaga ritme pembangunan secara <strong>bertahap dan tuntas per fase</strong>adalah strategi terbaik
+                untuk meminimalisasi bug di kemudian hari.</li>
+            </ul>
           </div>
         </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- QNA SECTION (di luar tab, sebelum footer)     -->
-  <!-- ══════════════════════════════════════════════ -->
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-200 mt-4">
-    <h2 class="text-xl font-bold text-slate-800 mb-6">Pertanyaan yang Mungkin Muncul</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <summary class="font-semibold text-slate-800 text-sm">Model apa yang sebaiknya dipakai sekarang?</summary>
-        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-          <strong>Sonnet 4.6</strong> adalah pilihan utama untuk analisis pertandingan — keseimbangan terbaik antara
-          kualitas dan biaya. <strong>Haiku 4.5</strong> bisa dipakai sebagai pendukung untuk tugas ringan seperti
-          meringkas data. <strong>Opus 4.7</strong> belum diperlukan untuk fase saat ini karena biayanya jauh lebih
-          tinggi tanpa manfaat tambahan yang sebanding untuk operasi rutin.
-        </p>
-      </details>
-
-      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <summary class="font-semibold text-slate-800 text-sm">Berapa perkiraan budget awal yang masuk akal?</summary>
-        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-          Mulai kecil dengan Sonnet 4.6 sebagai model utama. Dengan pola penggunaan saat ini (2 scan per hari, sekitar
-          15 kandidat per scan), estimasi biaya bulanan masih di kisaran <strong>belasan dolar</strong> — sangat
-          terkendali. Tidak perlu menyiapkan budget besar di fase shadow mode. Biaya bisa ditinjau ulang saat penggunaan
-          meningkat.
-        </p>
-      </details>
-
-      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <summary class="font-semibold text-slate-800 text-sm">Kapan caching mulai layak diterapkan?</summary>
-        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-          Caching paling efektif saat <strong>instruksi untuk AI sudah stabil</strong> dan tidak sering berubah —
-          artinya template analisis sudah final dan pola penggunaan sudah berulang secara konsisten. Di tahap awal saat
-          instruksi masih sering direvisi, manfaat cache belum optimal. Sebaiknya aktifkan caching setelah pola
-          operasional harian sudah jelas dan stabil.
-        </p>
-      </details>
-
-      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <summary class="font-semibold text-slate-800 text-sm">Proyek saat ini sudah sampai mana?</summary>
-        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-          NekoSport sedang berada di tahap <strong>Intelligence Layer</strong>. Adapter NBA sudah berjalan dan
-          pengujiannya sudah lulus, termasuk mekanisme cadangan untuk sumber data. Namun, data performa pertandingan
-          terbaru masih dalam penyempurnaan sehingga tahap ini belum dinyatakan selesai. Sistem masih berjalan dalam
-          mode pengamatan (shadow mode) — belum ada transaksi nyata.
-        </p>
-      </details>
-
-      <details class="qna-item bg-white rounded-xl shadow-sm border border-slate-200 p-5 md:col-span-2">
-        <summary class="font-semibold text-slate-800 text-sm">Apakah biaya API saat ini masih wajar?</summary>
-        <p class="text-sm text-slate-600 mt-3 leading-relaxed">
-          Ya. Dengan volume penggunaan fase shadow (sekitar 30–40 panggilan per hari), biaya API masih sangat rendah —
-          di bawah $20/bulan untuk Sonnet, atau sekitar Rp250.000–330.000. Ini jauh di bawah biaya infrastruktur
-          lainnya. Biaya API baru menjadi perhatian serius jika volume penggunaan naik signifikan (misalnya ratusan
-          analisis per hari di semua cabang olahraga), dan saat itu caching akan sangat membantu menekan biaya.
-        </p>
-      </details>
-
+      </section><!-- 9. Q&A -->
+      <section>
+        <h2>Pertanyaan yang Mungkin Muncul (Q&A)</h2>
+        <div class="accordion">
+          <div class="accordion-item"><button class="accordion-header">1. Apakah proyek YukiNexus sudah
+              berjalan?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Ya,
+                proyek sudah berjalan dengan baik. Fondasi arsitektur sudah selesai dibangun dan sistem sudah
+                ditempatkan di server (VPS) yang sesungguhnya. </div>
+            </div>
+          </div>
+          <div class="accordion-item"><button class="accordion-header">2. Apa yang sudah benar-benar aktif saat
+              ini?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Saat ini sistem sudah mampu menyala secara mandiri,
+                terhubung ke penyedia data utama (seperti Binance),
+                menarik data secara langsung (live),
+                dan mengubahnya ke dalam format yang kita butuhkan. </div>
+            </div>
+          </div>
+          <div class="accordion-item"><button class="accordion-header">3. Kenapa proyek belum dinyatakan siap live
+              sepenuhnya?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Karena proyek ini dibangun secara bertahap demi keamanan. Saat ini kita
+                baru menyelesaikan tahap pengumpulan dan perapian data (Fase 1 dan 2). Tahap untuk "berpikir dan
+                mengambil keputusan/strategi"(Fase 3, 4, dan 5) masih dalam antrean pengerjaan. </div>
+            </div>
+          </div>
+          <div class="accordion-item"><button class="accordion-header">4. Apa penghalang (blocker) utama saat
+              ini?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Penghalangnya cukup minor. Sistem kita belum sinkron dalam membaca "jam
+                buka/tutup pasar"(sesi aktif) dari salah satu sumber data (Polymarket) di lingkungan asli. Tanpa ini,
+                aliran data selanjutnya bisa tidak beraturan. Ini sedang kami perbaiki. </div>
+            </div>
+          </div>
+          <div class="accordion-item"><button class="accordion-header">5. Kapan target realistis proyek bisa siap
+              live?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Dengan kapasitas kerja konsisten 14 jam per minggu,
+                skenario realistisnya sistem akan siap uji coba live secara utuh di sekitar bulan September hingga
+                Oktober 2026. </div>
+            </div>
+          </div>
+          <div class="accordion-item"><button class="accordion-header">6. Apakah ada risiko keterlambatan?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Risiko selalu ada,
+                terutama jika kita menemukan perilaku sumber data yang berubah-ubah di lingkungan live. Namun,
+                dengan metode kerja fase-per-fase,
+                risiko kerusakan fatal menjadi sangat kecil. Jika ada keterlambatan,
+                biasanya hanya berupa tambahan waktu untuk stabilisasi. </div>
+            </div>
+          </div>
+          <div class="accordion-item"><button class="accordion-header">7. Kenapa pengembangan dilakukan secara bertahap
+              (Fase)?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Sistem ini menangani data dan pada akhirnya,
+                eksekusi strategi. Membangunnya sekaligus akan sangat berisiko. Dengan cara bertahap,
+                kita memastikan fondasinya kokoh dan anti-bocor sebelum memasang mesin pengambilan keputusannya. </div>
+            </div>
+          </div>
+          <div class="accordion-item"><button class="accordion-header">8. Kapan stakeholder perlu mengambil keputusan
+              penting berikutnya?</button>
+            <div class="accordion-body">
+              <div class="accordion-content">Stakeholder tidak perlu mengambil keputusan teknis. Keputusan bisnis
+                berikutnya baru akan diperlukan ketika proyek mendekati "Fase 6 - Shadow Validation",
+                di mana kita perlu mengevaluasi bersama apakah performa strategi (tanpa uang sungguhan) sudah sesuai
+                harapan untuk dilanjutkan ke tahap live trading. </div>
+            </div>
+          </div>
+        </div>
+      </section><!-- 10. Penutup -->
+      <footer>
+        <p><strong>Kesimpulan:</strong>Proyek terus bergerak maju di jalur yang tepat. Fondasi utama telah kokoh,
+          dan fokus eksklusif kita dalam 1-2 minggu ke depan adalah membereskan detail validasi aliran data ini. Setelah
+          fondasi data ini dinyatakan tertutup dan bersih,
+          kita akan melaju ke tahap pembangunan fitur inti (logika strategi).</p>
+        <p style="margin-top: 15px; font-size: 0.85rem;"><em>Laporan ini digenerate secara khusus untuk pemantauan
+            progres rutin tingkat eksekutif.</em></p>
+      </footer>
     </div>
   </div>
 
-  <footer class="max-w-6xl mx-auto px-4 py-6 text-center text-xs text-slate-400 border-t border-slate-200">
-    <p>Halaman ini adalah ringkasan kebutuhan AI untuk proyek NekoSport.</p>
-    <p>Harga berdasarkan tarif Anthropic per April 2026. Semua angka adalah estimasi.</p>
-  </footer>
+  <!-- TAB 2: NEKOSPORT -->
+  <div id="neko-tab" class="tab-content">
+    <div class="container">
+      <!-- 1. Header -->
+      <header class="header">
+        <h1>Laporan Perkembangan NekoSport</h1>
+        <p>Status proyek, hambatan utama, dan estimasi menuju live</p>
+        <div class="badges">
+          <span class="badge badge-neutral">Shadow Mode</span>
+          <span class="badge badge-neutral">Tahap: Intelligence Layer</span>
+          <span class="badge badge-danger">Status: Belum Live</span>
+        </div>
+      </header>
 
+      <!-- 2. Ringkasan Eksekutif -->
+      <section class="section">
+        <div class="summary-box">
+          <h3 style="color: #1e3a8a; margin-bottom: 0.75rem;">Ringkasan Eksekutif</h3>
+          <ul>
+            <li>Proyek saat ini masih berada di tahap <strong>Intelligence Layer</strong> dan belum siap live.</li>
+            <li>Fondasi sistem (deployment & database) sudah berjalan stabil.</li>
+            <li>Hambatan terbesar saat ini adalah <strong>kualitas data pertandingan NBA terbaru yang belum
+                stabil</strong>.</li>
+            <li>Dengan ritme kerja saat ini, target <strong>live terbatas</strong> diperkirakan tercapai pada
+              <strong>akhir Juni hingga pertengahan Juli 2026</strong>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 3. Status Proyek Saat Ini -->
+      <section class="section card">
+        <h2 class="card-title">Status Komponen Proyek</h2>
+        <div class="status-grid">
+          <div class="status-item">
+            <span class="status-label">Deployment & CI/CD</span>
+            <span class="status-tag tag-success">Sudah Berjalan</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Database & Reporting Dasar</span>
+            <span class="status-tag tag-success">Dasar Sudah Ada</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">NBA Adapter</span>
+            <span class="status-tag tag-warning">Berkembang, Belum Final</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">AI Analyzer</span>
+            <span class="status-tag tag-danger">Belum Aktif Penuh</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Order Building</span>
+            <span class="status-tag tag-danger">Belum Siap</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Live Readiness</span>
+            <span class="status-tag tag-danger">Belum Siap</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Yang Sudah Selesai -->
+      <section class="section card">
+        <h2 class="card-title">Pencapaian (Sudah Berjalan)</h2>
+        <ul class="check-list">
+          <li>Fondasi <strong>deployment pipeline</strong> (GitHub Actions ke VPS) sudah berjalan.</li>
+          <li>Environment proyek (container) sudah aktif.</li>
+          <li>Wiring database dan reporting dasar sudah tersedia.</li>
+          <li>Standings NBA sudah memiliki sistem <em>fallback</em> yang berjalan.</li>
+          <li>Adapter NBA sudah banyak berkembang dan lulus pengujian dasar.</li>
+          <li>Secara umum, fondasi proyek sudah jauh lebih stabil dibandingkan fase awal.</li>
+        </ul>
+      </section>
+
+      <!-- 5. Kendala Utama Saat Ini -->
+      <section class="section card obstacle-box">
+        <h2 class="card-title">Hambatan Utama Saat Ini</h2>
+        <p>Proyek tertahan di tahap Intelligence Layer karena beberapa isu terkait penyediaan data:</p>
+        <ul style="color: #92400e;">
+          <li>Sumber data performa pertandingan terbaru (<em>recent form</em> aktual) <strong>masih belum
+              stabil</strong>.</li>
+          <li>Kualitas data yang didapat masih sering berada di level <strong>PARTIAL</strong>, belum mencapai standar
+            <strong>COMPLETE</strong>.</li>
+          <li>Adapter NBA belum sepenuhnya selesai karena harus mengatasi anomali data tersebut.</li>
+          <li>Akibat fondasi data yang belum sempurna, <strong>AI Analyzer belum dapat diaktifkan secara utuh</strong>,
+            dan proses eksekusi <em>live</em> belum bisa disiapkan.</li>
+        </ul>
+      </section>
+
+      <!-- 6. Fokus Pekerjaan Berikutnya -->
+      <section class="section card">
+        <h2 class="card-title">Fokus Prioritas Berikutnya</h2>
+        <ol style="padding-left: 1.5rem; color: var(--text-muted);">
+          <li><strong>Menyelesaikan Intelligence Layer:</strong> Menstabilkan adapter NBA dan memastikan kualitas data
+            mencapai standar <em>COMPLETE</em>.</li>
+          <li><strong>Mengaktifkan AI Analyzer:</strong> Menyambungkan logika analitik ke alur kerja utama proyek.</li>
+          <li><strong>Menyiapkan Order Building:</strong> Membangun blok eksekusi dasar dan lapisan keamanan (<em>safety
+              layer</em>).</li>
+          <li><strong>Validasi Menyeluruh:</strong> Melakukan uji coba <em>end-to-end</em> untuk memastikan kesiapan
+            <em>live</em>.</li>
+        </ol>
+      </section>
+
+      <!-- 7. Estimasi Menuju Live -->
+      <section class="section card">
+        <h2 class="card-title">Estimasi Menuju Live</h2>
+        <p>Asumsi perencanaan waktu berbasis kapasitas kerja yang tersedia: <strong>2 jam/hari</strong> (Total:
+          <strong>14 jam/minggu</strong>).</p>
+
+        <div class="timeline-container">
+          <div class="timeline-item">
+            <div class="timeline-duration">2–3 Minggu</div>
+            <div class="timeline-desc">
+              <strong>Penyelesaian Intelligence Layer & Adapter NBA</strong>
+              <span>Stabilisasi data recent form aktual, peningkatan dari PARTIAL ke COMPLETE, dan validasi
+                hasil.</span>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-duration">2 Minggu</div>
+            <div class="timeline-desc">
+              <strong>Integrasi AI Analyzer</strong>
+              <span>Mengaktifkan analisis AI secara utuh ke dalam alur kerja proyek.</span>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-duration">2–3 Minggu</div>
+            <div class="timeline-desc">
+              <strong>Order Building & Safety Layer</strong>
+              <span>Menyiapkan building block untuk eksekusi dan memastikan kontrol pengamanan dasar.</span>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-duration">2 Minggu</div>
+            <div class="timeline-desc">
+              <strong>End-to-End Validation & Go-Live Prep</strong>
+              <span>Uji alur penuh dari awal hingga akhir dan pengecekan final readiness.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="conclusion-highlight">
+          <h3>Estimasi Siap Live Terbatas: Akhir Juni – Pertengahan Juli 2026</h3>
+          <p>(Durasi sekitar 8–10 minggu dihitung dari awal Mei 2026)</p>
+        </div>
+        <p class="risk-note">*Catatan: Jika hambatan kestabilan data adapter NBA berlanjut, target ini berisiko mundur
+          2–4 minggu.</p>
+      </section>
+
+      <!-- 8. Kesimpulan Akhir -->
+      <section class="section">
+        <p style="text-align: center; font-size: 1.05rem; color: var(--text-main); max-width: 800px; margin: 0 auto;">
+          Secara keseluruhan, proyek NekoSport sudah memiliki fondasi teknis yang kuat, namun saat ini masih berada di
+          tahap pematangan <em>Intelligence Layer</em>. Prioritas utama kami adalah membereskan kualitas data NBA agar
+          analisis AI dapat berjalan akurat. Proyek belum siap live hari ini, namun dengan ritme kerja 14 jam per
+          minggu, target peluncuran (live terbatas) paling realistis adalah antara akhir Juni hingga pertengahan Juli
+          2026.
+        </p>
+      </section>
+
+      <!-- 9. QnA Section -->
+      <section class="section qna-section">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Tanya Jawab (QnA) Singkat</h2>
+
+        <details>
+          <summary>Q1. Saat ini proyek NekoSport sudah sampai mana?</summary>
+          <div class="details-content">
+            <p>Proyek masih berada pada tahap <strong>Intelligence Layer</strong>. Fondasi dasar sudah berjalan dan
+              adapter NBA sudah berkembang. Namun, tahap ini belum selesai karena data performa pertandingan terbaru
+              masih belum sepenuhnya stabil, sehingga proyek <strong>belum siap live</strong>.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Q2. Apa hambatan utama saat ini?</summary>
+          <div class="details-content">
+            <p>Hambatan utama ada pada penyempurnaan data pertandingan NBA, khususnya data performa pertandingan
+              terbaru. Akibatnya, kualitas data masih belum konsisten penuh, yang menahan proyek untuk masuk ke tahap
+              validasi live.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Q3. Apakah proyek sudah siap live sekarang?</summary>
+          <div class="details-content">
+            <p>Belum. Proyek masih dalam mode bayangan (<em>shadow mode</em>). Meski komponen dasar sudah ada, kami
+              masih perlu melakukan penyempurnaan. Live baru layak dilakukan setelah tahap Intelligence Layer, AI
+              Analyzer, dan validasi akhir selesai.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Q4. Kapan proyek diperkirakan siap live?</summary>
+          <div class="details-content">
+            <p>Dengan asumsi kapasitas kerja 2 jam per hari (14 jam per minggu), estimasi live terbatas adalah sekitar
+              8–10 minggu ke depan. Jika dihitung dari awal Mei 2026, targetnya adalah sekitar <strong>akhir Juni hingga
+                pertengahan Juli 2026</strong>. Jika hambatan data berlanjut, target bisa mundur 2–4 minggu.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Q5. Apa fokus pekerjaan berikutnya?</summary>
+          <div class="details-content">
+            <p>Fokus kami adalah menyelesaikan Intelligence Layer dan menstabilkan adapter NBA. Setelah data beres, kami
+              akan mengaktifkan AI Analyzer, menyiapkan Order Building, dan melakukan validasi menyeluruh menuju live.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Q6. Apakah biaya API saat ini masih wajar?</summary>
+          <div class="details-content">
+            <p>Ya, untuk fase sekarang biaya masih relatif terkendali karena proyek belum berada pada tahap penggunaan
+              berskala besar. Model utama yang disarankan tetap Sonnet, dan biaya masih bisa dijaga selama penggunaannya
+              terarah serta efisien.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Q7. Model AI apa yang paling tepat untuk fase sekarang?</summary>
+          <div class="details-content">
+            <p>Model <strong>Sonnet</strong> adalah pilihan utama yang paling tepat. Model Haiku bersifat opsional untuk
+              tugas-tugas ringan, sedangkan model Opus belum diperlukan untuk operasional harian saat ini.</p>
+          </div>
+        </details>
+
+      </section>
+    </div>
+  </div>
+
+  <!-- LOGIKA JAVASCRIPT UNTUK TAB DAN ACCORDION -->
   <script>
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.target).classList.add('active');
+    // Logika Untuk Pergantian Tab
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+
+      // Sembunyikan semua konten tab
+      tabcontent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove("active");
+      }
+
+      // Hapus kelas 'active' dari semua tombol tab
+      tablinks = document.getElementsByClassName("tab-btn");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+
+      // Tampilkan tab spesifik yang ditekan dan tambahkan gaya 'active' ke tombol
+      document.getElementById(tabName).classList.add("active");
+      evt.currentTarget.className += " active";
+    }
+
+    // Logika Accordion (Berjalan Khusus untuk Tab YukiNexus)
+    document.addEventListener('DOMContentLoaded', () => {
+      const accordionHeaders = document.querySelectorAll('#yuki-tab .accordion-header');
+
+      accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+          // Tutup item accordion yang sedang terbuka (hanya mengizinkan 1 terbuka dalam 1 waktu)
+          const currentlyActive = document.querySelector('#yuki-tab .accordion-header.active');
+
+          if (currentlyActive && currentlyActive !== header) {
+            currentlyActive.classList.remove('active');
+            currentlyActive.nextElementSibling.style.maxHeight = null;
+          }
+
+          // Buka atau Tutup item yang diklik
+          header.classList.toggle('active');
+          const body = header.nextElementSibling;
+
+          if (header.classList.contains('active')) {
+            body.style.maxHeight = body.scrollHeight + "px";
+          } else {
+            body.style.maxHeight = null;
+          }
+        });
       });
     });
-
-    new Chart(document.getElementById('priceComparisonChart'), {
-      type: 'bar',
-      data: {
-        labels: ['Haiku 4.5', 'Sonnet 4.6', 'Opus 4.7'],
-        datasets: [
-          { label: 'Input ($/MTok)', data: [1, 3, 5], backgroundColor: '#3b82f6' },
-          { label: 'Output ($/MTok)', data: [5, 15, 25], backgroundColor: '#f59e0b' }
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true, title: { display: true, text: '$ per 1 juta token' } } },
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
-
-    new Chart(document.getElementById('tokenAnatomyChart'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Instruksi untuk AI (bisa di-cache)', 'Data pertandingan (berubah tiap analisis)', 'Jawaban AI'],
-        datasets: [{ data: [55, 30, 15], backgroundColor: ['#2563eb', '#f59e0b', '#10b981'], borderWidth: 2, borderColor: '#fff' }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '65%',
-        plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: c => c.label + ': ~' + c.raw + '%' } } }
-      }
-    });
-
-    const IDR_RATE = 16500;
-    const ui = {
-      sliderCalls: document.getElementById('slider-calls'),
-      sliderInput: document.getElementById('slider-input'),
-      sliderOutput: document.getElementById('slider-output'),
-      valCalls: document.getElementById('val-calls'),
-      valInput: document.getElementById('val-input'),
-      valOutput: document.getElementById('val-output'),
-      haikuMonth: document.getElementById('cost-haiku-month'),
-      haikuDay: document.getElementById('cost-haiku-day'),
-      haikuIdr: document.getElementById('cost-haiku-idr'),
-      sonnetMonth: document.getElementById('cost-sonnet-month'),
-      sonnetDay: document.getElementById('cost-sonnet-day'),
-      sonnetIdr: document.getElementById('cost-sonnet-idr'),
-      opusMonth: document.getElementById('cost-opus-month'),
-      savingsBadge: document.getElementById('savings-badge'),
-      savingsPct: document.getElementById('savings-pct'),
-      cacheLabel: document.getElementById('cache-label'),
-    };
-    const P = {
-      haiku: { i: 1, o: 5, ch: 0.10 },
-      sonnet: { i: 3, o: 15, ch: 0.30 },
-      opus: { i: 5, o: 25, ch: 0.50 },
-    };
-    let cacheMode = 'none';
-    function setCacheMode(m) {
-      cacheMode = m;
-      document.getElementById('btn-no-cache').className = 'text-xs px-3 py-2 rounded-lg border font-medium ' + (m === 'none' ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50');
-      document.getElementById('btn-cached').className = 'text-xs px-3 py-2 rounded-lg border font-medium ' + (m === 'cached' ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50');
-      calculateCost();
-    }
-    function applyPreset(c, i, o) { ui.sliderCalls.value = c; ui.sliderInput.value = i; ui.sliderOutput.value = o; calculateCost(); }
-    function usd(n) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n); }
-    function idr(n) { return 'Rp' + Math.round(n * IDR_RATE).toLocaleString('id-ID'); }
-    function calc(calls, inT, outT, p) {
-      let iDay;
-      if (cacheMode === 'cached') {
-        const cacheable = inT * 0.60, dynamic = inT * 0.40;
-        iDay = calls * ((dynamic * p.i + cacheable * p.ch) / 1e6);
-      } else {
-        iDay = calls * (inT * p.i / 1e6);
-      }
-      const oDay = calls * (outT * p.o / 1e6);
-      return { day: iDay + oDay, month: (iDay + oDay) * 30 };
-    }
-    function calculateCost() {
-      const c = +ui.sliderCalls.value, i = +ui.sliderInput.value, o = +ui.sliderOutput.value;
-      ui.valCalls.textContent = c.toLocaleString();
-      ui.valInput.textContent = i.toLocaleString();
-      ui.valOutput.textContent = o.toLocaleString();
-      const h = calc(c, i, o, P.haiku), s = calc(c, i, o, P.sonnet), op = calc(c, i, o, P.opus);
-      ui.haikuMonth.textContent = usd(h.month); ui.haikuDay.textContent = usd(h.day); ui.haikuIdr.textContent = idr(h.month);
-      ui.sonnetMonth.textContent = usd(s.month); ui.sonnetDay.textContent = usd(s.day); ui.sonnetIdr.textContent = idr(s.month);
-      ui.opusMonth.textContent = usd(op.month);
-      if (cacheMode === 'cached') {
-        const nc = calc(c, i, o, { i: P.sonnet.i, o: P.sonnet.o, ch: P.sonnet.i });
-        const pct = nc.month > 0 ? Math.round((1 - s.month / nc.month) * 100) : 0;
-        if (pct > 0) { ui.savingsPct.textContent = pct; ui.savingsBadge.classList.remove('hidden'); }
-        else { ui.savingsBadge.classList.add('hidden'); }
-        ui.cacheLabel.textContent = 'Mode: Dengan Cache (stabil) — estimasi setelah penggunaan berulang.';
-      } else {
-        ui.savingsBadge.classList.add('hidden');
-        ui.cacheLabel.textContent = 'Mode: Tanpa Cache — estimasi harga penuh.';
-      }
-    }
-    [ui.sliderCalls, ui.sliderInput, ui.sliderOutput].forEach(el => el.addEventListener('input', calculateCost));
-    setCacheMode('none');
-    calculateCost();
   </script>
 </body>
 
