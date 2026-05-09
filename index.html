@@ -1,1303 +1,904 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laporan Proyek Gabungan</title>
+  <title>NekoSport Architecture & Diagnostics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* =================================================================
-           TAB NAVIGATION STYLES (Desain Tambahan untuk Tab)
-           ================================================================= */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f8fafc;
+    /* Custom Styles for Print and Flowchart */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+
+      #toc-sidebar,
+      #detail-panel,
+      .fc-interactive-hint {
+        display: none !important;
+      }
+
+      main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        overflow: visible !important;
+      }
+
+      .print-break-inside-avoid {
+        break-inside: avoid;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
     }
 
-    .tabs-header {
-      background-color: #ffffff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .tab-btn {
-      background: transparent;
-      border: none;
-      outline: none;
-      padding: 18px 30px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
+    .fc-node {
       transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
-    .tab-btn:hover {
-      color: #1e3a8a;
-      background-color: #f1f5f9;
+    .fc-node:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
-    .tab-btn.active {
-      color: #2563eb;
-      border-bottom-color: #2563eb;
-      background-color: #f8fafc;
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(5px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* =================================================================
-           YUKINEXUS SCOPED STYLES (Diisolasi khusus untuk YukiNexus)
-           ================================================================= */
-    #yuki-tab {
-      --primary: #1e3a8a;
-      --primary-light: #eff6ff;
-      --text-main: #334155;
-      --text-muted: #64748b;
-      --bg-body: #f8fafc;
-      --bg-card: #ffffff;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --neutral: #cbd5e1;
-      --border: #e2e8f0;
-      --radius: 8px;
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      background-color: var(--bg-body);
-      color: var(--text-main);
-      line-height: 1.6;
-      font-size: 16px;
-      min-height: 100vh;
-    }
-
-    #yuki-tab * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    #yuki-tab .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 20px 40px;
-    }
-
-    #yuki-tab header {
-      background-color: var(--primary);
-      color: white;
-      padding: 40px 20px;
-      text-align: center;
-      border-bottom-left-radius: 16px;
-      border-bottom-right-radius: 16px;
-      margin-bottom: 40px;
-      box-shadow: var(--shadow);
-    }
-
-    #yuki-tab h1 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    #yuki-tab .subtitle {
-      font-size: 1.1rem;
-      color: #bfdbfe;
-      font-weight: 400;
-      max-width: 800px;
+    .fc-line-vertical {
+      width: 2px;
+      height: 24px;
+      background-color: #4b5563;
+      /* tailwind gray-600 */
       margin: 0 auto;
     }
 
-    #yuki-tab section {
-      margin-bottom: 40px;
-    }
-
-    #yuki-tab h2 {
-      font-size: 1.5rem;
-      color: var(--primary);
-      margin-bottom: 20px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #yuki-tab .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 768px) {
-      #yuki-tab .grid-2 {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    #yuki-tab .card {
-      background: var(--bg-card);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    #yuki-tab .card h3 {
-      margin-bottom: 12px;
-      font-size: 1.2rem;
-      color: var(--primary);
-    }
-
-    #yuki-tab ul {
-      list-style-position: outside;
-      margin-left: 20px;
-    }
-
-    #yuki-tab li {
-      margin-bottom: 8px;
-    }
-
-    #yuki-tab .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    #yuki-tab .badge-success {
-      background-color: #d1fae5;
-      color: #065f46;
-    }
-
-    #yuki-tab .badge-warning {
-      background-color: #fef3c7;
-      color: #92400e;
-    }
-
-    #yuki-tab .badge-neutral {
-      background-color: #f1f5f9;
-      color: #475569;
-    }
-
-    #yuki-tab .timeline {
-      position: relative;
-      max-width: 100%;
-      margin: 0 auto;
-      padding-left: 20px;
-    }
-
-    #yuki-tab .timeline::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 10px;
-      bottom: 10px;
-      width: 4px;
-      background: var(--border);
-      border-radius: 4px;
-    }
-
-    #yuki-tab .timeline-item {
-      position: relative;
-      padding: 15px 20px;
-      background: var(--bg-card);
-      border-radius: var(--radius);
-      margin-bottom: 15px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--border);
-      margin-left: 15px;
-    }
-
-    #yuki-tab .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: -33px;
-      top: 20px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--bg-body);
-      border: 4px solid var(--neutral);
-    }
-
-    #yuki-tab .timeline-item.done::before {
-      border-color: var(--success);
-    }
-
-    #yuki-tab .timeline-item.active::before {
-      border-color: var(--warning);
-      background: var(--warning);
-    }
-
-    #yuki-tab .timeline-item.active {
-      border-left: 4px solid var(--warning);
-    }
-
-    #yuki-tab .timeline-title {
-      font-weight: 600;
-      font-size: 1.1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    @media (max-width: 600px) {
-      #yuki-tab .timeline-title {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-      }
-    }
-
-    #yuki-tab .table-container {
-      overflow-x: auto;
-      background: var(--bg-card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    #yuki-tab table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    #yuki-tab th,
-    #yuki-tab td {
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    #yuki-tab th {
-      background-color: var(--primary-light);
-      color: var(--primary);
-      font-weight: 600;
-    }
-
-    #yuki-tab tr:last-child td {
-      border-bottom: none;
-    }
-
-    #yuki-tab .alert-box {
-      background-color: #fffbeb;
-      border-left: 4px solid var(--warning);
-      padding: 16px 20px;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      margin-bottom: 20px;
-    }
-
-    #yuki-tab .alert-box h4 {
-      color: #92400e;
-      margin-bottom: 5px;
-    }
-
-    #yuki-tab .accordion {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--bg-card);
-      box-shadow: var(--shadow);
-    }
-
-    #yuki-tab .accordion-item {
-      border-bottom: 1px solid var(--border);
-    }
-
-    #yuki-tab .accordion-item:last-child {
-      border-bottom: none;
-    }
-
-    #yuki-tab .accordion-header {
-      width: 100%;
-      text-align: left;
-      padding: 18px 20px;
-      font-size: 1rem;
-      font-weight: 600;
-      background: none;
-      border: none;
-      color: var(--text-main);
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background 0.2s;
-    }
-
-    #yuki-tab .accordion-header:hover {
-      background-color: var(--primary-light);
-    }
-
-    #yuki-tab .accordion-header::after {
-      content: '+';
-      font-size: 1.5rem;
-      color: var(--primary);
-      transition: transform 0.3s;
-    }
-
-    #yuki-tab .accordion-header.active::after {
-      content: '−';
-      transform: rotate(180deg);
-    }
-
-    #yuki-tab .accordion-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-out;
-      background-color: #fafafa;
-    }
-
-    #yuki-tab .accordion-content {
-      padding: 15px 20px 20px;
-      color: var(--text-muted);
-    }
-
-    #yuki-tab footer {
-      text-align: center;
-      padding: 30px;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
-    }
-
-    /* =================================================================
-           NEKOSPORT SCOPED STYLES (Diisolasi khusus untuk NekoSport)
-           ================================================================= */
-    #neko-tab {
-      --bg-color: #f1f5f9;
-      --surface: #ffffff;
-      --text-main: #1e293b;
-      --text-muted: #475569;
-      --border: #e2e8f0;
-      --primary: #2563eb;
-      --primary-light: #eff6ff;
-      --success-bg: #dcfce7;
-      --success-text: #15803d;
-      --warning-bg: #fef3c7;
-      --warning-text: #b45309;
-      --danger-bg: #fee2e2;
-      --danger-text: #b91c1c;
-      --neutral-bg: #f1f5f9;
-      --neutral-text: #475569;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      line-height: 1.6;
-      padding: 2rem 1rem;
-      min-height: 100vh;
-    }
-
-    #neko-tab * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    #neko-tab .container {
-      max-width: 900px;
+    .fc-arrow-down {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #4b5563;
       margin: 0 auto;
     }
 
-    #neko-tab h1,
-    #neko-tab h2,
-    #neko-tab h3,
-    #neko-tab h4 {
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 1rem;
-      line-height: 1.3;
+    /* Color Coding Classes */
+    .node-green {
+      @apply bg-emerald-900 border-2 border-emerald-500 text-emerald-50;
     }
 
-    #neko-tab p {
-      margin-bottom: 1rem;
-      color: var(--text-muted);
+    .node-yellow {
+      @apply bg-amber-900 border-2 border-amber-500 text-amber-50;
     }
 
-    #neko-tab ul {
-      margin-bottom: 1rem;
-      padding-left: 1.5rem;
-      color: var(--text-muted);
+    .node-red {
+      @apply bg-rose-900 border-2 border-rose-500 text-rose-50;
     }
 
-    #neko-tab ol {
-      padding-left: 1.5rem;
-      color: var(--text-muted);
+    .node-blue {
+      @apply bg-blue-900 border-2 border-blue-500 text-blue-50;
     }
 
-    #neko-tab li {
-      margin-bottom: 0.5rem;
+    .node-gray {
+      @apply bg-slate-800 border-2 border-slate-500 text-slate-200;
     }
 
-    #neko-tab .header {
-      text-align: center;
-      margin-bottom: 3rem;
-      padding: 2rem;
-      background: var(--surface);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    /* Badge Colors */
+    .badge-green {
+      @apply bg-emerald-500 text-white;
     }
 
-    #neko-tab .header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.02em;
+    .badge-yellow {
+      @apply bg-amber-500 text-white;
     }
 
-    #neko-tab .header p {
-      font-size: 1.125rem;
-      margin-bottom: 1.5rem;
+    .badge-red {
+      @apply bg-rose-500 text-white;
     }
 
-    #neko-tab .badges {
-      display: flex;
-      justify-content: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
+    .badge-blue {
+      @apply bg-blue-500 text-white;
     }
 
-    #neko-tab .badge {
-      padding: 0.35rem 1rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      letter-spacing: 0.025em;
+    .badge-gray {
+      @apply bg-slate-500 text-white;
     }
 
-    #neko-tab .badge-neutral {
-      background: var(--neutral-bg);
-      color: var(--neutral-text);
+    /* Typography */
+    .narrative-text {
+      @apply font-sans max-w-[75ch] leading-relaxed text-slate-300;
     }
 
-    #neko-tab .badge-danger {
-      background: var(--danger-bg);
-      color: var(--danger-text);
+    .tech-id {
+      @apply font-mono text-sm text-pink-300 bg-slate-800 px-1 py-0.5 rounded;
     }
 
-    #neko-tab .section {
-      margin-bottom: 2.5rem;
+    /* TOC Active State */
+    .toc-link.active {
+      @apply text-emerald-400 font-semibold border-l-2 border-emerald-400 pl-2;
     }
 
-    #neko-tab .card {
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 1.75rem;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    #neko-tab .card-title {
-      font-size: 1.25rem;
-      border-bottom: 2px solid var(--bg-color);
-      padding-bottom: 0.75rem;
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    #neko-tab .summary-box {
-      background: var(--primary-light);
-      border-left: 4px solid var(--primary);
-      border-radius: 0 8px 8px 0;
-      padding: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
-
-    #neko-tab .summary-box ul {
-      margin-bottom: 0;
-      color: #1e3a8a;
-    }
-
-    #neko-tab .status-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-    }
-
-    #neko-tab .status-item {
-      background: var(--bg-color);
-      padding: 1rem;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      border: 1px solid var(--border);
-    }
-
-    #neko-tab .status-label {
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    #neko-tab .status-tag {
-      align-self: flex-start;
-      padding: 0.25rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    #neko-tab .tag-success {
-      background: var(--success-bg);
-      color: var(--success-text);
-    }
-
-    #neko-tab .tag-warning {
-      background: var(--warning-bg);
-      color: var(--warning-text);
-    }
-
-    #neko-tab .tag-danger {
-      background: var(--danger-bg);
-      color: var(--danger-text);
-    }
-
-    #neko-tab .obstacle-box {
-      background: #fffbeb;
-      border: 1px solid #fcd34d;
-      border-left: 4px solid #f59e0b;
-    }
-
-    #neko-tab .obstacle-box .card-title {
-      color: #b45309;
-      border-bottom-color: #fde68a;
-    }
-
-    #neko-tab .check-list {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    #neko-tab .check-list li {
-      position: relative;
-      padding-left: 1.75rem;
-    }
-
-    #neko-tab .check-list li::before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: var(--success-text);
-      font-weight: bold;
-    }
-
-    #neko-tab .timeline-container {
-      margin-top: 1.5rem;
-    }
-
-    #neko-tab .timeline-item {
-      display: flex;
-      margin-bottom: 1rem;
-      background: var(--bg-color);
-      border-radius: 8px;
-      padding: 1rem;
-      border: 1px solid var(--border);
-      align-items: center;
-    }
-
-    #neko-tab .timeline-duration {
-      min-width: 100px;
-      font-weight: 700;
-      color: var(--primary);
-      font-size: 1.1rem;
-    }
-
-    #neko-tab .timeline-desc {
-      flex-grow: 1;
-    }
-
-    #neko-tab .timeline-desc strong {
-      display: block;
-      color: var(--text-main);
-      margin-bottom: 0.25rem;
-    }
-
-    #neko-tab .timeline-desc span {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-
-    #neko-tab .conclusion-highlight {
-      background: var(--text-main);
-      color: white;
-      padding: 1.5rem;
-      border-radius: 8px;
-      text-align: center;
-      margin-top: 1.5rem;
-    }
-
-    #neko-tab .conclusion-highlight h3 {
-      color: white;
-      margin-bottom: 0.5rem;
-      font-size: 1.5rem;
-    }
-
-    #neko-tab .conclusion-highlight p {
-      color: #cbd5e1;
-      margin-bottom: 0;
-      font-size: 1.1rem;
-    }
-
-    #neko-tab .risk-note {
-      text-align: center;
-      font-size: 0.9rem;
-      color: var(--danger-text);
-      margin-top: 0.75rem;
-      font-weight: 500;
-    }
-
-    #neko-tab .qna-section {
-      margin-top: 3rem;
-      border-top: 2px dashed var(--border);
-      padding-top: 2.5rem;
-    }
-
-    #neko-tab details {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 0.75rem;
-      overflow: hidden;
-      transition: all 0.2s ease;
-    }
-
-    #neko-tab details[open] {
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      border-color: #cbd5e1;
-    }
-
-    #neko-tab summary {
-      padding: 1.25rem;
-      font-weight: 600;
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8fafc;
-      color: var(--text-main);
-    }
-
-    #neko-tab summary:hover {
-      background: #f1f5f9;
-    }
-
-    #neko-tab summary::-webkit-details-marker {
-      display: none;
-    }
-
-    #neko-tab summary::after {
-      content: "+";
-      font-size: 1.25rem;
-      color: var(--text-muted);
-      transition: transform 0.2s ease;
-    }
-
-    #neko-tab details[open] summary::after {
-      content: "−";
-      transform: rotate(180deg);
-    }
-
-    #neko-tab details[open] summary {
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    #neko-tab .details-content {
-      padding: 1.25rem;
-      color: var(--text-muted);
-      background: var(--surface);
-    }
-
-    #neko-tab .details-content p:last-child {
-      margin-bottom: 0;
+    .toc-link {
+      @apply transition-all duration-200 border-l-2 border-transparent pl-2;
     }
   </style>
 </head>
 
-<body>
+<body class="bg-slate-950 text-slate-200 font-sans h-screen flex overflow-hidden">
 
-  <!-- NAVIGASI TAB -->
-  <div class="tabs-header">
-    <button class="tab-btn active" onclick="openTab(event, 'yuki-tab')">Laporan YukiNexus</button>
-    <button class="tab-btn" onclick="openTab(event, 'neko-tab')">Laporan NekoSport</button>
-  </div>
+  <!-- Sidebar TOC -->
+  <nav id="toc-sidebar"
+    class="w-64 flex-shrink-0 bg-slate-900 border-r border-slate-800 p-6 overflow-y-auto z-10 hidden lg:block">
+    <div class="mb-8">
+      <h1 class="text-xl font-bold text-white tracking-tight">NekoSport<br><span
+          class="text-emerald-500 text-sm font-mono">Tech Docs v1.5</span></h1>
+      <p class="text-xs text-slate-500 mt-2">Architecture & Diagnostic Tracker</p>
+    </div>
 
-  <!-- TAB 1: YUKINEXUS -->
-  <div id="yuki-tab" class="tab-content active">
-    <header>
-      <h1>Laporan Perkembangan Proyek YukiNexus</h1>
-      <p class="subtitle">Posisi proyek saat ini,
-        langkah berikutnya,
-        dan estimasi kesiapan menuju live</p>
-    </header>
-    <div class="container"><!-- 1. Ringkasan Eksekutif -->
-      <section>
-        <h2>Ringkasan Eksekutif</h2>
-        <div class="card">
-          <p style="margin-bottom: 10px;"><strong>YukiNexus</strong>adalah sistem baru yang dibangun secara terpisah dan
-            independen dari sistem <strong>Yukinyan</strong>saat ini. Selama proses ini berlangsung,
-            Yukinyan tetap beroperasi normal sebagai pengumpul data (collector) dan baseline referensi kita.</p>
-          <p style="margin-bottom: 10px;">Secara keseluruhan,
-            <strong>proyek sudah berhasil melewati fase fondasi</strong>. Sistem baru sudah bisa berdiri sendiri. Saat
-            ini,
-            kita berada di tahap validasi operasional (memastikan data yang masuk sudah rapi dan akurat). Terdapat
-            beberapa penyesuaian kecil yang perlu diselesaikan sebelum kita secara resmi menutup fase ini dan beralih ke
-            pembuatan fitur-fitur inti.
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Table of Contents</h2>
+    <ul class="space-y-3 text-sm text-slate-400" id="toc-list">
+      <li><a href="#sec-arsitektur" class="toc-link hover:text-slate-200 block">1. Arsitektur Keseluruhan</a></li>
+      <li><a href="#sec-posisi" class="toc-link hover:text-slate-200 block">2. Posisi Saat Ini (Phase 2)</a></li>
+      <li><a href="#sec-eksperimen" class="toc-link hover:text-slate-200 block">3. Log Eksperimen</a></li>
+      <li><a href="#sec-akar" class="toc-link hover:text-slate-200 block">4. Akar Masalah & Solusi</a></li>
+    </ul>
+
+    <div class="mt-12 pt-6 border-t border-slate-800">
+      <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Legenda Warna</h3>
+      <ul class="space-y-2 text-xs">
+        <li class="flex items-center"><span class="w-3 h-3 rounded bg-emerald-500 mr-2"></span> Aktif / Working</li>
+        <li class="flex items-center"><span class="w-3 h-3 rounded bg-amber-500 mr-2"></span> Scaffold / Partial</li>
+        <li class="flex items-center"><span class="w-3 h-3 rounded bg-rose-500 mr-2"></span> Blocker / Missing</li>
+        <li class="flex items-center"><span class="w-3 h-3 rounded bg-blue-500 mr-2"></span> Decision Point</li>
+        <li class="flex items-center"><span class="w-3 h-3 rounded bg-slate-500 mr-2"></span> Locked / Audit</li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto p-6 lg:p-12 scroll-smooth" id="main-scroll">
+    <div class="max-w-5xl mx-auto space-y-24 pb-32">
+
+      <!-- Section 1: Arsitektur NekoSport -->
+      <section id="sec-arsitektur" class="scroll-mt-12">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
+            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">01</span>
+            Arsitektur NekoSport &mdash; Alur Keseluruhan
+          </h2>
+          <p class="narrative-text mb-4">
+            Flowchart end-to-end pipeline NekoSport, dari trigger sampai persistence. Klik pada node untuk melihat
+            detail spesifik, peran, dan dependency-nya.
+          </p>
+          <p class="text-sm text-amber-400 flex items-center fc-interactive-hint">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122">
+              </path>
+            </svg>
+            Interaktif: Klik kotak flowchart untuk membuka panel detail.
           </p>
         </div>
-      </section><!-- 2. Status & 3. Pencapaian -->
-      <section>
-        <h2>Status & Pencapaian Saat Ini</h2>
-        <div class="grid-2">
-          <div class="card"><span class="badge badge-success">Sudah Berhasil Dicapai</span>
-            <h3>Fondasi & Operasional Dasar</h3>
-            <ul>
-              <li>Repositori dan struktur arsitektur sistem baru sudah terbentuk sepenuhnya.</li>
-              <li><em>Event Store</em>(pusat penyimpanan kejadian) dan mekanisme <em>Bootstrap</em>sudah stabil.</li>
-              <li>Sistem (service) sudah berhasil hidup dengan sehat di server (VPS).</li>
-              <li>Mode <em>collector</em>(pengumpul data) sudah berhasil dijalankan secara mandiri.</li>
-              <li>Feed utama (Binance) sudah aktif dan berhasil menulis data terstruktur.</li>
-              <li>Reference feed kedua sudah berhasil diperbaiki dan beroperasi.</li>
-              <li>Sistem monitoring dan pencatatan (logging) dasar sudah berjalan baik.</li>
-            </ul>
-          </div>
-          <div class="card"><span class="badge badge-warning">Posisi Saat Ini</span>
-            <h3>Kondisi Runtime Terbaru</h3>
-            <p>Secara penulisan kode,
-              Fase 2 pada dasarnya <strong>sudah selesai</strong>. Namun,
-              kami sedang melakukan validasi operasional secara langsung (runtime validation).</p><br>
-            <p><strong>Status saat ini:</strong>Sistem sehat,
-              data masuk. Namun,
-              masih ada satu kendala kecil terkait deteksi jadwal pasar (session discovery) yang perlu disesuaikan agar
-              data benar-benar siap pakai.</p>
-          </div>
-        </div>
-      </section><!-- 4. Yang masih menjadi perhatian -->
-      <section>
-        <h2>Hal yang Masih Menjadi Perhatian (Fokus Saat Ini)</h2>
-        <div class="alert-box">
-          <h4>Penyesuaian Deteksi Sesi Data</h4>
-          <p>Saat sistem diuji di lingkungan <em>live</em>,
-            kami menemukan bahwa mekanisme pencarian sesi aktif untuk pasar <strong>Polymarket</strong>memerlukan
-            penyesuaian. Karena sistem belum berhasil mendeteksi sesi ini,
-            beberapa data yang masuk belum memiliki label waktu (<em>window_id</em>) yang tepat.</p>
-          <p style="margin-top: 10px;"><strong>Dampaknya:</strong>Fase 2 belum bisa dinyatakan 100% selesai secara
-            operasional. Ini adalah hal yang wajar dalam transisi pengujian live dan sedang menjadi prioritas utama
-            untuk diselesaikan secara tenang dan sistematis.</p>
-        </div>
-      </section><!-- 5. Posisi Fase Proyek -->
-      <section>
-        <h2>Peta Jalan Proyek (Roadmap)</h2>
-        <p style="margin-bottom: 20px; color: var(--text-muted);">Posisi kita saat ini berada di penghujung Phase 2.</p>
-        <div class="timeline">
-          <div class="timeline-item done">
-            <div class="timeline-title"><span>Design Freeze v2</span><span class="badge badge-success">Selesai</span>
+
+        <!-- Orchestration & Trigger -->
+        <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 mb-8 relative">
+          <h3
+            class="text-xs font-semibold text-slate-400 uppercase tracking-wider absolute top-0 left-4 -translate-y-1/2 bg-slate-900 px-2">
+            Trigger & Orchestration</h3>
+
+          <div class="flex flex-col items-center mt-4">
+            <div class="fc-node node-green p-4 rounded-lg cursor-pointer w-64 text-center z-10"
+              onclick="showDetail('OpenClaw Gateway', 'Aktif', 'green', 'N/A', 'Trigger cron jobs. 09:00 & 20:00 WIB untuk scan, 06:00 WIB untuk evaluate.', 'Memanggil engine via docker exec.', 'N/A')">
+              <div class="font-bold">OpenClaw Gateway</div>
+              <div class="font-mono text-xs mt-1 text-emerald-200">cron 09:00, 20:00 (scan)</div>
+              <div class="font-mono text-xs text-emerald-200">cron 06:00 (evaluate)</div>
             </div>
-          </div>
-          <div class="timeline-item done">
-            <div class="timeline-title"><span>Phase 0 — Project Setup</span><span
-                class="badge badge-success">Selesai</span></div>
-          </div>
-          <div class="timeline-item done">
-            <div class="timeline-title"><span>Phase 1 — Event Store+Bootstrap</span><span
-                class="badge badge-success">Selesai</span></div>
-          </div>
-          <div class="timeline-item active">
-            <div class="timeline-title"><span>Phase 2 — Feed Ingestion+Normalizer</span><span
-                class="badge badge-warning">Validasi Runtime Berjalan</span></div>
-            <p style="margin-top: 8px; font-size: 0.9rem; color: var(--text-muted);">Kode selesai,
-              sedang membereskan kendala pencatatan sesi pasar.</p>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-title"><span>Phase 3 — Feature Engine</span><span class="badge badge-neutral">Belum
-                Dimulai</span></div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-title"><span>Phase 4 — Strategy State Machine</span><span
-                class="badge badge-neutral">Belum Dimulai</span></div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-title"><span>Phase 5 — Execution Gateway</span><span class="badge badge-neutral">Belum
-                Dimulai</span></div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-title"><span>Phase 6 — Replay / Shadow Validation</span><span
-                class="badge badge-neutral">Belum Dimulai</span></div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-title"><span>Live Readiness</span><span class="badge badge-neutral">Belum
-                Dimulai</span></div>
-          </div>
-        </div>
-      </section><!-- 6. Estimasi Kesiapan Live -->
-      <section>
-        <h2>Estimasi Target Kesiapan Live</h2>
-        <p style="margin-bottom: 15px;">Estimasi di bawah ini dihitung berdasarkan komitmen kapasitas pengerjaan yang
-          tersedia secara konsisten,
-          yaitu:</p>
-        <ul style="margin-bottom: 20px;">
-          <li><strong>2 jam kerja per hari</strong></li>
-          <li><strong>14 jam kerja per minggu</strong>(7 hari kerja/minggu)</li>
-        </ul>
-        <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted);"><em>Catatan: Estimasi ini adalah
-            proyeksi berbasis beban kerja dan kompleksitas sistem,
-            bukan komitmen tenggat waktu absolut. Asumsi dihitung mulai dari penyelesaian Phase 2 saat ini.</em></p>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Skenario</th>
-                <th>Asumsi Pengerjaan</th>
-                <th>Estimasi Waktu</th>
-                <th>Proyeksi Target Live</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Agresif</strong></td>
-                <td>Validasi Phase 2 cepat selesai,
-                  tidak ada blocker berarti di fase logika inti (Phase 3 & 4),
-                  dan proses integrasi berjalan mulus.</td>
-                <td>~12 - 14 Minggu</td>
-                <td>Agustus 2026</td>
-              </tr>
-              <tr>
-                <td><strong>Base Case (Realistis)</strong></td>
-                <td>Terdapat ruang (buffer) wajar untuk debugging,
-                  penyesuaian desain logika selama Phase 3 & 4,
-                  serta masa observasi bayangan (shadow) yang cukup.</td>
-                <td>~16 - 18 Minggu</td>
-                <td>Akhir September 2026</td>
-              </tr>
-              <tr>
-                <td><strong>Konservatif</strong></td>
-                <td>Terdapat tantangan teknis saat menyatukan seluruh modul (Phase 5),
-                  atau butuh validasi berlapis dan penyesuaian ketat sebelum benar-benar siap pakai secara finansial.
-                </td>
-                <td>~22 - 24 Minggu</td>
-                <td>November 2026</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section><!-- 7. Fokus & 8. Risiko -->
-      <section>
-        <div class="grid-2">
-          <div class="card">
-            <h2>Rekomendasi Fokus Jangka Pendek</h2>
-            <ul>
-              <li>Fokus utama saat ini adalah <strong>menyelesaikan deteksi sesi Polymarket di lingkungan live</strong>.
-              </li>
-              <li>Memastikan label waktu (<em>window mapping</em>) pada data sudah konsisten.</li>
-              <li>Menutup masa pengujian operasional Phase 2 secara bersih.</li>
-              <li>Menahan diri untuk tidak berpindah ke Phase 3 (Feature Engine) sebelum integritas data benar-benar
-                dipastikan stabil.</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h2>Risiko Utama (Pantauan)</h2>
-            <ul>
-              <li><strong>Perbedaan Asumsi vs Realita:</strong>Kadang data di lingkungan live memiliki perilaku berbeda
-                dari asumsi awal desain,
-                yang membutuhkan sedikit waktu ekstra untuk penyesuaian (seperti yang terjadi saat ini).</li>
-              <li><strong>Fase Integrasi:</strong>Menyatukan fase pengolahan data (Phase 3) dan logika strategi (Phase
-                4) biasanya membutuhkan kehati-hatian ekstra.</li>
-              <li>Oleh karena itu,
-                menjaga ritme pembangunan secara <strong>bertahap dan tuntas per fase</strong>adalah strategi terbaik
-                untuk meminimalisasi bug di kemudian hari.</li>
-            </ul>
-          </div>
-        </div>
-      </section><!-- 9. Q&A -->
-      <section>
-        <h2>Pertanyaan yang Mungkin Muncul (Q&A)</h2>
-        <div class="accordion">
-          <div class="accordion-item"><button class="accordion-header">1. Apakah proyek YukiNexus sudah
-              berjalan?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Ya,
-                proyek sudah berjalan dengan baik. Fondasi arsitektur sudah selesai dibangun dan sistem sudah
-                ditempatkan di server (VPS) yang sesungguhnya. </div>
-            </div>
-          </div>
-          <div class="accordion-item"><button class="accordion-header">2. Apa yang sudah benar-benar aktif saat
-              ini?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Saat ini sistem sudah mampu menyala secara mandiri,
-                terhubung ke penyedia data utama (seperti Binance),
-                menarik data secara langsung (live),
-                dan mengubahnya ke dalam format yang kita butuhkan. </div>
-            </div>
-          </div>
-          <div class="accordion-item"><button class="accordion-header">3. Kenapa proyek belum dinyatakan siap live
-              sepenuhnya?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Karena proyek ini dibangun secara bertahap demi keamanan. Saat ini kita
-                baru menyelesaikan tahap pengumpulan dan perapian data (Fase 1 dan 2). Tahap untuk "berpikir dan
-                mengambil keputusan/strategi"(Fase 3, 4, dan 5) masih dalam antrean pengerjaan. </div>
-            </div>
-          </div>
-          <div class="accordion-item"><button class="accordion-header">4. Apa penghalang (blocker) utama saat
-              ini?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Penghalangnya cukup minor. Sistem kita belum sinkron dalam membaca "jam
-                buka/tutup pasar"(sesi aktif) dari salah satu sumber data (Polymarket) di lingkungan asli. Tanpa ini,
-                aliran data selanjutnya bisa tidak beraturan. Ini sedang kami perbaiki. </div>
-            </div>
-          </div>
-          <div class="accordion-item"><button class="accordion-header">5. Kapan target realistis proyek bisa siap
-              live?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Dengan kapasitas kerja konsisten 14 jam per minggu,
-                skenario realistisnya sistem akan siap uji coba live secara utuh di sekitar bulan September hingga
-                Oktober 2026. </div>
-            </div>
-          </div>
-          <div class="accordion-item"><button class="accordion-header">6. Apakah ada risiko keterlambatan?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Risiko selalu ada,
-                terutama jika kita menemukan perilaku sumber data yang berubah-ubah di lingkungan live. Namun,
-                dengan metode kerja fase-per-fase,
-                risiko kerusakan fatal menjadi sangat kecil. Jika ada keterlambatan,
-                biasanya hanya berupa tambahan waktu untuk stabilisasi. </div>
-            </div>
-          </div>
-          <div class="accordion-item"><button class="accordion-header">7. Kenapa pengembangan dilakukan secara bertahap
-              (Fase)?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Sistem ini menangani data dan pada akhirnya,
-                eksekusi strategi. Membangunnya sekaligus akan sangat berisiko. Dengan cara bertahap,
-                kita memastikan fondasinya kokoh dan anti-bocor sebelum memasang mesin pengambilan keputusannya. </div>
-            </div>
-          </div>
-          <div class="accordion-item"><button class="accordion-header">8. Kapan stakeholder perlu mengambil keputusan
-              penting berikutnya?</button>
-            <div class="accordion-body">
-              <div class="accordion-content">Stakeholder tidak perlu mengambil keputusan teknis. Keputusan bisnis
-                berikutnya baru akan diperlukan ketika proyek mendekati "Fase 6 - Shadow Validation",
-                di mana kita perlu mengevaluasi bersama apakah performa strategi (tanpa uang sungguhan) sudah sesuai
-                harapan untuk dilanjutkan ke tahap live trading. </div>
+
+            <div class="fc-line-vertical"></div>
+            <div class="fc-arrow-down"></div>
+
+            <div class="fc-node node-gray p-3 rounded-lg cursor-pointer w-auto text-center z-10"
+              onclick="showDetail('Docker Exec Command', 'Locked', 'gray', 'N/A', 'Perintah eksekusi container', 'Meneruskan trigger ke python cli entrypoints', 'N/A')">
+              <div class="font-mono text-sm">docker exec nekosport-engine python -m cli.{scan|evaluate}</div>
             </div>
           </div>
         </div>
-      </section><!-- 10. Penutup -->
-      <footer>
-        <p><strong>Kesimpulan:</strong>Proyek terus bergerak maju di jalur yang tepat. Fondasi utama telah kokoh,
-          dan fokus eksklusif kita dalam 1-2 minggu ke depan adalah membereskan detail validasi aliran data ini. Setelah
-          fondasi data ini dinyatakan tertutup dan bersih,
-          kita akan melaju ke tahap pembangunan fitur inti (logika strategi).</p>
-        <p style="margin-top: 15px; font-size: 0.85rem;"><em>Laporan ini digenerate secara khusus untuk pemantauan
-            progres rutin tingkat eksekutif.</em></p>
-      </footer>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <!-- Pipeline Scan -->
+          <div class="border border-slate-700 border-dashed rounded-xl p-6 relative">
+            <h3
+              class="text-xs font-semibold text-slate-400 uppercase tracking-wider absolute top-0 left-4 -translate-y-1/2 bg-slate-950 px-2">
+              Pipeline Scan (09:00 & 20:00)</h3>
+
+            <div class="flex flex-col items-center mt-4 space-y-0">
+
+              <!-- CLI Scan -->
+              <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
+                onclick="showDetail('CLI Scan', 'Aktif', 'green', 'cli/scan.py', 'Entry point, orchestrator utama pipeline scan.', 'Memanggil Scanner.', 'Tidak ada')">
+                <div class="font-bold">cli/scan.py</div>
+                <div class="text-xs mt-1 opacity-90">Entry point / Orchestrator</div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- Scanner -->
+              <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
+                onclick="showDetail('Market Scanner', 'Aktif', 'green', 'market_scan/scanner.py', 'Fetch dari Polymarket Gamma API, filter pregame matchup/moneyline, enrich orderbook.', 'Menghasilkan list kandidat.', 'Polymarket API')">
+                <div class="font-bold">market_scan/scanner.py</div>
+                <div class="text-xs mt-1 opacity-90">Fetch Polymarket & Filter</div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- HARD GATE 1 -->
+              <div
+                class="fc-node node-blue p-2 rounded cursor-pointer w-3/4 max-w-sm text-center transform rotate-1 scale-95"
+                onclick="showDetail('HARD GATE 1', 'Decision Point', 'blue', 'N/A', 'Pengecekan eksistensi adapter untuk sport terkait.', 'Jika adapter belum ada → SKIP.', 'market_scan/scanner.py output')">
+                <div class="font-bold text-sm text-blue-100">HARD GATE 1</div>
+                <div class="text-xs text-blue-200">Adapter belum ada → SKIP</div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- Adapter Domain Area -->
+              <div class="w-full border border-slate-600 rounded p-4 mb-2 relative bg-slate-900 bg-opacity-50">
+                <div class="text-[10px] text-slate-400 absolute top-1 left-2 uppercase tracking-wide">Adapter Domain
+                </div>
+                <div class="flex flex-col items-center pt-3">
+                  <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-xs text-center"
+                    onclick="showDetail('NBA Adapter', 'Real (v1.5)', 'green', 'source_adapters/nba.py', 'Fetch standings (stats.nba.com primary, ESPN fallback) + form (ESPN schedule primary, gamelog fallback, standings_l10 last resort).', 'Menghasilkan raw data form & standing.', 'stats.nba.com, ESPN API')">
+                    <div class="font-bold">source_adapters/nba.py</div>
+                    <div class="font-mono text-[10px] text-emerald-300 mt-1">Status: Real, v1.5</div>
+                    <div class="text-xs mt-1 opacity-90">Fetch Standings & Form</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- HARD GATE 2 -->
+              <div
+                class="fc-node node-blue p-2 rounded cursor-pointer w-3/4 max-w-sm text-center transform -rotate-1 scale-95"
+                onclick="showDetail('HARD GATE 2', 'Decision Point', 'blue', 'N/A', 'Pengecekan kualitas data.', 'Data quality bukan COMPLETE → SKIP.', 'Adapter Output')">
+                <div class="font-bold text-sm text-blue-100">HARD GATE 2</div>
+                <div class="text-xs text-blue-200">Data quality != COMPLETE → SKIP</div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- AI Domain Area -->
+              <div class="w-full border border-purple-800/50 rounded p-4 mb-2 relative bg-purple-900/10">
+                <div class="text-[10px] text-purple-400 absolute top-1 left-2 uppercase tracking-wide">AI Domain (Strict
+                  Isolation)</div>
+                <div class="flex flex-col items-center pt-3">
+                  <div
+                    class="fc-node node-yellow p-3 rounded-lg cursor-pointer w-full max-w-xs text-center border-dashed"
+                    onclick="showDetail('AI Engine', 'Placeholder (p_model=0.5)', 'yellow', 'ai_engine/', 'Hanya bertugas memberi skor + alasan. Tidak boleh kirim order/ubah config.', 'Schema validation + retry 1x. Gagal → SKIP.', 'LLM API (Future)')">
+                    <div class="font-bold">ai_engine/</div>
+                    <div class="text-xs mt-1 opacity-90">Schema validation + Retry 1x</div>
+                    <div class="text-[10px] text-amber-300 mt-1">AI hanya skor+alasan. No order perm.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- Rule Engine Domain Area -->
+              <div class="w-full border border-sky-800/50 rounded p-4 mb-2 relative bg-sky-900/10">
+                <div class="text-[10px] text-sky-400 absolute top-1 left-2 uppercase tracking-wide">Rule Engine Domain
+                </div>
+
+                <div class="flex flex-col items-center pt-3 space-y-0">
+                  <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-xs text-center"
+                    onclick="showDetail('Math Engine', 'Aktif', 'green', 'math_engine/decision.py', 'Evaluasi matematis. Adapter ambil data, rule engine putuskan.', '8 checkpoint berurutan (emergency stop, data quality, AI, spread, volume, liquidity, cutoff, EV+confidence).', 'AI Engine, Scanner')">
+                    <div class="font-bold text-sm">math_engine/decision.py</div>
+                    <div class="text-[10px] mt-1 opacity-90">8 sequential checkpoints</div>
+                  </div>
+
+                  <div class="fc-line-vertical h-4"></div>
+                  <div class="fc-arrow-down"></div>
+
+                  <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-xs text-center"
+                    onclick="showDetail('Risk Engine', 'Aktif', 'green', 'risk/engine.py', 'Pre-trade check.', 'Kill switch, daily cap, concurrent positions, exposure, mode.', 'Math Engine')">
+                    <div class="font-bold text-sm">risk/engine.py</div>
+                    <div class="text-[10px] mt-1 opacity-90">Pre-trade check & limits</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- Execution Engine -->
+              <div class="fc-node node-yellow p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
+                onclick="showDetail('Execution Engine', 'Partial/Placeholder', 'yellow', 'execution/engine.py', 'Dispatch order berdasarkan TRADING_MODE.', 'Shadow (aktif, log JSONL), Paper (siap, sim PnL), Live (placeholder).', 'Risk Engine')">
+                <div class="font-bold">execution/engine.py</div>
+                <div class="text-xs mt-1 opacity-90">Dispatch via TRADING_MODE</div>
+                <div class="flex justify-center gap-1 mt-2 text-[9px] font-mono">
+                  <span class="bg-emerald-900 text-emerald-300 px-1 rounded">Shadow</span>
+                  <span class="bg-amber-900 text-amber-300 px-1 rounded">Paper</span>
+                  <span class="bg-rose-900 text-rose-300 px-1 rounded">Live</span>
+                </div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- DB Repository -->
+              <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
+                onclick="showDetail('DB Repository', 'Aktif', 'green', 'db/repository.py', 'Persistensi data persisten.', 'Simpan ke SQLite tables: signals, trades, config_versions, evaluations.', 'SQLite')">
+                <div class="font-bold">db/repository.py</div>
+                <div class="text-xs mt-1 opacity-90">Persist to SQLite tables</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline Evaluate -->
+          <div class="border border-slate-700 border-dashed rounded-xl p-6 relative h-fit">
+            <h3
+              class="text-xs font-semibold text-slate-400 uppercase tracking-wider absolute top-0 left-4 -translate-y-1/2 bg-slate-950 px-2">
+              Pipeline Evaluate (06:00)</h3>
+
+            <div class="flex flex-col items-center mt-4 space-y-0">
+
+              <!-- CLI Evaluate -->
+              <div class="fc-node node-gray p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
+                onclick="showDetail('CLI Evaluate', 'Audit/Locked', 'gray', 'cli/evaluate.py', 'Entry point pipeline evaluasi.', 'Membaca data H-1 untuk evaluasi performa.', 'DB Repository')">
+                <div class="font-bold">cli/evaluate.py</div>
+                <div class="text-xs mt-1 opacity-90">Baca performa H-1</div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <div class="w-full flex justify-center gap-4">
+                <!-- Metrics -->
+                <div class="flex-1">
+                  <div class="fc-node node-gray p-3 rounded-lg cursor-pointer h-full"
+                    onclick="showDetail('Metrics Evaluator', 'Audit/Locked', 'gray', 'evaluation/metrics.py', 'Kalkulasi metrik performa historis.', 'Hit rate, ROI, PnL per sport, Brier, log loss, max drawdown.', 'CLI Evaluate')">
+                    <div class="font-bold text-sm text-center">evaluation/metrics.py</div>
+                    <ul class="text-[10px] mt-2 list-disc pl-4 text-slate-300">
+                      <li>Hit rate, ROI</li>
+                      <li>PnL per sport</li>
+                      <li>Brier, log loss</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Tuner -->
+                <div class="flex-1">
+                  <div class="fc-node node-gray p-3 rounded-lg cursor-pointer h-full"
+                    onclick="showDetail('Bounded Tuner', 'Audit/Locked', 'gray', 'evaluation/tuner.py', 'Tuning parameter otomatis dengan guardrails.', 'Bounded tuning (max delta, min sample 30, max 1 aktivasi/hari). Membedakan locked vs tunable params.', 'Metrics')">
+                    <div class="font-bold text-sm text-center">evaluation/tuner.py</div>
+                    <div class="text-[10px] mt-2 text-center text-slate-300">Bounded tuning with guardrails</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fc-line-vertical"></div>
+              <div class="fc-arrow-down"></div>
+
+              <!-- Versioning -->
+              <div class="fc-node node-gray p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
+                onclick="showDetail('Versioning', 'Audit/Locked', 'gray', 'evaluation/versioning.py', 'Manajemen versi konfigurasi.', 'Menyimpan config version store.', 'Tuner')">
+                <div class="font-bold">evaluation/versioning.py</div>
+                <div class="text-xs mt-1 opacity-90">Config version store</div>
+              </div>
+            </div>
+
+            <div class="mt-8 bg-slate-900 p-4 rounded text-sm border border-slate-700">
+              <h4 class="font-semibold text-white mb-2 border-b border-slate-700 pb-1">Konteks Tambahan:</h4>
+              <ul class="space-y-2 text-slate-300 text-xs">
+                <li><strong class="text-slate-100">Trading Modes:</strong>
+                  <ul class="list-disc pl-4 mt-1 space-y-1">
+                    <li><span class="text-emerald-400">Shadow (aktif):</span> Execution diblokir oleh G-18. Log JSONL.
+                    </li>
+                    <li><span class="text-amber-400">Paper:</span> Siap dipakai, belum aktif. (Simulasi PnL).</li>
+                    <li><span class="text-rose-400">Live:</span> Placeholder, belum dibangun.</li>
+                  </ul>
+                </li>
+                <li class="pt-1"><strong class="text-slate-100">Locked vs Tunable Params:</strong> Diatur dari <code
+                    class="tech-id text-[10px]">config/tuning_ranges.py</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Posisi Saat Ini -->
+      <section id="sec-posisi" class="scroll-mt-12 pt-8 border-t border-slate-800">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
+            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">02</span>
+            Posisi Saat Ini &mdash; Phase 2 (Stuck)
+          </h2>
+          <p class="narrative-text">
+            Status hari ini (9 Mei 2026): Target gate Phase 2 adalah <code
+              class="tech-id">COMPLETE untuk ≥80% matchup NBA aktif</code>. Realitanya, hanya 1 dari 8 tim aktif yang
+            menghasilkan COMPLETE (12.5%).
+          </p>
+        </div>
+
+        <!-- Horizontal Timeline -->
+        <div class="flex items-center space-x-2 overflow-x-auto pb-6 scrollbar-hide w-full mb-8">
+          <div
+            class="flex-shrink-0 bg-emerald-900 border border-emerald-500 text-emerald-200 px-4 py-2 rounded text-sm font-semibold opacity-75">
+            Phase 0 ✓</div>
+          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
+          <div
+            class="flex-shrink-0 bg-emerald-900 border border-emerald-500 text-emerald-200 px-4 py-2 rounded text-sm font-semibold opacity-75">
+            Phase 1 ✓</div>
+          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
+          <div
+            class="flex-shrink-0 bg-rose-900 border-2 border-rose-500 text-white px-5 py-3 rounded-lg text-base font-bold shadow-[0_0_15px_rgba(225,29,72,0.3)] relative cursor-pointer hover:bg-rose-800 transition"
+            onclick="showDetail('Phase 2', 'Blocker / Stuck', 'red', 'N/A', 'Mencapai target validasi pipeline pre-AI.', 'Stuck ~2 minggu karena adapter fail di syarat metrik form.', 'N/A')">
+            Phase 2
+            <span
+              class="absolute -top-3 -right-3 bg-rose-600 text-white text-[10px] px-2 py-0.5 rounded-full shadow border border-rose-400 whitespace-nowrap animate-pulse">STUCK
+              ~2 minggu</span>
+          </div>
+          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
+          <div class="flex-shrink-0 bg-slate-800 border border-slate-600 text-slate-400 px-4 py-2 rounded text-sm">Phase
+            3</div>
+          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
+          <div class="flex-shrink-0 bg-slate-800 border border-slate-600 text-slate-400 px-4 py-2 rounded text-sm">Phase
+            4</div>
+          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
+          <div class="flex-shrink-0 text-slate-500 text-sm tracking-widest">. . . Phase 7+</div>
+        </div>
+
+        <!-- 3 Layers of Blockers -->
+        <div class="bg-slate-900 border border-rose-900/50 rounded-xl p-6 relative">
+          <h3 class="text-sm font-bold text-rose-400 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+              </path>
+            </svg>
+            Tiga Lapisan Blocker (Awalnya Dicurgai Saling Menutupi)
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Layer Scanner -->
+            <div class="bg-slate-800 border border-slate-600 rounded p-4">
+              <h4 class="font-bold text-amber-400 mb-2 border-b border-slate-700 pb-1 text-sm">Layer 1: Scanner</h4>
+              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Aturan:</strong> vol≥5000 AND
+                liq≥5000, ATAU vol≥3000 AND liq≥20000 (floor 3000 di dual-path)</p>
+              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Implikasi:</strong> Market
+                high-liquidity-low-volume (contoh: 76ers vs Knicks vol $212 liq $47k) tidak pernah lolos.</p>
+              <p class="text-xs text-amber-200/80 italic">Catatan: floor 3000 tidak punya justifikasi tertulis.</p>
+            </div>
+
+            <!-- Layer Audit -->
+            <div class="bg-slate-800 border border-slate-600 rounded p-4">
+              <h4 class="font-bold text-amber-400 mb-2 border-b border-slate-700 pb-1 text-sm">Layer 2: Audit</h4>
+              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Masalah:</strong> <code
+                  class="tech-id text-[10px]">coverage_audit</code> semantik stale.</p>
+              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Definisi stale:</strong> event_start
+                &lt; now_utc → di-skip.</p>
+              <p class="text-xs text-slate-300"><strong class="text-slate-100">Implikasi:</strong> Market low-volume
+                yang lolos pagi sudah stale ketika audit jalan sore. Hasil: coverage_audit selalu lapor 0 below-gate
+                matchups.</p>
+            </div>
+
+            <!-- Layer Adapter -->
+            <div class="bg-slate-800 border border-rose-500 rounded p-4 relative overflow-hidden">
+              <div
+                class="absolute right-0 top-0 w-16 h-16 bg-rose-500 transform rotate-45 translate-x-8 -translate-y-8 opacity-20">
+              </div>
+              <h4 class="font-bold text-rose-400 mb-2 border-b border-rose-900 pb-1 text-sm">Layer 3: Adapter (The Real
+                Culprit)</h4>
+              <p class="text-xs text-slate-300 mb-2">Adapter NBA v1.5 sudah real, unit test pass. Tapi belum pernah
+                dipanggil manual pada matchup nyata saat runtime.</p>
+              <p class="text-xs text-rose-200 font-semibold mt-3">Kesimpulan: Tidak tahu apakah benar bisa COMPLETE atau
+                tidak sebelum dieksekusi terpisah.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Eksperimen -->
+      <section id="sec-eksperimen" class="scroll-mt-12 pt-8 border-t border-slate-800">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
+            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">03</span>
+            Yang Sudah Dicoba & Hasilnya
+          </h2>
+          <p class="narrative-text">Log iterasi troubleshooting selama investigasi Phase 2. Eksperimen dilakukan secara
+            berurutan untuk mengupas layer demi layer dari blocker.</p>
+        </div>
+
+        <div class="relative border-l-2 border-slate-700 ml-4 space-y-8">
+
+          <!-- Exp 1 -->
+          <div class="relative pl-6">
+            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
+            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 1: Cleanup scope scanner <span
+                class="text-xs font-normal text-slate-500 ml-2">(~2 minggu lalu)</span></h3>
+            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
+              <p><strong class="text-slate-400">Hipotesis:</strong> Scanner kemasukan futures, draft, totals, spread →
+                menghasilkan noise.</p>
+              <p><strong class="text-blue-400">Action:</strong> Filter futures keywords, partial games (1H/1Q), award
+                futures, draft, coach movement.</p>
+              <p><strong class="text-emerald-400">Hasil:</strong> Scanner jauh lebih bersih, fokus ke pregame
+                matchup/moneyline.</p>
+              <p><strong class="text-amber-400">Kesimpulan:</strong> Bagus, tapi tidak menyelesaikan blocker utama
+                (tetap 0 candidates).</p>
+            </div>
+          </div>
+
+          <!-- Exp 2 -->
+          <div class="relative pl-6">
+            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
+            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 2: Tuning shadow threshold + dual-path</h3>
+            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
+              <p><strong class="text-slate-400">Hipotesis:</strong> Threshold scanner terlalu ketat.</p>
+              <p><strong class="text-blue-400">Action:</strong> Turunkan ke vol≥5000 / liq≥5000, tambahkan dual-path
+                vol≥3000 AND liq≥20000.</p>
+              <p><strong class="text-emerald-400">Hasil:</strong> Tetap 0 candidates di run 24 iterasi (window
+                13:03–14:58 WIB).</p>
+              <p><strong class="text-amber-400">Kesimpulan:</strong> Melonggarkan threshold tidak cukup; ada blocker
+                lain.</p>
+            </div>
+          </div>
+
+          <!-- Exp 3 -->
+          <div class="relative pl-6">
+            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
+            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 3: Build scan_monitor untuk observability</h3>
+            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
+              <p><strong class="text-slate-400">Hipotesis:</strong> Kita perlu data runtime untuk diagnosa.</p>
+              <p><strong class="text-blue-400">Action:</strong> Tool yang catat total_candidates, quality_complete,
+                quality_partial per iterasi.</p>
+              <p><strong class="text-emerald-400">Hasil:</strong> 24 iterasi semua 0 candidates, 0 COMPLETE, 0 PARTIAL.
+              </p>
+              <p><strong class="text-amber-400">Kesimpulan:</strong> Scanner tidak meloloskan apapun selama window
+                observasi.</p>
+            </div>
+          </div>
+
+          <!-- Exp 4 -->
+          <div class="relative pl-6">
+            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
+            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 4: Build coverage_audit untuk paksa audit adapter
+            </h3>
+            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
+              <p><strong class="text-slate-400">Hipotesis:</strong> Butuh tool yang paksa audit adapter pada market
+                below-gate.</p>
+              <p><strong class="text-blue-400">Action:</strong> coverage_audit yang scan market low-volume, jalankan
+                adapter.</p>
+              <p><strong class="text-emerald-400">Hasil:</strong> 0 below-gate matchups (karena freshness check
+                menyaring duluan).</p>
+              <p><strong class="text-amber-400">Kesimpulan:</strong> Tool jadi, tapi tidak memberi bahan validasi
+                adapter.</p>
+            </div>
+          </div>
+
+          <!-- Exp 5 -->
+          <div class="relative pl-6">
+            <div
+              class="absolute w-5 h-5 bg-rose-500 rounded-full -left-[9.5px] top-1 border-4 border-slate-950 animate-pulse">
+            </div>
+            <h3 class="text-lg font-bold text-rose-400 mb-1">Eksperimen 5: Build standalone proof tool untuk adapter
+              <span class="text-xs font-normal text-rose-500 ml-2">(HARI INI)</span></h3>
+            <div class="bg-rose-950/30 rounded p-4 text-sm space-y-2 border border-rose-900/50">
+              <p><strong class="text-slate-300">Hipotesis:</strong> Adapter mungkin belum benar-benar berjalan runtime,
+                tapi kita tidak tahu karena scanner blokir duluan.</p>
+              <p><strong class="text-blue-400">Action:</strong> Panggil <code
+                  class="tech-id">NBAAdapter.fetch_raw()</code> + <code class="tech-id">parse_payload()</code> langsung
+                di luar scanner, pada matchup NBA aktif.</p>
+              <div class="bg-slate-900/80 p-3 rounded my-2 font-mono text-[11px] text-slate-300">
+                <span class="text-emerald-400">Hasil run 1</span> (4 matchup default, mix aktif + eliminated): 4/4
+                PARTIAL<br>
+                <span class="text-emerald-400">Hasil run 2</span> (4 matchup 100% aktif Round 2 playoffs): 1/8 tim
+                COMPLETE (76ers), 7/8 PARTIAL
+              </div>
+              <p><strong class="text-rose-400 font-bold">Kesimpulan:</strong> Blocker BUKAN scanner. Blocker adalah
+                parser ESPN schedule yang require ≥10 completed games.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Akar Masalah & Solusi -->
+      <section id="sec-akar" class="scroll-mt-12 pt-8 border-t border-slate-800">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
+            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">04</span>
+            Akar Masalah & Tiga Opsi Solusi
+          </h2>
+        </div>
+
+        <!-- Root Cause Highlight Block -->
+        <div class="bg-rose-950 border border-rose-600 rounded-xl p-6 shadow-2xl mb-10 print-break-inside-avoid">
+          <div class="flex items-start">
+            <div class="bg-rose-900 p-2 rounded-lg mr-4 mt-1">
+              <svg class="w-6 h-6 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                </path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-rose-300 mb-3">Akar Masalah Teridentifikasi</h3>
+              <div class="space-y-3 text-sm text-slate-200 narrative-text">
+                <p><strong class="text-white">File:</strong> <code
+                    class="tech-id text-[11px] bg-rose-900 text-rose-200">source_adapters/nba.py</code>, baris 369-374,
+                  fungsi <code class="tech-id text-[11px] bg-rose-900 text-rose-200">_parse_espn_schedule()</code></p>
+                <p><strong class="text-white">Logika:</strong> <code
+                    class="font-mono text-rose-300 bg-rose-900/50 px-1 rounded">if len(completed) &lt; 10: return None</code>
+                </p>
+                <p><strong class="text-white">Realita:</strong> ESPN team schedule endpoint kembalikan playoff games
+                  saja (kemungkinan, perlu konfirmasi). Untuk tim Round 2 playoffs awal Mei, completed playoff games =
+                  5-9, di bawah threshold.</p>
+                <p><strong class="text-white">Bukti:</strong> 76ers (10 completed: 7 game R1 + 3 game R2) lolos. Knicks
+                  (R1 + 3 R2 = ~7) gagal. Lakers, Thunder, Pistons, Cavs, Spurs, Wolves: semua gagal dengan pola sama.
+                </p>
+
+                <div class="bg-rose-900/40 p-4 rounded mt-4 border border-rose-800">
+                  <p class="font-bold text-rose-200 mb-2">⚠ Yang Penting:</p>
+                  <p>Threshold 10 BUKAN heuristik liar. Ini bagian definisi metrik form yang konsisten di tiga modul:
+                  </p>
+                  <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300 font-mono text-xs">
+                    <li><span class="text-emerald-300">_parse_espn_schedule()</span> — tolak &lt; 10</li>
+                    <li><span class="text-emerald-300">_parse_l10()</span> — terima actual hanya kalau w+l==10</li>
+                    <li><span class="text-emerald-300">_compute_form_gap()</span> — formula (wa - wb) / 5.0
+                      mengasumsikan window 10 game dengan baseline netral 5</li>
+                  </ul>
+                  <p class="mt-2 text-rose-300 font-semibold italic">Mengubah threshold di satu tempat tanpa koordinasi
+                    tiga modul → metrik rusak.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decision Tree: Tiga Opsi Solusi -->
+        <h3 class="text-xl font-bold text-white mb-6">Decision Tree: Tiga Opsi Solusi</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <!-- Opsi C -->
+          <div class="fc-node node-blue rounded-xl p-5 cursor-pointer h-full flex flex-col justify-between"
+            onclick="showDetail('Opsi C', 'Rekomendasi Awal', 'blue', 'source_adapters/nba.py', 'Investigate ESPN endpoint parameter.', 'Mencari cara fetch data regular + playoff tanpa ubah metrik.', 'N/A')">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <h4 class="font-bold text-lg text-blue-100">Opsi C</h4>
+                <span
+                  class="bg-blue-700 text-blue-100 text-[10px] px-2 py-1 rounded uppercase font-bold">Investigate</span>
+              </div>
+              <p class="text-sm font-semibold mb-2 text-blue-200">Investigate ESPN endpoint</p>
+              <div class="text-xs text-blue-100/80 space-y-2 mt-4">
+                <p><strong class="text-blue-300">Action:</strong> Cari parameter (seasontype=2,3 atau
+                  season=2026&dates=...) yang buka window regular season + playoff.</p>
+                <p><strong class="text-blue-300">Effort:</strong> 30-60 menit eksperimen.</p>
+                <p><strong class="text-blue-300">Benefit:</strong> Kalau berhasil, fix 1 baris di
+                  _fetch_espn_schedule(). Definisi metrik tetap utuh, COMPLETE achievable.</p>
+                <p><strong class="text-blue-300">Risiko:</strong> Kalau ESPN strict postseason-only, waktu ini sia-sia.
+                </p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-blue-700/50 flex justify-between items-center">
+              <span class="text-[10px] uppercase text-blue-300">Reversibility</span>
+              <span class="text-xs font-bold text-emerald-400">Tinggi</span>
+            </div>
+          </div>
+
+          <!-- Opsi E -->
+          <div
+            class="fc-node bg-slate-800 border-2 border-slate-600 text-slate-200 rounded-xl p-5 cursor-pointer h-full flex flex-col justify-between"
+            onclick="showDetail('Opsi E', 'Conservative Fallback', 'gray', 'Dokumentasi', 'Tunda Phase 2 ke pre-season.', 'Menghindari technical debt dengan mengorbankan timeline.', 'N/A')">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <h4 class="font-bold text-lg text-slate-100">Opsi E</h4>
+                <span class="bg-slate-600 text-slate-200 text-[10px] px-2 py-1 rounded uppercase font-bold">Pause</span>
+              </div>
+              <p class="text-sm font-semibold mb-2 text-slate-300">Tunda Phase 2 ke Oktober</p>
+              <div class="text-xs text-slate-400 space-y-2 mt-4">
+                <p><strong class="text-slate-300">Action:</strong> Dokumentasikan temuan, bekukan Phase 2 gate
+                  validation, lanjut ke Phase 3 (AI analyzer) atau pause.</p>
+                <p><strong class="text-slate-300">Effort:</strong> Nol kode, dokumentasi saja.</p>
+                <p><strong class="text-slate-300">Benefit:</strong> Paling jujur. Definisi metrik utuh. Sejajar dengan
+                  "Conservative-first". Tidak ada technical debt.</p>
+                <p><strong class="text-slate-300">Risiko:</strong> Timeline mundur 4-5 bulan. Stakeholder kecewa.</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-700/50 flex justify-between items-center">
+              <span class="text-[10px] uppercase text-slate-400">Reversibility</span>
+              <span class="text-xs font-bold text-emerald-400">Tinggi</span>
+            </div>
+          </div>
+
+          <!-- Opsi F -->
+          <div class="fc-node node-yellow rounded-xl p-5 cursor-pointer h-full flex flex-col justify-between"
+            onclick="showDetail('Opsi F', 'High Impact / Refactor', 'yellow', 'nba.py, metrics.py', 'Redesign metrik form (N variable).', 'Merombak arsitektur perhitungan metrik form dari L10 statis menjadi dinamis.', 'Seluruh modul metrik')">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <h4 class="font-bold text-lg text-amber-100">Opsi F</h4>
+                <span
+                  class="bg-amber-600 text-amber-100 text-[10px] px-2 py-1 rounded uppercase font-bold">Redesign</span>
+              </div>
+              <p class="text-sm font-semibold mb-2 text-amber-200">Redesign metrik form (N variable)</p>
+              <div class="text-xs text-amber-100/80 space-y-2 mt-4">
+                <p><strong class="text-amber-300">Action:</strong> Pindah dari "L10 actual" ke "L_N actual dengan N≥5".
+                  Update 3 modul terkoordinasi. Dokumentasi diff.</p>
+                <p><strong class="text-amber-300">Effort:</strong> 1-2 hari engineering + verification.</p>
+                <p><strong class="text-amber-300">Benefit:</strong> Phase 2 dibuka selama playoffs. Adapter bisa
+                  COMPLETE.</p>
+                <p><strong class="text-amber-300">Risiko:</strong> Skala formula berubah. Skor antar musim tidak
+                  comparable. Risk register R-09 (tuning bias) berlaku.</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-amber-700/50 flex justify-between items-center">
+              <span class="text-[10px] uppercase text-amber-300">Reversibility</span>
+              <span class="text-xs font-bold text-rose-400">Rendah</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-6 p-4 bg-emerald-900/30 border-l-4 border-emerald-500 rounded text-sm text-emerald-100">
+          <strong class="text-emerald-400 uppercase tracking-wide text-xs">Rekomendasi Awal:</strong><br>
+          Mulai dengan <strong>Opsi C</strong> dulu (cek murah 30-60 menit). Kalau gagal → diskusi C/E/F dengan
+          stakeholder. Ini bukan keputusan engineering tunggal karena menyangkut validitas statistik sistem.
+        </div>
+
+      </section>
     </div>
-  </div>
 
-  <!-- TAB 2: NEKOSPORT -->
-  <div id="neko-tab" class="tab-content">
-    <div class="container">
-      <!-- 1. Header -->
-      <header class="header">
-        <h1>Laporan Perkembangan NekoSport</h1>
-        <p>Status proyek, hambatan utama, dan estimasi menuju live</p>
-        <div class="badges">
-          <span class="badge badge-neutral">Shadow Mode</span>
-          <span class="badge badge-neutral">Tahap: Intelligence Layer</span>
-          <span class="badge badge-danger">Status: Belum Live</span>
+    <!-- Footer -->
+    <footer class="mt-16 pt-8 border-t border-slate-800 text-center text-slate-500 text-xs pb-12">
+      <p>Generated on: <span id="gen-timestamp"></span> | NekoSport Engine v1.5 Adapter | Target: Phase 2 Evaluation</p>
+      <p class="mt-2">Dokumen internal khusus untuk keperluan technical audit & troubleshooting.</p>
+    </footer>
+  </main>
+
+  <!-- Detail Panel (Slide-over) -->
+  <aside id="detail-panel"
+    class="fixed right-0 top-0 h-full w-96 bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 ease-in-out shadow-[-10px_0_30px_rgba(0,0,0,0.5)] z-50 flex flex-col">
+
+    <!-- Header -->
+    <div class="p-6 border-b border-slate-800 flex justify-between items-start">
+      <div>
+        <div id="dp-status-badge" class="inline-block px-2 py-1 text-[10px] font-bold uppercase rounded mb-2">STATUS
         </div>
-      </header>
-
-      <!-- 2. Ringkasan Eksekutif -->
-      <section class="section">
-        <div class="summary-box">
-          <h3 style="color: #1e3a8a; margin-bottom: 0.75rem;">Ringkasan Eksekutif</h3>
-          <ul>
-            <li>Proyek saat ini masih berada di tahap <strong>Intelligence Layer</strong> dan belum siap live.</li>
-            <li>Fondasi sistem (deployment & database) sudah berjalan stabil.</li>
-            <li>Hambatan terbesar saat ini adalah <strong>kualitas data pertandingan NBA terbaru yang belum
-                stabil</strong>.</li>
-            <li>Dengan ritme kerja saat ini, target <strong>live terbatas</strong> diperkirakan tercapai pada
-              <strong>akhir Juni hingga pertengahan Juli 2026</strong>.</li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- 3. Status Proyek Saat Ini -->
-      <section class="section card">
-        <h2 class="card-title">Status Komponen Proyek</h2>
-        <div class="status-grid">
-          <div class="status-item">
-            <span class="status-label">Deployment & CI/CD</span>
-            <span class="status-tag tag-success">Sudah Berjalan</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Database & Reporting Dasar</span>
-            <span class="status-tag tag-success">Dasar Sudah Ada</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">NBA Adapter</span>
-            <span class="status-tag tag-warning">Berkembang, Belum Final</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">AI Analyzer</span>
-            <span class="status-tag tag-danger">Belum Aktif Penuh</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Order Building</span>
-            <span class="status-tag tag-danger">Belum Siap</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Live Readiness</span>
-            <span class="status-tag tag-danger">Belum Siap</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4. Yang Sudah Selesai -->
-      <section class="section card">
-        <h2 class="card-title">Pencapaian (Sudah Berjalan)</h2>
-        <ul class="check-list">
-          <li>Fondasi <strong>deployment pipeline</strong> (GitHub Actions ke VPS) sudah berjalan.</li>
-          <li>Environment proyek (container) sudah aktif.</li>
-          <li>Wiring database dan reporting dasar sudah tersedia.</li>
-          <li>Standings NBA sudah memiliki sistem <em>fallback</em> yang berjalan.</li>
-          <li>Adapter NBA sudah banyak berkembang dan lulus pengujian dasar.</li>
-          <li>Secara umum, fondasi proyek sudah jauh lebih stabil dibandingkan fase awal.</li>
-        </ul>
-      </section>
-
-      <!-- 5. Kendala Utama Saat Ini -->
-      <section class="section card obstacle-box">
-        <h2 class="card-title">Hambatan Utama Saat Ini</h2>
-        <p>Proyek tertahan di tahap Intelligence Layer karena beberapa isu terkait penyediaan data:</p>
-        <ul style="color: #92400e;">
-          <li>Sumber data performa pertandingan terbaru (<em>recent form</em> aktual) <strong>masih belum
-              stabil</strong>.</li>
-          <li>Kualitas data yang didapat masih sering berada di level <strong>PARTIAL</strong>, belum mencapai standar
-            <strong>COMPLETE</strong>.</li>
-          <li>Adapter NBA belum sepenuhnya selesai karena harus mengatasi anomali data tersebut.</li>
-          <li>Akibat fondasi data yang belum sempurna, <strong>AI Analyzer belum dapat diaktifkan secara utuh</strong>,
-            dan proses eksekusi <em>live</em> belum bisa disiapkan.</li>
-        </ul>
-      </section>
-
-      <!-- 6. Fokus Pekerjaan Berikutnya -->
-      <section class="section card">
-        <h2 class="card-title">Fokus Prioritas Berikutnya</h2>
-        <ol style="padding-left: 1.5rem; color: var(--text-muted);">
-          <li><strong>Menyelesaikan Intelligence Layer:</strong> Menstabilkan adapter NBA dan memastikan kualitas data
-            mencapai standar <em>COMPLETE</em>.</li>
-          <li><strong>Mengaktifkan AI Analyzer:</strong> Menyambungkan logika analitik ke alur kerja utama proyek.</li>
-          <li><strong>Menyiapkan Order Building:</strong> Membangun blok eksekusi dasar dan lapisan keamanan (<em>safety
-              layer</em>).</li>
-          <li><strong>Validasi Menyeluruh:</strong> Melakukan uji coba <em>end-to-end</em> untuk memastikan kesiapan
-            <em>live</em>.</li>
-        </ol>
-      </section>
-
-      <!-- 7. Estimasi Menuju Live -->
-      <section class="section card">
-        <h2 class="card-title">Estimasi Menuju Live</h2>
-        <p>Asumsi perencanaan waktu berbasis kapasitas kerja yang tersedia: <strong>2 jam/hari</strong> (Total:
-          <strong>14 jam/minggu</strong>).</p>
-
-        <div class="timeline-container">
-          <div class="timeline-item">
-            <div class="timeline-duration">2–3 Minggu</div>
-            <div class="timeline-desc">
-              <strong>Penyelesaian Intelligence Layer & Adapter NBA</strong>
-              <span>Stabilisasi data recent form aktual, peningkatan dari PARTIAL ke COMPLETE, dan validasi
-                hasil.</span>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-duration">2 Minggu</div>
-            <div class="timeline-desc">
-              <strong>Integrasi AI Analyzer</strong>
-              <span>Mengaktifkan analisis AI secara utuh ke dalam alur kerja proyek.</span>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-duration">2–3 Minggu</div>
-            <div class="timeline-desc">
-              <strong>Order Building & Safety Layer</strong>
-              <span>Menyiapkan building block untuk eksekusi dan memastikan kontrol pengamanan dasar.</span>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-duration">2 Minggu</div>
-            <div class="timeline-desc">
-              <strong>End-to-End Validation & Go-Live Prep</strong>
-              <span>Uji alur penuh dari awal hingga akhir dan pengecekan final readiness.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="conclusion-highlight">
-          <h3>Estimasi Siap Live Terbatas: Akhir Juni – Pertengahan Juli 2026</h3>
-          <p>(Durasi sekitar 8–10 minggu dihitung dari awal Mei 2026)</p>
-        </div>
-        <p class="risk-note">*Catatan: Jika hambatan kestabilan data adapter NBA berlanjut, target ini berisiko mundur
-          2–4 minggu.</p>
-      </section>
-
-      <!-- 8. Kesimpulan Akhir -->
-      <section class="section">
-        <p style="text-align: center; font-size: 1.05rem; color: var(--text-main); max-width: 800px; margin: 0 auto;">
-          Secara keseluruhan, proyek NekoSport sudah memiliki fondasi teknis yang kuat, namun saat ini masih berada di
-          tahap pematangan <em>Intelligence Layer</em>. Prioritas utama kami adalah membereskan kualitas data NBA agar
-          analisis AI dapat berjalan akurat. Proyek belum siap live hari ini, namun dengan ritme kerja 14 jam per
-          minggu, target peluncuran (live terbatas) paling realistis adalah antara akhir Juni hingga pertengahan Juli
-          2026.
-        </p>
-      </section>
-
-      <!-- 9. QnA Section -->
-      <section class="section qna-section">
-        <h2 style="text-align: center; margin-bottom: 2rem;">Tanya Jawab (QnA) Singkat</h2>
-
-        <details>
-          <summary>Q1. Saat ini proyek NekoSport sudah sampai mana?</summary>
-          <div class="details-content">
-            <p>Proyek masih berada pada tahap <strong>Intelligence Layer</strong>. Fondasi dasar sudah berjalan dan
-              adapter NBA sudah berkembang. Namun, tahap ini belum selesai karena data performa pertandingan terbaru
-              masih belum sepenuhnya stabil, sehingga proyek <strong>belum siap live</strong>.</p>
-          </div>
-        </details>
-
-        <details>
-          <summary>Q2. Apa hambatan utama saat ini?</summary>
-          <div class="details-content">
-            <p>Hambatan utama ada pada penyempurnaan data pertandingan NBA, khususnya data performa pertandingan
-              terbaru. Akibatnya, kualitas data masih belum konsisten penuh, yang menahan proyek untuk masuk ke tahap
-              validasi live.</p>
-          </div>
-        </details>
-
-        <details>
-          <summary>Q3. Apakah proyek sudah siap live sekarang?</summary>
-          <div class="details-content">
-            <p>Belum. Proyek masih dalam mode bayangan (<em>shadow mode</em>). Meski komponen dasar sudah ada, kami
-              masih perlu melakukan penyempurnaan. Live baru layak dilakukan setelah tahap Intelligence Layer, AI
-              Analyzer, dan validasi akhir selesai.</p>
-          </div>
-        </details>
-
-        <details>
-          <summary>Q4. Kapan proyek diperkirakan siap live?</summary>
-          <div class="details-content">
-            <p>Dengan asumsi kapasitas kerja 2 jam per hari (14 jam per minggu), estimasi live terbatas adalah sekitar
-              8–10 minggu ke depan. Jika dihitung dari awal Mei 2026, targetnya adalah sekitar <strong>akhir Juni hingga
-                pertengahan Juli 2026</strong>. Jika hambatan data berlanjut, target bisa mundur 2–4 minggu.</p>
-          </div>
-        </details>
-
-        <details>
-          <summary>Q5. Apa fokus pekerjaan berikutnya?</summary>
-          <div class="details-content">
-            <p>Fokus kami adalah menyelesaikan Intelligence Layer dan menstabilkan adapter NBA. Setelah data beres, kami
-              akan mengaktifkan AI Analyzer, menyiapkan Order Building, dan melakukan validasi menyeluruh menuju live.
-            </p>
-          </div>
-        </details>
-
-        <details>
-          <summary>Q6. Apakah biaya API saat ini masih wajar?</summary>
-          <div class="details-content">
-            <p>Ya, untuk fase sekarang biaya masih relatif terkendali karena proyek belum berada pada tahap penggunaan
-              berskala besar. Model utama yang disarankan tetap Sonnet, dan biaya masih bisa dijaga selama penggunaannya
-              terarah serta efisien.</p>
-          </div>
-        </details>
-
-        <details>
-          <summary>Q7. Model AI apa yang paling tepat untuk fase sekarang?</summary>
-          <div class="details-content">
-            <p>Model <strong>Sonnet</strong> adalah pilihan utama yang paling tepat. Model Haiku bersifat opsional untuk
-              tugas-tugas ringan, sedangkan model Opus belum diperlukan untuk operasional harian saat ini.</p>
-          </div>
-        </details>
-
-      </section>
+        <h2 id="dp-title" class="text-xl font-bold text-white font-mono break-words">Node Title</h2>
+      </div>
+      <button onclick="closeDetail()"
+        class="text-slate-400 hover:text-white p-1 bg-slate-800 rounded hover:bg-slate-700 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
     </div>
-  </div>
 
-  <!-- LOGIKA JAVASCRIPT UNTUK TAB DAN ACCORDION -->
+    <!-- Content -->
+    <div class="p-6 overflow-y-auto flex-1 space-y-6">
+
+      <div>
+        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">File Location</h4>
+        <div id="dp-file"
+          class="font-mono text-sm text-pink-300 bg-slate-950 p-2 rounded border border-slate-800 break-all"></div>
+      </div>
+
+      <div>
+        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Peran Spesifik</h4>
+        <p id="dp-role" class="text-sm text-slate-300 leading-relaxed"></p>
+      </div>
+
+      <div>
+        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Keterangan Khusus</h4>
+        <p id="dp-desc" class="text-sm text-slate-300 leading-relaxed"></p>
+      </div>
+
+      <div class="bg-slate-950 p-4 rounded border border-slate-800">
+        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Dependencies / I/O</h4>
+        <p id="dp-deps" class="text-sm text-slate-400 italic"></p>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Overlay for mobile when panel is open -->
+  <div id="panel-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0"
+    onclick="closeDetail()"></div>
+
   <script>
-    // Logika Untuk Pergantian Tab
-    function openTab(evt, tabName) {
-      var i, tabcontent, tablinks;
+    // Set dynamic timestamp
+    document.getElementById('gen-timestamp').innerText = new Date().toLocaleString('id-ID', { timeZoneName: 'short' });
 
-      // Sembunyikan semua konten tab
-      tabcontent = document.getElementsByClassName("tab-content");
-      for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].classList.remove("active");
-      }
+    // Interactivity: Panel Slide-over
+    const detailPanel = document.getElementById('detail-panel');
+    const panelOverlay = document.getElementById('panel-overlay');
 
-      // Hapus kelas 'active' dari semua tombol tab
-      tablinks = document.getElementsByClassName("tab-btn");
-      for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-      }
+    function showDetail(title, status, colorTheme, file, role, desc, deps) {
+      document.getElementById('dp-title').innerText = title;
+      document.getElementById('dp-file').innerText = file;
+      document.getElementById('dp-role').innerHTML = role;
+      document.getElementById('dp-desc').innerHTML = desc;
+      document.getElementById('dp-deps').innerText = deps;
 
-      // Tampilkan tab spesifik yang ditekan dan tambahkan gaya 'active' ke tombol
-      document.getElementById(tabName).classList.add("active");
-      evt.currentTarget.className += " active";
+      const badge = document.getElementById('dp-status-badge');
+      badge.innerText = status;
+
+      // Reset badge classes
+      badge.className = 'inline-block px-2 py-1 text-[10px] font-bold uppercase rounded mb-2';
+
+      // Apply color
+      if (colorTheme === 'green') badge.classList.add('badge-green');
+      else if (colorTheme === 'yellow') badge.classList.add('badge-yellow');
+      else if (colorTheme === 'red') badge.classList.add('badge-red');
+      else if (colorTheme === 'blue') badge.classList.add('badge-blue');
+      else badge.classList.add('badge-gray');
+
+      // Open Panel
+      detailPanel.classList.remove('translate-x-full');
+      panelOverlay.classList.remove('hidden');
+      // Small delay for transition
+      setTimeout(() => {
+        panelOverlay.classList.remove('opacity-0');
+        panelOverlay.classList.add('opacity-100');
+      }, 10);
     }
 
-    // Logika Accordion (Berjalan Khusus untuk Tab YukiNexus)
-    document.addEventListener('DOMContentLoaded', () => {
-      const accordionHeaders = document.querySelectorAll('#yuki-tab .accordion-header');
+    function closeDetail() {
+      detailPanel.classList.add('translate-x-full');
+      panelOverlay.classList.remove('opacity-100');
+      panelOverlay.classList.add('opacity-0');
+      setTimeout(() => {
+        panelOverlay.classList.add('hidden');
+      }, 300);
+    }
 
-      accordionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-          // Tutup item accordion yang sedang terbuka (hanya mengizinkan 1 terbuka dalam 1 waktu)
-          const currentlyActive = document.querySelector('#yuki-tab .accordion-header.active');
+    // Interactivity: Sticky TOC Highlight (Scroll Spy)
+    const sections = document.querySelectorAll('main section');
+    const navLinks = document.querySelectorAll('.toc-link');
+    const mainScroll = document.getElementById('main-scroll');
 
-          if (currentlyActive && currentlyActive !== header) {
-            currentlyActive.classList.remove('active');
-            currentlyActive.nextElementSibling.style.maxHeight = null;
-          }
+    const observerOptions = {
+      root: mainScroll,
+      rootMargin: '0px 0px -50% 0px',
+      threshold: 0.1
+    };
 
-          // Buka atau Tutup item yang diklik
-          header.classList.toggle('active');
-          const body = header.nextElementSibling;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${id}`) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }, observerOptions);
 
-          if (header.classList.contains('active')) {
-            body.style.maxHeight = body.scrollHeight + "px";
-          } else {
-            body.style.maxHeight = null;
-          }
-        });
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+
+    // Handle TOC click scrolling manually due to custom overflow setup
+    navLinks.forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          // Smooth scroll main container to target element
+          targetElement.scrollIntoView({ behavior: 'smooth' });
+        }
       });
     });
   </script>
