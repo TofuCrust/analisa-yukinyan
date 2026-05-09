@@ -4,904 +4,717 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NekoSport Architecture & Diagnostics</title>
+  <title>Briefing Dokumen: Status Proyek NekoSport</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700;900&display=swap"
+    rel="stylesheet">
   <style>
-    /* Custom Styles for Print and Flowchart */
+    :root {
+      --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-serif: 'Merriweather', ui-serif, Georgia, serif;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: #f8fafc;
+      /* slate-50 */
+      color: #0f172a;
+      /* slate-900 */
+      line-height: 1.6;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    .font-serif {
+      font-family: var(--font-serif);
+    }
+
+    /* Flowchart CSS */
+    .flow-node {
+      position: relative;
+      z-index: 10;
+    }
+
+    .flow-connector {
+      width: 2px;
+      height: 24px;
+      background-color: #cbd5e1;
+      /* slate-300 */
+      margin: 0 auto;
+    }
+
+    .flow-arrow-down {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid #cbd5e1;
+      margin: 0 auto;
+    }
+
+    /* Interactive Elements */
+    details>summary {
+      list-style: none;
+    }
+
+    details>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    /* Print Styles */
     @media print {
       body {
-        background: white !important;
-        color: black !important;
+        background-color: #ffffff;
       }
 
-      #toc-sidebar,
-      #detail-panel,
-      .fc-interactive-hint {
+      .no-print {
         display: none !important;
-      }
-
-      main {
-        margin-left: 0 !important;
-        width: 100% !important;
-        overflow: visible !important;
       }
 
       .print-break-inside-avoid {
         break-inside: avoid;
       }
 
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+      .print-border {
+        border: 1px solid #e2e8f0;
+      }
+
+      .print-shadow-none {
+        box-shadow: none !important;
+      }
+
+      main {
+        margin: 0;
+        padding: 0;
+        border: none;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      /* Force details open on print */
+      details {
+        display: block;
+      }
+
+      details[open] summary~* {
+        display: block;
       }
     }
-
-    .fc-node {
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-
-    .fc-node:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    .fc-line-vertical {
-      width: 2px;
-      height: 24px;
-      background-color: #4b5563;
-      /* tailwind gray-600 */
-      margin: 0 auto;
-    }
-
-    .fc-arrow-down {
-      width: 0;
-      height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-top: 8px solid #4b5563;
-      margin: 0 auto;
-    }
-
-    /* Color Coding Classes */
-    .node-green {
-      @apply bg-emerald-900 border-2 border-emerald-500 text-emerald-50;
-    }
-
-    .node-yellow {
-      @apply bg-amber-900 border-2 border-amber-500 text-amber-50;
-    }
-
-    .node-red {
-      @apply bg-rose-900 border-2 border-rose-500 text-rose-50;
-    }
-
-    .node-blue {
-      @apply bg-blue-900 border-2 border-blue-500 text-blue-50;
-    }
-
-    .node-gray {
-      @apply bg-slate-800 border-2 border-slate-500 text-slate-200;
-    }
-
-    /* Badge Colors */
-    .badge-green {
-      @apply bg-emerald-500 text-white;
-    }
-
-    .badge-yellow {
-      @apply bg-amber-500 text-white;
-    }
-
-    .badge-red {
-      @apply bg-rose-500 text-white;
-    }
-
-    .badge-blue {
-      @apply bg-blue-500 text-white;
-    }
-
-    .badge-gray {
-      @apply bg-slate-500 text-white;
-    }
-
-    /* Typography */
-    .narrative-text {
-      @apply font-sans max-w-[75ch] leading-relaxed text-slate-300;
-    }
-
-    .tech-id {
-      @apply font-mono text-sm text-pink-300 bg-slate-800 px-1 py-0.5 rounded;
-    }
-
-    /* TOC Active State */
-    .toc-link.active {
-      @apply text-emerald-400 font-semibold border-l-2 border-emerald-400 pl-2;
-    }
-
-    .toc-link {
-      @apply transition-all duration-200 border-l-2 border-transparent pl-2;
-    }
   </style>
+  <script>
+    // Force open all details elements before printing
+    window.addEventListener('beforeprint', () => {
+      document.querySelectorAll('details').forEach(detail => {
+        detail.setAttribute('data-was-closed', !detail.open);
+        detail.open = true;
+      });
+    });
+    window.addEventListener('afterprint', () => {
+      document.querySelectorAll('details[data-was-closed="true"]').forEach(detail => {
+        detail.open = false;
+        detail.removeAttribute('data-was-closed');
+      });
+    });
+  </script>
 </head>
 
-<body class="bg-slate-950 text-slate-200 font-sans h-screen flex overflow-hidden">
+<body class="antialiased pb-24">
 
-  <!-- Sidebar TOC -->
-  <nav id="toc-sidebar"
-    class="w-64 flex-shrink-0 bg-slate-900 border-r border-slate-800 p-6 overflow-y-auto z-10 hidden lg:block">
-    <div class="mb-8">
-      <h1 class="text-xl font-bold text-white tracking-tight">NekoSport<br><span
-          class="text-emerald-500 text-sm font-mono">Tech Docs v1.5</span></h1>
-      <p class="text-xs text-slate-500 mt-2">Architecture & Diagnostic Tracker</p>
-    </div>
-
-    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Table of Contents</h2>
-    <ul class="space-y-3 text-sm text-slate-400" id="toc-list">
-      <li><a href="#sec-arsitektur" class="toc-link hover:text-slate-200 block">1. Arsitektur Keseluruhan</a></li>
-      <li><a href="#sec-posisi" class="toc-link hover:text-slate-200 block">2. Posisi Saat Ini (Phase 2)</a></li>
-      <li><a href="#sec-eksperimen" class="toc-link hover:text-slate-200 block">3. Log Eksperimen</a></li>
-      <li><a href="#sec-akar" class="toc-link hover:text-slate-200 block">4. Akar Masalah & Solusi</a></li>
-    </ul>
-
-    <div class="mt-12 pt-6 border-t border-slate-800">
-      <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Legenda Warna</h3>
-      <ul class="space-y-2 text-xs">
-        <li class="flex items-center"><span class="w-3 h-3 rounded bg-emerald-500 mr-2"></span> Aktif / Working</li>
-        <li class="flex items-center"><span class="w-3 h-3 rounded bg-amber-500 mr-2"></span> Scaffold / Partial</li>
-        <li class="flex items-center"><span class="w-3 h-3 rounded bg-rose-500 mr-2"></span> Blocker / Missing</li>
-        <li class="flex items-center"><span class="w-3 h-3 rounded bg-blue-500 mr-2"></span> Decision Point</li>
-        <li class="flex items-center"><span class="w-3 h-3 rounded bg-slate-500 mr-2"></span> Locked / Audit</li>
-      </ul>
+  <!-- Top Navigation / Breadcrumb -->
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print shadow-sm">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center text-sm">
+      <div class="flex items-center space-x-2 text-slate-500 font-medium">
+        <span class="text-indigo-600 font-semibold">NekoSport</span>
+        <span>/</span>
+        <span>Dokumen Internal</span>
+        <span>/</span>
+        <span class="text-slate-900">Briefing Status</span>
+      </div>
+      <div>
+        <button onclick="window.print()"
+          class="text-slate-600 hover:text-indigo-600 flex items-center transition-colors">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+            </path>
+          </svg>
+          Cetak PDF
+        </button>
+      </div>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <main class="flex-1 overflow-y-auto p-6 lg:p-12 scroll-smooth" id="main-scroll">
-    <div class="max-w-5xl mx-auto space-y-24 pb-32">
+  <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-start lg:gap-8 px-4 sm:px-6 lg:px-8 mt-8">
 
-      <!-- Section 1: Arsitektur NekoSport -->
-      <section id="sec-arsitektur" class="scroll-mt-12">
-        <div class="mb-8">
-          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
-            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">01</span>
-            Arsitektur NekoSport &mdash; Alur Keseluruhan
+    <!-- Main Content -->
+    <main
+      class="w-full lg:w-3/4 bg-white p-6 sm:p-10 border border-slate-200 rounded-xl shadow-sm print-shadow-none print-border relative">
+
+      <!-- Header -->
+      <header class="mb-10 pb-6 border-b border-slate-200">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-4">
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Briefing Dokumen: Status Proyek NekoSport
+            </h1>
+            <p class="text-slate-500 font-medium">Disiapkan oleh: Tim Proyek NekoSport</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3 text-xs font-medium mt-4">
+          <span class="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-md">Tanggal: 9 Mei
+            2026</span>
+          <span
+            class="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md flex items-center">Status:
+            Fase 2 (Blocker Teridentifikasi)</span>
+          <span class="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-md">Versi Engine:
+            v0.8.2-shadow</span>
+        </div>
+      </header>
+
+      <!-- Bagian I: Ringkasan Eksekutif -->
+      <section id="ringkasan" class="mb-12 scroll-mt-20">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+          <span class="text-slate-400 mr-2">I.</span> Ringkasan Eksekutif
+        </h2>
+        <div
+          class="bg-blue-50 border-l-4 border-blue-600 p-5 rounded-r-lg text-slate-800 text-sm md:text-base leading-relaxed print-break-inside-avoid">
+          <p class="mb-2">Status proyek saat ini berada di <strong>Fase 2 (Real Data Adapter)</strong>, memasuki hari
+            ke-14+. Tim proyek telah mengidentifikasi akar masalah teknis (blocker) spesifik setelah melakukan lima
+            babak eksperimen diagnostik mendalam.</p>
+          <p class="mb-2">Temuan mengindikasikan adanya batasan struktural pada sumber data yang bersinggungan langsung
+            dengan definisi metrik kehati-hatian sistem. Implikasinya, target <em>live trade</em> akhir Mei perlu
+            dipertimbangkan ulang berdasarkan tiga opsi strategis yang tersedia.</p>
+          <p>Tim merekomendasikan investigasi cepat (Opsi 1) sebagai langkah intervensi pertama, dilanjutkan dengan
+            re-evaluasi proyeksi waktu berdasarkan hasil temuan tersebut.</p>
+        </div>
+      </section>
+
+      <!-- Bagian II: Apa yang sedang dibangun -->
+      <section id="arsitektur" class="mb-12 scroll-mt-20">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+          <span class="text-slate-400 mr-2">II.</span> Fungsionalitas Sistem & Filosofi Proyek
+        </h2>
+
+        <p class="text-slate-700 mb-5">
+          NekoSport adalah sistem otomatis yang memantau pasar prediksi olahraga di Polymarket — platform di mana pihak
+          eksternal dapat memperdagangkan probabilitas hasil pertandingan, secara fundamental mirip pasar saham namun
+          direksional untuk peristiwa olahraga. Sistem mengambil data fundamental tim dari sumber publik, menghitung
+          secara kuantitatif apakah harga pasar mencerminkan probabilitas yang adil, lalu mengeksekusi keputusan
+          terprogram apakah peluang trading layak diambil atau diabaikan.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div class="border border-slate-200 bg-slate-50 p-4 rounded-lg">
+            <h4 class="font-bold text-slate-800 text-sm mb-1 border-b border-slate-200 pb-2">Shadow-first</h4>
+            <p class="text-xs text-slate-600 mt-2">Sistem dijalankan tanpa eksekusi finansial nyata (dry-run) terlebih
+              dahulu untuk validasi logika secara end-to-end.</p>
+          </div>
+          <div class="border border-slate-200 bg-slate-50 p-4 rounded-lg">
+            <h4 class="font-bold text-slate-800 text-sm mb-1 border-b border-slate-200 pb-2">Conservative-first</h4>
+            <p class="text-xs text-slate-600 mt-2">Bila data inkonklusif atau tidak lengkap, sistem otomatis menolak
+              transaksi. Default aksi adalah menolak, bukan menerima.</p>
+          </div>
+          <div class="border border-slate-200 bg-slate-50 p-4 rounded-lg">
+            <h4 class="font-bold text-slate-800 text-sm mb-1 border-b border-slate-200 pb-2">Audit-friendly</h4>
+            <p class="text-xs text-slate-600 mt-2">Setiap keputusan kuantitatif harus memiliki jejak rekaman yang dapat
+              direkonstruksi untuk keperluan evaluasi performa.</p>
+          </div>
+        </div>
+
+        <div class="border border-slate-200 rounded-lg p-6 bg-white print-break-inside-avoid">
+          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6 text-center">Alur Pemrosesan
+            Deterministik Sistem</h3>
+
+          <div class="max-w-sm mx-auto text-center text-sm font-medium">
+            <div class="flow-node bg-slate-100 border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
+              Pemicu terjadwal</div>
+            <div class="flow-connector"></div>
+            <div class="flow-arrow-down"></div>
+
+            <div class="flow-node bg-white border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
+              Pemindaian pasar di Polymarket</div>
+            <div class="flow-connector"></div>
+            <div class="flow-arrow-down"></div>
+
+            <div class="flow-node bg-white border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
+              Pengambilan data fundamental tim (sumber publik)</div>
+            <div class="flow-connector"></div>
+            <div class="flow-arrow-down"></div>
+
+            <div class="flow-node bg-white border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
+              Validasi kualitas data</div>
+            <div class="flow-connector"></div>
+            <div class="flow-arrow-down"></div>
+
+            <div class="flow-node bg-indigo-50 border border-indigo-200 text-indigo-800 py-2.5 px-4 rounded shadow-sm">
+              Mesin keputusan deterministik</div>
+            <div class="flow-connector"></div>
+            <div class="flow-arrow-down"></div>
+
+            <div
+              class="flow-node bg-emerald-50 border border-emerald-200 text-emerald-800 py-2.5 px-4 rounded shadow-sm">
+              Pencatatan keputusan ke database<br><span class="text-xs font-normal opacity-80">(Mode shadow saat
+                ini)</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bagian III: Posisi proyek dalam roadmap -->
+      <section id="roadmap" class="mb-12 scroll-mt-20">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+          <span class="text-slate-400 mr-2">III.</span> Posisi Proyek dalam Roadmap
+        </h2>
+
+        <div class="overflow-x-auto print-break-inside-avoid">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-t border-slate-200">
+              <tr>
+                <th scope="col" class="px-4 py-3">Fase Proyek</th>
+                <th scope="col" class="px-4 py-3">Status</th>
+                <th scope="col" class="px-4 py-3">Deskripsi Singkat</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr class="bg-white text-slate-600">
+                <td class="px-4 py-3 font-medium text-slate-800">Fase 0: Fondasi Sistem</td>
+                <td class="px-4 py-3"><span class="text-emerald-600 font-semibold flex items-center">✓ Selesai</span>
+                </td>
+                <td class="px-4 py-3">Pipeline dasar, database, evaluator</td>
+              </tr>
+              <tr class="bg-white text-slate-600">
+                <td class="px-4 py-3 font-medium text-slate-800">Fase 1: Stabilisasi</td>
+                <td class="px-4 py-3"><span class="text-emerald-600 font-semibold flex items-center">✓ Selesai</span>
+                </td>
+                <td class="px-4 py-3">Dokumentasi, test coverage</td>
+              </tr>
+              <tr class="bg-amber-50 border-y-2 border-amber-200 text-slate-800">
+                <td class="px-4 py-3 font-bold text-amber-900">Fase 2: Adapter Data NBA Nyata</td>
+                <td class="px-4 py-3"><span class="text-amber-600 font-bold flex items-center">⚠ Sedang Berjalan (Hari
+                    14+)</span></td>
+                <td class="px-4 py-3 font-medium">POSISI SAAT INI</td>
+              </tr>
+              <tr class="bg-white text-slate-400">
+                <td class="px-4 py-3 font-medium text-slate-500">Fase 3: Aktivasi AI Analyzer</td>
+                <td class="px-4 py-3">— Belum dimulai</td>
+                <td class="px-4 py-3">Probabilitas dari model AI</td>
+              </tr>
+              <tr class="bg-white text-slate-400">
+                <td class="px-4 py-3 font-medium text-slate-500">Fase 4: Resolusi Trade Otomatis</td>
+                <td class="px-4 py-3">— Belum dimulai</td>
+                <td class="px-4 py-3">Sistem tahu menang/kalah</td>
+              </tr>
+              <tr class="bg-white text-slate-400">
+                <td class="px-4 py-3 font-medium text-slate-500">Fase 5: Adapter Multi-Cabang</td>
+                <td class="px-4 py-3">— Belum dimulai</td>
+                <td class="px-4 py-3">NHL, esports, dll</td>
+              </tr>
+              <tr class="bg-white text-slate-400">
+                <td class="px-4 py-3 font-medium text-slate-500">Fase 6: Validasi Shadow</td>
+                <td class="px-4 py-3">— Belum dimulai</td>
+                <td class="px-4 py-3">Kumpulkan ≥30 trade resolved</td>
+              </tr>
+              <tr class="bg-slate-800 text-white border-t border-slate-700">
+                <td class="px-4 py-3 font-bold">Live Trade</td>
+                <td class="px-4 py-3 font-medium text-slate-300">Setelah Fase 6 lulus</td>
+                <td class="px-4 py-3">Eksekusi finansial nyata</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-6 p-4 border border-slate-200 rounded-lg bg-slate-50">
+          <h4 class="font-semibold text-slate-800 mb-2 text-sm">Kriteria Kelulusan Fase 2 yang Belum Terpenuhi:</h4>
+          <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1 mb-4">
+            <li>Data lengkap untuk ≥80% pertandingan NBA aktif.</li>
+            <li>Pemindaian menghasilkan campuran keputusan yang masuk akal.</li>
+            <li>Skor fundamental bervariasi antar tim.</li>
+          </ul>
+          <div class="bg-white p-3 border border-slate-200 rounded flex justify-between items-center text-sm">
+            <span class="font-medium text-slate-700">Status Validasi Data Hari Ini:</span>
+            <span class="text-rose-600 font-bold bg-rose-50 px-2 py-1 rounded">1 dari 8 tim aktif (12.5%) — Target:
+              80%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bagian IV: Eksperimen -->
+      <section id="eksperimen" class="mb-12 scroll-mt-20">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+          <span class="text-slate-400 mr-2">IV.</span> Hasil Observasi & Eksperimen Diagnostik
+        </h2>
+
+        <p class="text-slate-700 mb-6 text-sm">
+          Tim proyek telah melaksanakan 5 sekuens pengujian terisolasi untuk memisahkan indikasi kegagalan pada lapisan
+          pemindai (scanner) dengan lapisan pengolah data (adapter).
+        </p>
+
+        <div class="space-y-4 print-break-inside-avoid">
+
+          <!-- Babak 1 -->
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <div
+              class="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center text-sm font-semibold text-slate-700">
+              <span>Eksperimen 1: Pembersihan ruang lingkup pemindaian</span>
+              <span class="font-normal text-slate-500 text-xs">~2 minggu lalu</span>
+            </div>
+            <div class="p-4 bg-white text-sm">
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div class="md:col-span-3 text-slate-500 font-medium">Hipotesis</div>
+                <div class="md:col-span-9 text-slate-800">Pemindaian menerima jenis pasar di luar target (futures,
+                  handicap, totals, draft) yang menghasilkan noise.</div>
+
+                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Tindakan</div>
+                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">Penambahan filter
+                  eksplisit untuk menolak jenis pasar non-target.</div>
+
+                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Hasil &
+                  Pelajaran</div>
+                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">
+                  Pemindaian terkonsentrasi pada pasar pregame matchup/moneyline sesuai cakupan produksi. Ini merupakan
+                  perbaikan strukturil, namun bukan akar masalah utama.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Babak 2 -->
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <div
+              class="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center text-sm font-semibold text-slate-700">
+              <span>Eksperimen 2: Pelonggaran threshold pemindaian</span>
+              <span class="font-normal text-slate-500 text-xs">~1.5 minggu lalu</span>
+            </div>
+            <div class="p-4 bg-white text-sm">
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div class="md:col-span-3 text-slate-500 font-medium">Hipotesis</div>
+                <div class="md:col-span-9 text-slate-800">Ambang batas volume/likuiditas terlalu ketat untuk realita
+                  pasar NBA Polymarket saat ini.</div>
+
+                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Tindakan</div>
+                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">Penurunan threshold ke
+                  vol≥5000/liq≥5000 dengan jalur pelapis vol≥3000/liq≥20000.</div>
+
+                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Hasil &
+                  Pelajaran</div>
+                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">
+                  0 kandidat lolos selama 24 iterasi observasi (window 2 jam). Pelonggaran threshold tidak menyelesaikan
+                  blocker; terindikasi ada penyebab tersembunyi.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Babak 3 & 4 (Combined in UI using Details for brevity, but prompt asks for structured sequence. Let's keep them explicit) -->
+
+          <details class="group border border-slate-200 rounded-lg overflow-hidden bg-white print-break-inside-avoid">
+            <summary
+              class="bg-white hover:bg-slate-50 px-4 py-3 flex justify-between items-center text-sm font-semibold text-slate-700 cursor-pointer transition-colors">
+              <div class="flex items-center">
+                <span class="mr-2">Eksperimen 3 & 4: Pembangunan Tool Diagnostik (Klik untuk detail)</span>
+              </div>
+              <span class="text-indigo-500 group-open:rotate-180 transition-transform">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </span>
+            </summary>
+            <div class="p-4 border-t border-slate-200 bg-slate-50 text-sm space-y-6">
+              <!-- Babak 3 -->
+              <div>
+                <h4 class="font-bold text-slate-800 mb-2 border-l-2 border-slate-400 pl-2">Eksperimen 3: Tool monitoring
+                  runtime</h4>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 pl-3">
+                  <div class="md:col-span-3 text-slate-500">Tindakan:</div>
+                  <div class="md:col-span-9 text-slate-700">Pembangunan <code>scan_monitor</code> yang mencatat status
+                    pemindaian setiap 5 menit.</div>
+                  <div class="md:col-span-3 text-slate-500">Hasil:</div>
+                  <div class="md:col-span-9 text-slate-700">Konfirmasi 0 kandidat lolos selama window observasi; tidak
+                    ada pasar yang mencapai tahap validasi adapter. Pemindai memang tidak meloloskan apapun.</div>
+                </div>
+              </div>
+              <!-- Babak 4 -->
+              <div>
+                <h4 class="font-bold text-slate-800 mb-2 border-l-2 border-slate-400 pl-2">Eksperimen 4: Tool audit
+                  bypass filter</h4>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 pl-3">
+                  <div class="md:col-span-3 text-slate-500">Tindakan:</div>
+                  <div class="md:col-span-9 text-slate-700">Pembangunan <code>coverage_audit</code> untuk menguji
+                    adapter pada pasar low-volume yang tidak lolos filter normal.</div>
+                  <div class="md:col-span-3 text-slate-500">Hasil:</div>
+                  <div class="md:col-span-9 text-slate-700">0 pasar tercakup karena adanya validasi freshness yang
+                    menyaring lebih dulu. Tool tersedia tapi belum memberikan bahan validasi adapter langsung.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Babak 5 -->
+          <div
+            class="border-2 border-indigo-200 rounded-lg overflow-hidden shadow-sm relative print-break-inside-avoid">
+            <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">HARI
+              INI</div>
+            <div
+              class="bg-indigo-50 px-4 py-3 border-b border-indigo-100 flex justify-between items-center text-sm font-bold text-indigo-900">
+              <span>Eksperimen 5: Validasi Adapter Langsung (Isolasi Akar Masalah)</span>
+            </div>
+            <div class="p-4 bg-white text-sm">
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div class="md:col-span-3 text-slate-500 font-medium">Hipotesis</div>
+                <div class="md:col-span-9 text-slate-800">Blocker mungkin di adapter data, bukan di pemindai. Adapter
+                  belum pernah diuji runtime di luar test environment buatan.</div>
+
+                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-3 mt-1">Tindakan</div>
+                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-3 mt-1">Pembangunan proof tool
+                  yang memanggil adapter NBA langsung pada 8 tim playoff aktif, mem-bypass seluruh filter pemindai.
+                </div>
+
+                <div class="md:col-span-3 text-indigo-700 font-bold border-t border-slate-100 pt-3 mt-1">Hasil Observasi
+                </div>
+                <div
+                  class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-3 mt-1 font-medium bg-slate-50 p-2 rounded">
+                  <span class="text-emerald-600">1 dari 8 tim menghasilkan data lengkap (76ers).</span><br>
+                  <span class="text-rose-600">7 dari 8 tim menghasilkan data parsial dengan pola kegagalan
+                    identik.</span>
+                </div>
+
+                <div class="md:col-span-3 text-slate-800 font-bold border-t border-slate-100 pt-3 mt-1">Pelajaran Utama
+                </div>
+                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-3 mt-1">
+                  Blocker BUKAN di pemindai. Blocker spesifik berada di modul parser data ESPN yang mensyaratkan minimum
+                  10 pertandingan selesai dalam window pengambilan data. Mengingat realita NBA Playoffs awal Mei,
+                  sebagian besar tim hanya memiliki 5-9 pertandingan playoff selesai, sehingga status data ditolak oleh
+                  sistem sebagai "tidak lengkap".
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bagian V: Akar Masalah -->
+      <section id="diagnosis" class="mb-12 scroll-mt-20">
+        <div class="bg-rose-50 border border-rose-200 rounded-xl p-6 print-break-inside-avoid">
+          <h2 class="text-xl font-bold text-rose-900 mb-4 flex items-center">
+            <span class="mr-2">✗</span> V. Diagnosis Presisi: Akar Masalah Terisolasi
           </h2>
-          <p class="narrative-text mb-4">
-            Flowchart end-to-end pipeline NekoSport, dari trigger sampai persistence. Klik pada node untuk melihat
-            detail spesifik, peran, dan dependency-nya.
-          </p>
-          <p class="text-sm text-amber-400 flex items-center fc-interactive-hint">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122">
-              </path>
-            </svg>
-            Interaktif: Klik kotak flowchart untuk membuka panel detail.
-          </p>
-        </div>
 
-        <!-- Orchestration & Trigger -->
-        <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 mb-8 relative">
-          <h3
-            class="text-xs font-semibold text-slate-400 uppercase tracking-wider absolute top-0 left-4 -translate-y-1/2 bg-slate-900 px-2">
-            Trigger & Orchestration</h3>
+          <div class="space-y-4 text-slate-800 text-sm">
+            <p class="font-medium bg-white p-4 rounded border border-rose-100 shadow-sm">
+              Modul parser data fundamental NBA mensyaratkan minimum <strong>10 pertandingan selesai</strong> untuk
+              menandai data sebagai "lengkap". Threshold ini bukan tuning sembarangan — ia adalah bagian definisi metrik
+              form yang konsisten di tiga modul terkait: parser, formula perhitungan skor performa, dan aturan kualitas
+              data.
+            </p>
 
-          <div class="flex flex-col items-center mt-4">
-            <div class="fc-node node-green p-4 rounded-lg cursor-pointer w-64 text-center z-10"
-              onclick="showDetail('OpenClaw Gateway', 'Aktif', 'green', 'N/A', 'Trigger cron jobs. 09:00 & 20:00 WIB untuk scan, 06:00 WIB untuk evaluate.', 'Memanggil engine via docker exec.', 'N/A')">
-              <div class="font-bold">OpenClaw Gateway</div>
-              <div class="font-mono text-xs mt-1 text-emerald-200">cron 09:00, 20:00 (scan)</div>
-              <div class="font-mono text-xs text-emerald-200">cron 06:00 (evaluate)</div>
-            </div>
+            <p>
+              Dalam realita window playoffs NBA awal Mei 2026, pertandingan yang tercatat di sumber data ESPN per tim
+              hanya <strong>5-9 game</strong> (Round 1 + Round 2 yang sedang berjalan). Hanya tim yang melalui Round 1
+              dengan 7 game penuh + 3 game Round 2 = 10 game yang melewati threshold. Dari 8 tim aktif Round 2, hanya
+              satu yang memenuhi kondisi tersebut.
+            </p>
 
-            <div class="fc-line-vertical"></div>
-            <div class="fc-arrow-down"></div>
-
-            <div class="fc-node node-gray p-3 rounded-lg cursor-pointer w-auto text-center z-10"
-              onclick="showDetail('Docker Exec Command', 'Locked', 'gray', 'N/A', 'Perintah eksekusi container', 'Meneruskan trigger ke python cli entrypoints', 'N/A')">
-              <div class="font-mono text-sm">docker exec nekosport-engine python -m cli.{scan|evaluate}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <!-- Pipeline Scan -->
-          <div class="border border-slate-700 border-dashed rounded-xl p-6 relative">
-            <h3
-              class="text-xs font-semibold text-slate-400 uppercase tracking-wider absolute top-0 left-4 -translate-y-1/2 bg-slate-950 px-2">
-              Pipeline Scan (09:00 & 20:00)</h3>
-
-            <div class="flex flex-col items-center mt-4 space-y-0">
-
-              <!-- CLI Scan -->
-              <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
-                onclick="showDetail('CLI Scan', 'Aktif', 'green', 'cli/scan.py', 'Entry point, orchestrator utama pipeline scan.', 'Memanggil Scanner.', 'Tidak ada')">
-                <div class="font-bold">cli/scan.py</div>
-                <div class="text-xs mt-1 opacity-90">Entry point / Orchestrator</div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- Scanner -->
-              <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
-                onclick="showDetail('Market Scanner', 'Aktif', 'green', 'market_scan/scanner.py', 'Fetch dari Polymarket Gamma API, filter pregame matchup/moneyline, enrich orderbook.', 'Menghasilkan list kandidat.', 'Polymarket API')">
-                <div class="font-bold">market_scan/scanner.py</div>
-                <div class="text-xs mt-1 opacity-90">Fetch Polymarket & Filter</div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- HARD GATE 1 -->
-              <div
-                class="fc-node node-blue p-2 rounded cursor-pointer w-3/4 max-w-sm text-center transform rotate-1 scale-95"
-                onclick="showDetail('HARD GATE 1', 'Decision Point', 'blue', 'N/A', 'Pengecekan eksistensi adapter untuk sport terkait.', 'Jika adapter belum ada → SKIP.', 'market_scan/scanner.py output')">
-                <div class="font-bold text-sm text-blue-100">HARD GATE 1</div>
-                <div class="text-xs text-blue-200">Adapter belum ada → SKIP</div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- Adapter Domain Area -->
-              <div class="w-full border border-slate-600 rounded p-4 mb-2 relative bg-slate-900 bg-opacity-50">
-                <div class="text-[10px] text-slate-400 absolute top-1 left-2 uppercase tracking-wide">Adapter Domain
-                </div>
-                <div class="flex flex-col items-center pt-3">
-                  <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-xs text-center"
-                    onclick="showDetail('NBA Adapter', 'Real (v1.5)', 'green', 'source_adapters/nba.py', 'Fetch standings (stats.nba.com primary, ESPN fallback) + form (ESPN schedule primary, gamelog fallback, standings_l10 last resort).', 'Menghasilkan raw data form & standing.', 'stats.nba.com, ESPN API')">
-                    <div class="font-bold">source_adapters/nba.py</div>
-                    <div class="font-mono text-[10px] text-emerald-300 mt-1">Status: Real, v1.5</div>
-                    <div class="text-xs mt-1 opacity-90">Fetch Standings & Form</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- HARD GATE 2 -->
-              <div
-                class="fc-node node-blue p-2 rounded cursor-pointer w-3/4 max-w-sm text-center transform -rotate-1 scale-95"
-                onclick="showDetail('HARD GATE 2', 'Decision Point', 'blue', 'N/A', 'Pengecekan kualitas data.', 'Data quality bukan COMPLETE → SKIP.', 'Adapter Output')">
-                <div class="font-bold text-sm text-blue-100">HARD GATE 2</div>
-                <div class="text-xs text-blue-200">Data quality != COMPLETE → SKIP</div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- AI Domain Area -->
-              <div class="w-full border border-purple-800/50 rounded p-4 mb-2 relative bg-purple-900/10">
-                <div class="text-[10px] text-purple-400 absolute top-1 left-2 uppercase tracking-wide">AI Domain (Strict
-                  Isolation)</div>
-                <div class="flex flex-col items-center pt-3">
-                  <div
-                    class="fc-node node-yellow p-3 rounded-lg cursor-pointer w-full max-w-xs text-center border-dashed"
-                    onclick="showDetail('AI Engine', 'Placeholder (p_model=0.5)', 'yellow', 'ai_engine/', 'Hanya bertugas memberi skor + alasan. Tidak boleh kirim order/ubah config.', 'Schema validation + retry 1x. Gagal → SKIP.', 'LLM API (Future)')">
-                    <div class="font-bold">ai_engine/</div>
-                    <div class="text-xs mt-1 opacity-90">Schema validation + Retry 1x</div>
-                    <div class="text-[10px] text-amber-300 mt-1">AI hanya skor+alasan. No order perm.</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- Rule Engine Domain Area -->
-              <div class="w-full border border-sky-800/50 rounded p-4 mb-2 relative bg-sky-900/10">
-                <div class="text-[10px] text-sky-400 absolute top-1 left-2 uppercase tracking-wide">Rule Engine Domain
-                </div>
-
-                <div class="flex flex-col items-center pt-3 space-y-0">
-                  <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-xs text-center"
-                    onclick="showDetail('Math Engine', 'Aktif', 'green', 'math_engine/decision.py', 'Evaluasi matematis. Adapter ambil data, rule engine putuskan.', '8 checkpoint berurutan (emergency stop, data quality, AI, spread, volume, liquidity, cutoff, EV+confidence).', 'AI Engine, Scanner')">
-                    <div class="font-bold text-sm">math_engine/decision.py</div>
-                    <div class="text-[10px] mt-1 opacity-90">8 sequential checkpoints</div>
-                  </div>
-
-                  <div class="fc-line-vertical h-4"></div>
-                  <div class="fc-arrow-down"></div>
-
-                  <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-xs text-center"
-                    onclick="showDetail('Risk Engine', 'Aktif', 'green', 'risk/engine.py', 'Pre-trade check.', 'Kill switch, daily cap, concurrent positions, exposure, mode.', 'Math Engine')">
-                    <div class="font-bold text-sm">risk/engine.py</div>
-                    <div class="text-[10px] mt-1 opacity-90">Pre-trade check & limits</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- Execution Engine -->
-              <div class="fc-node node-yellow p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
-                onclick="showDetail('Execution Engine', 'Partial/Placeholder', 'yellow', 'execution/engine.py', 'Dispatch order berdasarkan TRADING_MODE.', 'Shadow (aktif, log JSONL), Paper (siap, sim PnL), Live (placeholder).', 'Risk Engine')">
-                <div class="font-bold">execution/engine.py</div>
-                <div class="text-xs mt-1 opacity-90">Dispatch via TRADING_MODE</div>
-                <div class="flex justify-center gap-1 mt-2 text-[9px] font-mono">
-                  <span class="bg-emerald-900 text-emerald-300 px-1 rounded">Shadow</span>
-                  <span class="bg-amber-900 text-amber-300 px-1 rounded">Paper</span>
-                  <span class="bg-rose-900 text-rose-300 px-1 rounded">Live</span>
-                </div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- DB Repository -->
-              <div class="fc-node node-green p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
-                onclick="showDetail('DB Repository', 'Aktif', 'green', 'db/repository.py', 'Persistensi data persisten.', 'Simpan ke SQLite tables: signals, trades, config_versions, evaluations.', 'SQLite')">
-                <div class="font-bold">db/repository.py</div>
-                <div class="text-xs mt-1 opacity-90">Persist to SQLite tables</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pipeline Evaluate -->
-          <div class="border border-slate-700 border-dashed rounded-xl p-6 relative h-fit">
-            <h3
-              class="text-xs font-semibold text-slate-400 uppercase tracking-wider absolute top-0 left-4 -translate-y-1/2 bg-slate-950 px-2">
-              Pipeline Evaluate (06:00)</h3>
-
-            <div class="flex flex-col items-center mt-4 space-y-0">
-
-              <!-- CLI Evaluate -->
-              <div class="fc-node node-gray p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
-                onclick="showDetail('CLI Evaluate', 'Audit/Locked', 'gray', 'cli/evaluate.py', 'Entry point pipeline evaluasi.', 'Membaca data H-1 untuk evaluasi performa.', 'DB Repository')">
-                <div class="font-bold">cli/evaluate.py</div>
-                <div class="text-xs mt-1 opacity-90">Baca performa H-1</div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <div class="w-full flex justify-center gap-4">
-                <!-- Metrics -->
-                <div class="flex-1">
-                  <div class="fc-node node-gray p-3 rounded-lg cursor-pointer h-full"
-                    onclick="showDetail('Metrics Evaluator', 'Audit/Locked', 'gray', 'evaluation/metrics.py', 'Kalkulasi metrik performa historis.', 'Hit rate, ROI, PnL per sport, Brier, log loss, max drawdown.', 'CLI Evaluate')">
-                    <div class="font-bold text-sm text-center">evaluation/metrics.py</div>
-                    <ul class="text-[10px] mt-2 list-disc pl-4 text-slate-300">
-                      <li>Hit rate, ROI</li>
-                      <li>PnL per sport</li>
-                      <li>Brier, log loss</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <!-- Tuner -->
-                <div class="flex-1">
-                  <div class="fc-node node-gray p-3 rounded-lg cursor-pointer h-full"
-                    onclick="showDetail('Bounded Tuner', 'Audit/Locked', 'gray', 'evaluation/tuner.py', 'Tuning parameter otomatis dengan guardrails.', 'Bounded tuning (max delta, min sample 30, max 1 aktivasi/hari). Membedakan locked vs tunable params.', 'Metrics')">
-                    <div class="font-bold text-sm text-center">evaluation/tuner.py</div>
-                    <div class="text-[10px] mt-2 text-center text-slate-300">Bounded tuning with guardrails</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="fc-line-vertical"></div>
-              <div class="fc-arrow-down"></div>
-
-              <!-- Versioning -->
-              <div class="fc-node node-gray p-3 rounded-lg cursor-pointer w-full max-w-sm text-center"
-                onclick="showDetail('Versioning', 'Audit/Locked', 'gray', 'evaluation/versioning.py', 'Manajemen versi konfigurasi.', 'Menyimpan config version store.', 'Tuner')">
-                <div class="font-bold">evaluation/versioning.py</div>
-                <div class="text-xs mt-1 opacity-90">Config version store</div>
-              </div>
-            </div>
-
-            <div class="mt-8 bg-slate-900 p-4 rounded text-sm border border-slate-700">
-              <h4 class="font-semibold text-white mb-2 border-b border-slate-700 pb-1">Konteks Tambahan:</h4>
-              <ul class="space-y-2 text-slate-300 text-xs">
-                <li><strong class="text-slate-100">Trading Modes:</strong>
-                  <ul class="list-disc pl-4 mt-1 space-y-1">
-                    <li><span class="text-emerald-400">Shadow (aktif):</span> Execution diblokir oleh G-18. Log JSONL.
-                    </li>
-                    <li><span class="text-amber-400">Paper:</span> Siap dipakai, belum aktif. (Simulasi PnL).</li>
-                    <li><span class="text-rose-400">Live:</span> Placeholder, belum dibangun.</li>
-                  </ul>
-                </li>
-                <li class="pt-1"><strong class="text-slate-100">Locked vs Tunable Params:</strong> Diatur dari <code
-                    class="tech-id text-[10px]">config/tuning_ranges.py</code></li>
+            <div class="mt-4 pt-4 border-t border-rose-200">
+              <h4 class="font-bold text-rose-900 mb-2">Implikasi Struktural:</h4>
+              <ul class="list-disc pl-5 space-y-2 text-rose-800">
+                <li>Threshold 10 game bukan <em>bug</em> dalam arti sempit; sistem bekerja sesuai desain (menolak data
+                  minim).</li>
+                <li>Yang tidak diperhitungkan dalam desain awal: Endpoint ESPN kemungkinan besar mengembalikan
+                  <em>window playoff</em> saja secara terisolasi, bukan menggabungkan 10 game terakhir secara absolut
+                  (termasuk regular season).</li>
+                <li>Perubahan threshold tidak bisa dilakukan terisolasi. Mengubah angka di parser tanpa mengoordinasikan
+                  dengan formula skor dan aturan kualitas akan menghasilkan skor yang skala normalisasinya rusak.</li>
+                <li class="font-bold text-rose-900">Dampak temporal: Dengan format data saat ini, adapter NBA secara
+                  struktural tidak akan mencapai status "lengkap" konsisten selama ~6 minggu playoffs (Mei-Juni 2026),
+                  tanpa intervensi arsitektural.</li>
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Section 2: Posisi Saat Ini -->
-      <section id="sec-posisi" class="scroll-mt-12 pt-8 border-t border-slate-800">
-        <div class="mb-8">
-          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
-            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">02</span>
-            Posisi Saat Ini &mdash; Phase 2 (Stuck)
+      <!-- Bagian VI: Tiga Opsi -->
+      <section id="opsi" class="mb-12 scroll-mt-20">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+          <span class="text-slate-400 mr-2">VI.</span> Tiga Opsi Strategis Ke Depan
+        </h2>
+
+        <p class="text-slate-600 mb-6 text-sm">
+          Berdasarkan diagnosis di atas, tim memproyeksikan tiga jalur tindak lanjut dengan trade-off yang berbeda
+          antara kecepatan, risiko kualitas, dan reversibilitas.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch print-break-inside-avoid">
+
+          <!-- Card 1 -->
+          <div class="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col">
+            <div class="bg-slate-50 border-b border-slate-200 p-4 rounded-t-lg">
+              <h3 class="font-bold text-slate-800">Opsi 1: Investigasi parameter sumber data ESPN</h3>
+            </div>
+            <div class="p-4 text-sm text-slate-700 flex-grow flex flex-col">
+              <p class="mb-4 flex-grow">Penyelidikan apakah endpoint ESPN memiliki parameter yang membuka window data
+                lebih lebar (regular season + playoff). Bila ada, perubahan minimal pada satu fungsi cukup untuk membuka
+                adapter mencapai status lengkap tanpa mengubah definisi metrik.</p>
+
+              <dl class="space-y-2 border-t border-slate-100 pt-3 text-xs">
+                <div class="flex justify-between">
+                  <dt class="font-semibold text-slate-500">Waktu Eksekusi</dt>
+                  <dd class="text-right font-medium">30-60 menit (eksperimen + verifikasi)</dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="font-semibold text-slate-500">Reversibility</dt>
+                  <dd class="text-right text-emerald-600 font-semibold">Tinggi</dd>
+                </div>
+                <div class="flex justify-between flex-col mt-2 pt-2 border-t border-slate-50">
+                  <dt class="font-semibold text-slate-500 mb-1">Manfaat Utama</dt>
+                  <dd class="text-slate-800 bg-slate-50 p-2 rounded">Solusi minimal-invasive. Definisi metrik form tetap
+                    utuh. Phase 2 berpotensi terbuka dalam hari ini juga.</dd>
+                </div>
+                <div class="flex justify-between flex-col">
+                  <dt class="font-semibold text-slate-500 mb-1">Risiko Teknis</dt>
+                  <dd class="text-slate-800">Rendah. Bila gagal, waktu yang terpakai relatif kecil dan informasi tetap
+                    berguna untuk Opsi 2/3.</dd>
+                </div>
+                <div class="flex justify-between mt-2 pt-2 border-t border-slate-100">
+                  <dt class="font-semibold text-slate-500">Biaya Operasional</dt>
+                  <dd class="text-right">Tetap (Tidak ada tambahan)</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col">
+            <div class="bg-slate-50 border-b border-slate-200 p-4 rounded-t-lg">
+              <h3 class="font-bold text-slate-800">Opsi 2: Penundaan ke regular season NBA</h3>
+            </div>
+            <div class="p-4 text-sm text-slate-700 flex-grow flex flex-col">
+              <p class="mb-4 flex-grow">Penerimaan bahwa dengan format data window playoffs, validasi adapter berkala
+                tidak feasible dalam 6 minggu ke depan. Tunda kelulusan Fase 2 hingga regular season NBA dimulai
+                (Oktober 2026) di mana setiap tim main 80+ pertandingan.</p>
+
+              <dl class="space-y-2 border-t border-slate-100 pt-3 text-xs">
+                <div class="flex justify-between">
+                  <dt class="font-semibold text-slate-500">Waktu Eksekusi</dt>
+                  <dd class="text-right font-medium">~5 bulan penundaan target</dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="font-semibold text-slate-500">Reversibility</dt>
+                  <dd class="text-right text-emerald-600 font-semibold">Tinggi</dd>
+                </div>
+                <div class="flex justify-between flex-col mt-2 pt-2 border-t border-slate-50">
+                  <dt class="font-semibold text-slate-500 mb-1">Manfaat Utama</dt>
+                  <dd class="text-slate-800 bg-slate-50 p-2 rounded">Sistem dibangun dengan disiplin desain utuh.
+                    Definisi metrik tetap valid. Tidak ada <i>technical debt</i>.</dd>
+                </div>
+                <div class="flex justify-between flex-col">
+                  <dt class="font-semibold text-slate-500 mb-1">Risiko Proyek</dt>
+                  <dd class="text-slate-800">Timeline mundur signifikan. Waktu jeda bisa dimanfaatkan untuk Phase 3 (AI)
+                    atau pause aktivitas.</dd>
+                </div>
+                <div class="flex justify-between mt-2 pt-2 border-t border-slate-100">
+                  <dt class="font-semibold text-slate-500">Biaya Operasional</dt>
+                  <dd class="text-right font-medium text-amber-600">Infrastruktur terus berjalan ~5 bulan</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col">
+            <div class="bg-slate-50 border-b border-slate-200 p-4 rounded-t-lg">
+              <h3 class="font-bold text-slate-800">Opsi 3: Redesign metrik form ke window variabel</h3>
+            </div>
+            <div class="p-4 text-sm text-slate-700 flex-grow flex flex-col">
+              <p class="mb-4 flex-grow">Perubahan definisi metrik form dari "10 game terakhir tetap" menjadi "N game
+                terakhir dengan minimum N=5", dengan pembaruan terkoordinasi pada parser, formula perhitungan skor, dan
+                aturan kualitas, didokumentasikan di config store.</p>
+
+              <dl class="space-y-2 border-t border-slate-100 pt-3 text-xs">
+                <div class="flex justify-between">
+                  <dt class="font-semibold text-slate-500">Waktu Eksekusi</dt>
+                  <dd class="text-right font-medium">1-2 minggu (engineering & verifikasi)</dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="font-semibold text-slate-500">Reversibility</dt>
+                  <dd class="text-right text-rose-600 font-semibold">Rendah</dd>
+                </div>
+                <div class="flex justify-between flex-col mt-2 pt-2 border-t border-slate-50">
+                  <dt class="font-semibold text-slate-500 mb-1">Manfaat Utama</dt>
+                  <dd class="text-slate-800 bg-slate-50 p-2 rounded">Phase 2 berpotensi terbuka selama periode playoffs
+                    berjalan. Target live trade akhir Mei tetap dikejar.</dd>
+                </div>
+                <div class="flex justify-between flex-col">
+                  <dt class="font-semibold text-slate-500 mb-1">Risiko Teknis</dt>
+                  <dd class="text-slate-800">Skala metrik berubah. Risiko overfitting formula baru. Risk register R-09
+                    (tuning bias) aktif.</dd>
+                </div>
+                <div class="flex justify-between mt-2 pt-2 border-t border-slate-100">
+                  <dt class="font-semibold text-slate-500">Biaya Operasional</dt>
+                  <dd class="text-right">Overhead engineering 1-2 minggu</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Bagian VII: Rekomendasi -->
+      <section id="rekomendasi" class="scroll-mt-20 print-break-inside-avoid">
+        <div class="bg-slate-800 rounded-xl p-6 shadow-md text-white">
+          <h2 class="text-xl font-bold mb-4 border-b border-slate-600 pb-3 flex items-center">
+            <span class="mr-2 text-slate-400">VII.</span> Rekomendasi Tim & Poin Diskusi
           </h2>
-          <p class="narrative-text">
-            Status hari ini (9 Mei 2026): Target gate Phase 2 adalah <code
-              class="tech-id">COMPLETE untuk ≥80% matchup NBA aktif</code>. Realitanya, hanya 1 dari 8 tim aktif yang
-            menghasilkan COMPLETE (12.5%).
+
+          <p class="mb-4 text-slate-200 text-sm md:text-base leading-relaxed">
+            Tim merekomendasikan eksekusi <strong>Opsi 1</strong> sebagai langkah selanjutnya karena profil biaya
+            investigasi yang sangat rendah dan reversibilitas tinggi. Hasil investigasi ini (baik terkonfirmasi positif
+            maupun negatif) akan memberikan basis informasi faktual yang lebih solid untuk diskusi lanjutan.
+          </p>
+
+          <div class="bg-slate-700/50 border border-slate-600 rounded p-4 mb-4">
+            <h4 class="font-semibold text-white mb-2 text-sm">Persetujuan strategis diperlukan untuk:</h4>
+            <ol class="list-decimal pl-5 space-y-1 text-sm text-slate-300">
+              <li>Otorisasi alokasi waktu untuk eksekusi Opsi 1.</li>
+              <li>Persiapan diskusi lanjutan mengenai perbandingan Opsi 2 vs Opsi 3, sebagai langkah kontingensi apabila
+                Opsi 1 terbukti tidak feasible.</li>
+              <li>Re-evaluasi target timeline komersial proyek berdasarkan diagnosis hari ini.</li>
+            </ol>
+          </div>
+
+          <p class="text-sm text-slate-400 italic">
+            Catatan: Tim siap mengeksekusi opsi manapun yang disepakati. Pertimbangan utama pada tahap ini bukanlah
+            aspek teknikalitas, melainkan manajemen <em>trade-off</em> antara kecepatan timeline eksekusi, efisiensi
+            biaya operasional berjalan, dan integritas kualitas fondasi sistem jangka panjang.
           </p>
         </div>
-
-        <!-- Horizontal Timeline -->
-        <div class="flex items-center space-x-2 overflow-x-auto pb-6 scrollbar-hide w-full mb-8">
-          <div
-            class="flex-shrink-0 bg-emerald-900 border border-emerald-500 text-emerald-200 px-4 py-2 rounded text-sm font-semibold opacity-75">
-            Phase 0 ✓</div>
-          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
-          <div
-            class="flex-shrink-0 bg-emerald-900 border border-emerald-500 text-emerald-200 px-4 py-2 rounded text-sm font-semibold opacity-75">
-            Phase 1 ✓</div>
-          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
-          <div
-            class="flex-shrink-0 bg-rose-900 border-2 border-rose-500 text-white px-5 py-3 rounded-lg text-base font-bold shadow-[0_0_15px_rgba(225,29,72,0.3)] relative cursor-pointer hover:bg-rose-800 transition"
-            onclick="showDetail('Phase 2', 'Blocker / Stuck', 'red', 'N/A', 'Mencapai target validasi pipeline pre-AI.', 'Stuck ~2 minggu karena adapter fail di syarat metrik form.', 'N/A')">
-            Phase 2
-            <span
-              class="absolute -top-3 -right-3 bg-rose-600 text-white text-[10px] px-2 py-0.5 rounded-full shadow border border-rose-400 whitespace-nowrap animate-pulse">STUCK
-              ~2 minggu</span>
-          </div>
-          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
-          <div class="flex-shrink-0 bg-slate-800 border border-slate-600 text-slate-400 px-4 py-2 rounded text-sm">Phase
-            3</div>
-          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
-          <div class="flex-shrink-0 bg-slate-800 border border-slate-600 text-slate-400 px-4 py-2 rounded text-sm">Phase
-            4</div>
-          <div class="h-0.5 w-6 bg-slate-700 flex-shrink-0"></div>
-          <div class="flex-shrink-0 text-slate-500 text-sm tracking-widest">. . . Phase 7+</div>
-        </div>
-
-        <!-- 3 Layers of Blockers -->
-        <div class="bg-slate-900 border border-rose-900/50 rounded-xl p-6 relative">
-          <h3 class="text-sm font-bold text-rose-400 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-              </path>
-            </svg>
-            Tiga Lapisan Blocker (Awalnya Dicurgai Saling Menutupi)
-          </h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Layer Scanner -->
-            <div class="bg-slate-800 border border-slate-600 rounded p-4">
-              <h4 class="font-bold text-amber-400 mb-2 border-b border-slate-700 pb-1 text-sm">Layer 1: Scanner</h4>
-              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Aturan:</strong> vol≥5000 AND
-                liq≥5000, ATAU vol≥3000 AND liq≥20000 (floor 3000 di dual-path)</p>
-              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Implikasi:</strong> Market
-                high-liquidity-low-volume (contoh: 76ers vs Knicks vol $212 liq $47k) tidak pernah lolos.</p>
-              <p class="text-xs text-amber-200/80 italic">Catatan: floor 3000 tidak punya justifikasi tertulis.</p>
-            </div>
-
-            <!-- Layer Audit -->
-            <div class="bg-slate-800 border border-slate-600 rounded p-4">
-              <h4 class="font-bold text-amber-400 mb-2 border-b border-slate-700 pb-1 text-sm">Layer 2: Audit</h4>
-              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Masalah:</strong> <code
-                  class="tech-id text-[10px]">coverage_audit</code> semantik stale.</p>
-              <p class="text-xs text-slate-300 mb-2"><strong class="text-slate-100">Definisi stale:</strong> event_start
-                &lt; now_utc → di-skip.</p>
-              <p class="text-xs text-slate-300"><strong class="text-slate-100">Implikasi:</strong> Market low-volume
-                yang lolos pagi sudah stale ketika audit jalan sore. Hasil: coverage_audit selalu lapor 0 below-gate
-                matchups.</p>
-            </div>
-
-            <!-- Layer Adapter -->
-            <div class="bg-slate-800 border border-rose-500 rounded p-4 relative overflow-hidden">
-              <div
-                class="absolute right-0 top-0 w-16 h-16 bg-rose-500 transform rotate-45 translate-x-8 -translate-y-8 opacity-20">
-              </div>
-              <h4 class="font-bold text-rose-400 mb-2 border-b border-rose-900 pb-1 text-sm">Layer 3: Adapter (The Real
-                Culprit)</h4>
-              <p class="text-xs text-slate-300 mb-2">Adapter NBA v1.5 sudah real, unit test pass. Tapi belum pernah
-                dipanggil manual pada matchup nyata saat runtime.</p>
-              <p class="text-xs text-rose-200 font-semibold mt-3">Kesimpulan: Tidak tahu apakah benar bisa COMPLETE atau
-                tidak sebelum dieksekusi terpisah.</p>
-            </div>
-          </div>
-        </div>
       </section>
 
-      <!-- Section 3: Eksperimen -->
-      <section id="sec-eksperimen" class="scroll-mt-12 pt-8 border-t border-slate-800">
-        <div class="mb-8">
-          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
-            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">03</span>
-            Yang Sudah Dicoba & Hasilnya
-          </h2>
-          <p class="narrative-text">Log iterasi troubleshooting selama investigasi Phase 2. Eksperimen dilakukan secara
-            berurutan untuk mengupas layer demi layer dari blocker.</p>
-        </div>
+    </main>
 
-        <div class="relative border-l-2 border-slate-700 ml-4 space-y-8">
-
-          <!-- Exp 1 -->
-          <div class="relative pl-6">
-            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
-            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 1: Cleanup scope scanner <span
-                class="text-xs font-normal text-slate-500 ml-2">(~2 minggu lalu)</span></h3>
-            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
-              <p><strong class="text-slate-400">Hipotesis:</strong> Scanner kemasukan futures, draft, totals, spread →
-                menghasilkan noise.</p>
-              <p><strong class="text-blue-400">Action:</strong> Filter futures keywords, partial games (1H/1Q), award
-                futures, draft, coach movement.</p>
-              <p><strong class="text-emerald-400">Hasil:</strong> Scanner jauh lebih bersih, fokus ke pregame
-                matchup/moneyline.</p>
-              <p><strong class="text-amber-400">Kesimpulan:</strong> Bagus, tapi tidak menyelesaikan blocker utama
-                (tetap 0 candidates).</p>
-            </div>
-          </div>
-
-          <!-- Exp 2 -->
-          <div class="relative pl-6">
-            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
-            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 2: Tuning shadow threshold + dual-path</h3>
-            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
-              <p><strong class="text-slate-400">Hipotesis:</strong> Threshold scanner terlalu ketat.</p>
-              <p><strong class="text-blue-400">Action:</strong> Turunkan ke vol≥5000 / liq≥5000, tambahkan dual-path
-                vol≥3000 AND liq≥20000.</p>
-              <p><strong class="text-emerald-400">Hasil:</strong> Tetap 0 candidates di run 24 iterasi (window
-                13:03–14:58 WIB).</p>
-              <p><strong class="text-amber-400">Kesimpulan:</strong> Melonggarkan threshold tidak cukup; ada blocker
-                lain.</p>
-            </div>
-          </div>
-
-          <!-- Exp 3 -->
-          <div class="relative pl-6">
-            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
-            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 3: Build scan_monitor untuk observability</h3>
-            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
-              <p><strong class="text-slate-400">Hipotesis:</strong> Kita perlu data runtime untuk diagnosa.</p>
-              <p><strong class="text-blue-400">Action:</strong> Tool yang catat total_candidates, quality_complete,
-                quality_partial per iterasi.</p>
-              <p><strong class="text-emerald-400">Hasil:</strong> 24 iterasi semua 0 candidates, 0 COMPLETE, 0 PARTIAL.
-              </p>
-              <p><strong class="text-amber-400">Kesimpulan:</strong> Scanner tidak meloloskan apapun selama window
-                observasi.</p>
-            </div>
-          </div>
-
-          <!-- Exp 4 -->
-          <div class="relative pl-6">
-            <div class="absolute w-4 h-4 bg-slate-700 rounded-full -left-[9px] top-1 border-2 border-slate-900"></div>
-            <h3 class="text-lg font-bold text-white mb-1">Eksperimen 4: Build coverage_audit untuk paksa audit adapter
-            </h3>
-            <div class="bg-slate-900 rounded p-4 text-sm space-y-2 border border-slate-800">
-              <p><strong class="text-slate-400">Hipotesis:</strong> Butuh tool yang paksa audit adapter pada market
-                below-gate.</p>
-              <p><strong class="text-blue-400">Action:</strong> coverage_audit yang scan market low-volume, jalankan
-                adapter.</p>
-              <p><strong class="text-emerald-400">Hasil:</strong> 0 below-gate matchups (karena freshness check
-                menyaring duluan).</p>
-              <p><strong class="text-amber-400">Kesimpulan:</strong> Tool jadi, tapi tidak memberi bahan validasi
-                adapter.</p>
-            </div>
-          </div>
-
-          <!-- Exp 5 -->
-          <div class="relative pl-6">
-            <div
-              class="absolute w-5 h-5 bg-rose-500 rounded-full -left-[9.5px] top-1 border-4 border-slate-950 animate-pulse">
-            </div>
-            <h3 class="text-lg font-bold text-rose-400 mb-1">Eksperimen 5: Build standalone proof tool untuk adapter
-              <span class="text-xs font-normal text-rose-500 ml-2">(HARI INI)</span></h3>
-            <div class="bg-rose-950/30 rounded p-4 text-sm space-y-2 border border-rose-900/50">
-              <p><strong class="text-slate-300">Hipotesis:</strong> Adapter mungkin belum benar-benar berjalan runtime,
-                tapi kita tidak tahu karena scanner blokir duluan.</p>
-              <p><strong class="text-blue-400">Action:</strong> Panggil <code
-                  class="tech-id">NBAAdapter.fetch_raw()</code> + <code class="tech-id">parse_payload()</code> langsung
-                di luar scanner, pada matchup NBA aktif.</p>
-              <div class="bg-slate-900/80 p-3 rounded my-2 font-mono text-[11px] text-slate-300">
-                <span class="text-emerald-400">Hasil run 1</span> (4 matchup default, mix aktif + eliminated): 4/4
-                PARTIAL<br>
-                <span class="text-emerald-400">Hasil run 2</span> (4 matchup 100% aktif Round 2 playoffs): 1/8 tim
-                COMPLETE (76ers), 7/8 PARTIAL
-              </div>
-              <p><strong class="text-rose-400 font-bold">Kesimpulan:</strong> Blocker BUKAN scanner. Blocker adalah
-                parser ESPN schedule yang require ≥10 completed games.</p>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- Section 4: Akar Masalah & Solusi -->
-      <section id="sec-akar" class="scroll-mt-12 pt-8 border-t border-slate-800">
-        <div class="mb-8">
-          <h2 class="text-3xl font-bold text-white mb-4 flex items-center">
-            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg mr-3 text-lg font-mono">04</span>
-            Akar Masalah & Tiga Opsi Solusi
-          </h2>
-        </div>
-
-        <!-- Root Cause Highlight Block -->
-        <div class="bg-rose-950 border border-rose-600 rounded-xl p-6 shadow-2xl mb-10 print-break-inside-avoid">
-          <div class="flex items-start">
-            <div class="bg-rose-900 p-2 rounded-lg mr-4 mt-1">
-              <svg class="w-6 h-6 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-                </path>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-xl font-bold text-rose-300 mb-3">Akar Masalah Teridentifikasi</h3>
-              <div class="space-y-3 text-sm text-slate-200 narrative-text">
-                <p><strong class="text-white">File:</strong> <code
-                    class="tech-id text-[11px] bg-rose-900 text-rose-200">source_adapters/nba.py</code>, baris 369-374,
-                  fungsi <code class="tech-id text-[11px] bg-rose-900 text-rose-200">_parse_espn_schedule()</code></p>
-                <p><strong class="text-white">Logika:</strong> <code
-                    class="font-mono text-rose-300 bg-rose-900/50 px-1 rounded">if len(completed) &lt; 10: return None</code>
-                </p>
-                <p><strong class="text-white">Realita:</strong> ESPN team schedule endpoint kembalikan playoff games
-                  saja (kemungkinan, perlu konfirmasi). Untuk tim Round 2 playoffs awal Mei, completed playoff games =
-                  5-9, di bawah threshold.</p>
-                <p><strong class="text-white">Bukti:</strong> 76ers (10 completed: 7 game R1 + 3 game R2) lolos. Knicks
-                  (R1 + 3 R2 = ~7) gagal. Lakers, Thunder, Pistons, Cavs, Spurs, Wolves: semua gagal dengan pola sama.
-                </p>
-
-                <div class="bg-rose-900/40 p-4 rounded mt-4 border border-rose-800">
-                  <p class="font-bold text-rose-200 mb-2">⚠ Yang Penting:</p>
-                  <p>Threshold 10 BUKAN heuristik liar. Ini bagian definisi metrik form yang konsisten di tiga modul:
-                  </p>
-                  <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300 font-mono text-xs">
-                    <li><span class="text-emerald-300">_parse_espn_schedule()</span> — tolak &lt; 10</li>
-                    <li><span class="text-emerald-300">_parse_l10()</span> — terima actual hanya kalau w+l==10</li>
-                    <li><span class="text-emerald-300">_compute_form_gap()</span> — formula (wa - wb) / 5.0
-                      mengasumsikan window 10 game dengan baseline netral 5</li>
-                  </ul>
-                  <p class="mt-2 text-rose-300 font-semibold italic">Mengubah threshold di satu tempat tanpa koordinasi
-                    tiga modul → metrik rusak.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Decision Tree: Tiga Opsi Solusi -->
-        <h3 class="text-xl font-bold text-white mb-6">Decision Tree: Tiga Opsi Solusi</h3>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          <!-- Opsi C -->
-          <div class="fc-node node-blue rounded-xl p-5 cursor-pointer h-full flex flex-col justify-between"
-            onclick="showDetail('Opsi C', 'Rekomendasi Awal', 'blue', 'source_adapters/nba.py', 'Investigate ESPN endpoint parameter.', 'Mencari cara fetch data regular + playoff tanpa ubah metrik.', 'N/A')">
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <h4 class="font-bold text-lg text-blue-100">Opsi C</h4>
-                <span
-                  class="bg-blue-700 text-blue-100 text-[10px] px-2 py-1 rounded uppercase font-bold">Investigate</span>
-              </div>
-              <p class="text-sm font-semibold mb-2 text-blue-200">Investigate ESPN endpoint</p>
-              <div class="text-xs text-blue-100/80 space-y-2 mt-4">
-                <p><strong class="text-blue-300">Action:</strong> Cari parameter (seasontype=2,3 atau
-                  season=2026&dates=...) yang buka window regular season + playoff.</p>
-                <p><strong class="text-blue-300">Effort:</strong> 30-60 menit eksperimen.</p>
-                <p><strong class="text-blue-300">Benefit:</strong> Kalau berhasil, fix 1 baris di
-                  _fetch_espn_schedule(). Definisi metrik tetap utuh, COMPLETE achievable.</p>
-                <p><strong class="text-blue-300">Risiko:</strong> Kalau ESPN strict postseason-only, waktu ini sia-sia.
-                </p>
-              </div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-blue-700/50 flex justify-between items-center">
-              <span class="text-[10px] uppercase text-blue-300">Reversibility</span>
-              <span class="text-xs font-bold text-emerald-400">Tinggi</span>
-            </div>
-          </div>
-
-          <!-- Opsi E -->
-          <div
-            class="fc-node bg-slate-800 border-2 border-slate-600 text-slate-200 rounded-xl p-5 cursor-pointer h-full flex flex-col justify-between"
-            onclick="showDetail('Opsi E', 'Conservative Fallback', 'gray', 'Dokumentasi', 'Tunda Phase 2 ke pre-season.', 'Menghindari technical debt dengan mengorbankan timeline.', 'N/A')">
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <h4 class="font-bold text-lg text-slate-100">Opsi E</h4>
-                <span class="bg-slate-600 text-slate-200 text-[10px] px-2 py-1 rounded uppercase font-bold">Pause</span>
-              </div>
-              <p class="text-sm font-semibold mb-2 text-slate-300">Tunda Phase 2 ke Oktober</p>
-              <div class="text-xs text-slate-400 space-y-2 mt-4">
-                <p><strong class="text-slate-300">Action:</strong> Dokumentasikan temuan, bekukan Phase 2 gate
-                  validation, lanjut ke Phase 3 (AI analyzer) atau pause.</p>
-                <p><strong class="text-slate-300">Effort:</strong> Nol kode, dokumentasi saja.</p>
-                <p><strong class="text-slate-300">Benefit:</strong> Paling jujur. Definisi metrik utuh. Sejajar dengan
-                  "Conservative-first". Tidak ada technical debt.</p>
-                <p><strong class="text-slate-300">Risiko:</strong> Timeline mundur 4-5 bulan. Stakeholder kecewa.</p>
-              </div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-700/50 flex justify-between items-center">
-              <span class="text-[10px] uppercase text-slate-400">Reversibility</span>
-              <span class="text-xs font-bold text-emerald-400">Tinggi</span>
-            </div>
-          </div>
-
-          <!-- Opsi F -->
-          <div class="fc-node node-yellow rounded-xl p-5 cursor-pointer h-full flex flex-col justify-between"
-            onclick="showDetail('Opsi F', 'High Impact / Refactor', 'yellow', 'nba.py, metrics.py', 'Redesign metrik form (N variable).', 'Merombak arsitektur perhitungan metrik form dari L10 statis menjadi dinamis.', 'Seluruh modul metrik')">
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <h4 class="font-bold text-lg text-amber-100">Opsi F</h4>
-                <span
-                  class="bg-amber-600 text-amber-100 text-[10px] px-2 py-1 rounded uppercase font-bold">Redesign</span>
-              </div>
-              <p class="text-sm font-semibold mb-2 text-amber-200">Redesign metrik form (N variable)</p>
-              <div class="text-xs text-amber-100/80 space-y-2 mt-4">
-                <p><strong class="text-amber-300">Action:</strong> Pindah dari "L10 actual" ke "L_N actual dengan N≥5".
-                  Update 3 modul terkoordinasi. Dokumentasi diff.</p>
-                <p><strong class="text-amber-300">Effort:</strong> 1-2 hari engineering + verification.</p>
-                <p><strong class="text-amber-300">Benefit:</strong> Phase 2 dibuka selama playoffs. Adapter bisa
-                  COMPLETE.</p>
-                <p><strong class="text-amber-300">Risiko:</strong> Skala formula berubah. Skor antar musim tidak
-                  comparable. Risk register R-09 (tuning bias) berlaku.</p>
-              </div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-amber-700/50 flex justify-between items-center">
-              <span class="text-[10px] uppercase text-amber-300">Reversibility</span>
-              <span class="text-xs font-bold text-rose-400">Rendah</span>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="mt-6 p-4 bg-emerald-900/30 border-l-4 border-emerald-500 rounded text-sm text-emerald-100">
-          <strong class="text-emerald-400 uppercase tracking-wide text-xs">Rekomendasi Awal:</strong><br>
-          Mulai dengan <strong>Opsi C</strong> dulu (cek murah 30-60 menit). Kalau gagal → diskusi C/E/F dengan
-          stakeholder. Ini bukan keputusan engineering tunggal karena menyangkut validitas statistik sistem.
-        </div>
-
-      </section>
-    </div>
-
-    <!-- Footer -->
-    <footer class="mt-16 pt-8 border-t border-slate-800 text-center text-slate-500 text-xs pb-12">
-      <p>Generated on: <span id="gen-timestamp"></span> | NekoSport Engine v1.5 Adapter | Target: Phase 2 Evaluation</p>
-      <p class="mt-2">Dokumen internal khusus untuk keperluan technical audit & troubleshooting.</p>
-    </footer>
-  </main>
-
-  <!-- Detail Panel (Slide-over) -->
-  <aside id="detail-panel"
-    class="fixed right-0 top-0 h-full w-96 bg-slate-900 border-l border-slate-700 transform translate-x-full transition-transform duration-300 ease-in-out shadow-[-10px_0_30px_rgba(0,0,0,0.5)] z-50 flex flex-col">
-
-    <!-- Header -->
-    <div class="p-6 border-b border-slate-800 flex justify-between items-start">
-      <div>
-        <div id="dp-status-badge" class="inline-block px-2 py-1 text-[10px] font-bold uppercase rounded mb-2">STATUS
-        </div>
-        <h2 id="dp-title" class="text-xl font-bold text-white font-mono break-words">Node Title</h2>
+    <!-- Sidebar Navigation (Desktop Only) -->
+    <aside class="hidden lg:block lg:w-1/4 sticky top-24 pt-2 no-print self-start">
+      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
+          Navigasi Dokumen</h3>
+        <ul class="space-y-3 text-sm font-medium text-slate-600">
+          <li><a href="#ringkasan" class="hover:text-indigo-600 transition-colors">I. Ringkasan Eksekutif</a></li>
+          <li><a href="#arsitektur" class="hover:text-indigo-600 transition-colors">II. Fungsionalitas Sistem</a></li>
+          <li><a href="#roadmap" class="hover:text-indigo-600 transition-colors">III. Posisi Roadmap</a></li>
+          <li><a href="#eksperimen" class="hover:text-indigo-600 transition-colors">IV. Hasil Observasi</a></li>
+          <li><a href="#diagnosis" class="text-rose-600 hover:text-rose-700 transition-colors">V. Diagnosis Akar
+              Masalah</a></li>
+          <li><a href="#opsi" class="hover:text-indigo-600 transition-colors">VI. Tiga Opsi Strategis</a></li>
+          <li><a href="#rekomendasi" class="text-indigo-600 hover:text-indigo-700 transition-colors">VII. Rekomendasi
+              Tim</a></li>
+        </ul>
       </div>
-      <button onclick="closeDetail()"
-        class="text-slate-400 hover:text-white p-1 bg-slate-800 rounded hover:bg-slate-700 transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-    </div>
+    </aside>
 
-    <!-- Content -->
-    <div class="p-6 overflow-y-auto flex-1 space-y-6">
+  </div>
 
-      <div>
-        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">File Location</h4>
-        <div id="dp-file"
-          class="font-mono text-sm text-pink-300 bg-slate-950 p-2 rounded border border-slate-800 break-all"></div>
-      </div>
-
-      <div>
-        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Peran Spesifik</h4>
-        <p id="dp-role" class="text-sm text-slate-300 leading-relaxed"></p>
-      </div>
-
-      <div>
-        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Keterangan Khusus</h4>
-        <p id="dp-desc" class="text-sm text-slate-300 leading-relaxed"></p>
-      </div>
-
-      <div class="bg-slate-950 p-4 rounded border border-slate-800">
-        <h4 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Dependencies / I/O</h4>
-        <p id="dp-deps" class="text-sm text-slate-400 italic"></p>
-      </div>
-
-    </div>
-  </aside>
-
-  <!-- Overlay for mobile when panel is open -->
-  <div id="panel-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0"
-    onclick="closeDetail()"></div>
-
-  <script>
-    // Set dynamic timestamp
-    document.getElementById('gen-timestamp').innerText = new Date().toLocaleString('id-ID', { timeZoneName: 'short' });
-
-    // Interactivity: Panel Slide-over
-    const detailPanel = document.getElementById('detail-panel');
-    const panelOverlay = document.getElementById('panel-overlay');
-
-    function showDetail(title, status, colorTheme, file, role, desc, deps) {
-      document.getElementById('dp-title').innerText = title;
-      document.getElementById('dp-file').innerText = file;
-      document.getElementById('dp-role').innerHTML = role;
-      document.getElementById('dp-desc').innerHTML = desc;
-      document.getElementById('dp-deps').innerText = deps;
-
-      const badge = document.getElementById('dp-status-badge');
-      badge.innerText = status;
-
-      // Reset badge classes
-      badge.className = 'inline-block px-2 py-1 text-[10px] font-bold uppercase rounded mb-2';
-
-      // Apply color
-      if (colorTheme === 'green') badge.classList.add('badge-green');
-      else if (colorTheme === 'yellow') badge.classList.add('badge-yellow');
-      else if (colorTheme === 'red') badge.classList.add('badge-red');
-      else if (colorTheme === 'blue') badge.classList.add('badge-blue');
-      else badge.classList.add('badge-gray');
-
-      // Open Panel
-      detailPanel.classList.remove('translate-x-full');
-      panelOverlay.classList.remove('hidden');
-      // Small delay for transition
-      setTimeout(() => {
-        panelOverlay.classList.remove('opacity-0');
-        panelOverlay.classList.add('opacity-100');
-      }, 10);
-    }
-
-    function closeDetail() {
-      detailPanel.classList.add('translate-x-full');
-      panelOverlay.classList.remove('opacity-100');
-      panelOverlay.classList.add('opacity-0');
-      setTimeout(() => {
-        panelOverlay.classList.add('hidden');
-      }, 300);
-    }
-
-    // Interactivity: Sticky TOC Highlight (Scroll Spy)
-    const sections = document.querySelectorAll('main section');
-    const navLinks = document.querySelectorAll('.toc-link');
-    const mainScroll = document.getElementById('main-scroll');
-
-    const observerOptions = {
-      root: mainScroll,
-      rootMargin: '0px 0px -50% 0px',
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('id');
-          navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${id}`) {
-              link.classList.add('active');
-            }
-          });
-        }
-      });
-    }, observerOptions);
-
-    sections.forEach(section => {
-      observer.observe(section);
-    });
-
-    // Handle TOC click scrolling manually due to custom overflow setup
-    navLinks.forEach(link => {
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href').substring(1);
-        const targetElement = document.getElementById(targetId);
-
-        if (targetElement) {
-          // Smooth scroll main container to target element
-          targetElement.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-    });
-  </script>
 </body>
 
 </html>
