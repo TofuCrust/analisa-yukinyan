@@ -4,45 +4,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Briefing Dokumen: Status Proyek NekoSport</title>
+  <title>NekoSport v2 — Blueprint Rombakan Arsitektur</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700;900&display=swap"
-    rel="stylesheet">
   <style>
-    :root {
-      --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-      --font-serif: 'Merriweather', ui-serif, Georgia, serif;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
 
     body {
-      font-family: var(--font-sans);
-      background-color: #f8fafc;
-      /* slate-50 */
-      color: #0f172a;
-      /* slate-900 */
-      line-height: 1.6;
+      font-family: 'Inter', sans-serif;
     }
 
     h1,
     h2,
     h3,
     h4,
+    h5,
+    h6,
     .font-serif {
-      font-family: var(--font-serif);
+      font-family: 'Merriweather', serif;
     }
 
-    /* Flowchart CSS */
-    .flow-node {
-      position: relative;
-      z-index: 10;
+    /* Print Styles */
+    @media print {
+      body {
+        background-color: white !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .print-full {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .page-break {
+        page-break-before: always;
+      }
+
+      .avoid-break {
+        page-break-inside: avoid;
+      }
+
+      a {
+        text-decoration: none !important;
+        color: black !important;
+      }
+
+      /* Expand all details for printing */
+      .expand-on-print {
+        display: block !important;
+      }
+
+      .hide-on-print {
+        display: none !important;
+      }
     }
 
-    .flow-connector {
+    /* Flowchart SVG connection line */
+    .flow-line {
       width: 2px;
       height: 24px;
       background-color: #cbd5e1;
-      /* slate-300 */
       margin: 0 auto;
     }
 
@@ -51,669 +77,787 @@
       height: 0;
       border-left: 6px solid transparent;
       border-right: 6px solid transparent;
-      border-top: 6px solid #cbd5e1;
+      border-top: 8px solid #cbd5e1;
       margin: 0 auto;
-    }
-
-    /* Interactive Elements */
-    details>summary {
-      list-style: none;
-    }
-
-    details>summary::-webkit-details-marker {
-      display: none;
-    }
-
-    /* Print Styles */
-    @media print {
-      body {
-        background-color: #ffffff;
-      }
-
-      .no-print {
-        display: none !important;
-      }
-
-      .print-break-inside-avoid {
-        break-inside: avoid;
-      }
-
-      .print-border {
-        border: 1px solid #e2e8f0;
-      }
-
-      .print-shadow-none {
-        box-shadow: none !important;
-      }
-
-      main {
-        margin: 0;
-        padding: 0;
-        border: none;
-        width: 100%;
-        max-width: 100%;
-      }
-
-      /* Force details open on print */
-      details {
-        display: block;
-      }
-
-      details[open] summary~* {
-        display: block;
-      }
     }
   </style>
   <script>
-    // Force open all details elements before printing
-    window.addEventListener('beforeprint', () => {
-      document.querySelectorAll('details').forEach(detail => {
-        detail.setAttribute('data-was-closed', !detail.open);
-        detail.open = true;
-      });
-    });
-    window.addEventListener('afterprint', () => {
-      document.querySelectorAll('details[data-was-closed="true"]').forEach(detail => {
-        detail.open = false;
-        detail.removeAttribute('data-was-closed');
-      });
-    });
+    function toggleDetail(id, iconId) {
+      const el = document.getElementById(id);
+      const icon = document.getElementById(iconId);
+      if (el.classList.contains('hidden')) {
+        el.classList.remove('hidden');
+        icon.textContent = '−';
+      } else {
+        el.classList.add('hidden');
+        icon.textContent = '+';
+      }
+    }
   </script>
 </head>
 
-<body class="antialiased pb-24">
+<body class="bg-gray-50 text-gray-800 antialiased relative">
 
-  <!-- Top Navigation / Breadcrumb -->
-  <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print shadow-sm">
-    <div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center text-sm">
-      <div class="flex items-center space-x-2 text-slate-500 font-medium">
-        <span class="text-indigo-600 font-semibold">NekoSport</span>
-        <span>/</span>
-        <span>Dokumen Internal</span>
-        <span>/</span>
-        <span class="text-slate-900">Briefing Status</span>
-      </div>
+  <!-- Header Section -->
+  <header class="bg-white border-b border-gray-200 py-6 px-4 md:px-8 shadow-sm no-print sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
       <div>
-        <button onclick="window.print()"
-          class="text-slate-600 hover:text-indigo-600 flex items-center transition-colors">
-          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-            </path>
-          </svg>
-          Cetak PDF
-        </button>
+        <h1 class="text-2xl font-bold text-gray-900">NekoSport v2</h1>
+        <p class="text-sm text-gray-500 font-sans">Blueprint Rombakan Arsitektur</p>
+      </div>
+      <div class="text-right">
+        <p class="text-sm font-semibold text-gray-700">9 Mei 2026</p>
+        <span
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          Status: Untuk Approval
+        </span>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-start lg:gap-8 px-4 sm:px-6 lg:px-8 mt-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
 
-    <!-- Main Content -->
-    <main
-      class="w-full lg:w-3/4 bg-white p-6 sm:p-10 border border-slate-200 rounded-xl shadow-sm print-shadow-none print-border relative">
+    <!-- Main Content Area -->
+    <main class="w-full lg:w-3/4 bg-white p-6 md:p-10 shadow-sm border border-gray-200 rounded-lg print-full">
 
-      <!-- Header -->
-      <header class="mb-10 pb-6 border-b border-slate-200">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-4">
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Briefing Dokumen: Status Proyek NekoSport
-            </h1>
-            <p class="text-slate-500 font-medium">Disiapkan oleh: Tim Proyek NekoSport</p>
-          </div>
-        </div>
-        <div class="flex flex-wrap gap-3 text-xs font-medium mt-4">
-          <span class="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-md">Tanggal: 9 Mei
-            2026</span>
-          <span
-            class="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md flex items-center">Status:
-            Fase 2 (Blocker Teridentifikasi)</span>
-          <span class="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-md">Versi Engine:
-            v0.8.2-shadow</span>
-        </div>
-      </header>
+      <!-- Print Header (Visible only when printed) -->
+      <div class="hidden print:block mb-8 border-b pb-4">
+        <h1 class="text-3xl font-bold text-gray-900 font-serif">NekoSport v2 — Blueprint Rombakan Arsitektur</h1>
+        <p class="text-gray-600 mt-2">Tanggal: 9 Mei 2026 | Status: Untuk Approval</p>
+      </div>
 
-      <!-- Bagian I: Ringkasan Eksekutif -->
-      <section id="ringkasan" class="mb-12 scroll-mt-20">
-        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-          <span class="text-slate-400 mr-2">I.</span> Ringkasan Eksekutif
-        </h2>
-        <div
-          class="bg-blue-50 border-l-4 border-blue-600 p-5 rounded-r-lg text-slate-800 text-sm md:text-base leading-relaxed print-break-inside-avoid">
-          <p class="mb-2">Status proyek saat ini berada di <strong>Fase 2 (Real Data Adapter)</strong>, memasuki hari
-            ke-14+. Tim proyek telah mengidentifikasi akar masalah teknis (blocker) spesifik setelah melakukan lima
-            babak eksperimen diagnostik mendalam.</p>
-          <p class="mb-2">Temuan mengindikasikan adanya batasan struktural pada sumber data yang bersinggungan langsung
-            dengan definisi metrik kehati-hatian sistem. Implikasinya, target <em>live trade</em> akhir Mei perlu
-            dipertimbangkan ulang berdasarkan tiga opsi strategis yang tersedia.</p>
-          <p>Tim merekomendasikan investigasi cepat (Opsi 1) sebagai langkah intervensi pertama, dilanjutkan dengan
-            re-evaluasi proyeksi waktu berdasarkan hasil temuan tersebut.</p>
+      <!-- Section 1 -->
+      <section id="sec-1" class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">1. Ringkasan Eksekutif</h2>
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
+          <ul class="space-y-3 text-blue-900">
+            <li class="flex items-start">
+              <span class="mr-2">✓</span>
+              <span><strong>NekoSport v2</strong> adalah rombakan arsitektur dari single-source single-decision-engine
+                menjadi multi-source dengan AI synthesizer.</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">✓</span>
+              <span><strong>3 perubahan fundamental:</strong> multi-source triangulasi, AI sebagai decision synthesizer
+                (dengan guardrails), hedging sebagai first-class feature.</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">✓</span>
+              <span><strong>Target live trade:</strong> NBA Final 10 Juni 2026 (Game 7 if necessary).</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">✓</span>
+              <span><strong>Cost operasional estimate:</strong> Rp 650.000 - 830.000/bulan.</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">✓</span>
+              <span><strong>Minimum invest:</strong> 3 skenario tersedia (Rp 7 juta - Rp 50 juta tergantung apetit
+                risiko).</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">✓</span>
+              <span><strong>Yang dibutuhkan dari stakeholder:</strong> approval arah teknis + keputusan minimum
+                invest.</span>
+            </li>
+          </ul>
         </div>
       </section>
 
-      <!-- Bagian II: Apa yang sedang dibangun -->
-      <section id="arsitektur" class="mb-12 scroll-mt-20">
-        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-          <span class="text-slate-400 mr-2">II.</span> Fungsionalitas Sistem & Filosofi Proyek
-        </h2>
-
-        <p class="text-slate-700 mb-5">
-          NekoSport adalah sistem otomatis yang memantau pasar prediksi olahraga di Polymarket — platform di mana pihak
-          eksternal dapat memperdagangkan probabilitas hasil pertandingan, secara fundamental mirip pasar saham namun
-          direksional untuk peristiwa olahraga. Sistem mengambil data fundamental tim dari sumber publik, menghitung
-          secara kuantitatif apakah harga pasar mencerminkan probabilitas yang adil, lalu mengeksekusi keputusan
-          terprogram apakah peluang trading layak diambil atau diabaikan.
+      <!-- Section 2 -->
+      <section id="sec-2" class="mb-12 avoid-break">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">2. Apa yang Sedang Dibangun</h2>
+        <p class="mb-4 text-gray-700">
+          NekoSport adalah bot otomatis untuk pasar prediksi olahraga di Polymarket. Saat ini sistem berada di mode
+          shadow (analisis tanpa eksekusi nyata). Versi 1 (v1) menemui limitasi (stuck) karena mengandalkan
+          single-source (hanya ESPN) dan <i>rule engine</i> yang deterministik serta kurang fleksibel merespons dinamika
+          pasar. v2 dirancang untuk menyelesaikan limitasi ini melalui arsitektur baru.
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div class="border border-slate-200 bg-slate-50 p-4 rounded-lg">
-            <h4 class="font-bold text-slate-800 text-sm mb-1 border-b border-slate-200 pb-2">Shadow-first</h4>
-            <p class="text-xs text-slate-600 mt-2">Sistem dijalankan tanpa eksekusi finansial nyata (dry-run) terlebih
-              dahulu untuk validasi logika secara end-to-end.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div class="border border-gray-300 rounded-lg p-5 bg-gray-50">
+            <h3 class="font-bold text-gray-800 text-center mb-4 pb-2 border-b">v1 (Sekarang)</h3>
+            <ul class="space-y-3 text-sm text-gray-600">
+              <li class="flex items-center text-red-700"><span>✗ Single source (ESPN)</span></li>
+              <li class="flex items-center text-red-700"><span>✗ Rule engine deterministik</span></li>
+              <li class="flex items-center text-red-700"><span>✗ No hedging</span></li>
+              <li class="flex items-center text-red-700"><span>✗ Stuck di Phase 2</span></li>
+            </ul>
           </div>
-          <div class="border border-slate-200 bg-slate-50 p-4 rounded-lg">
-            <h4 class="font-bold text-slate-800 text-sm mb-1 border-b border-slate-200 pb-2">Conservative-first</h4>
-            <p class="text-xs text-slate-600 mt-2">Bila data inkonklusif atau tidak lengkap, sistem otomatis menolak
-              transaksi. Default aksi adalah menolak, bukan menerima.</p>
-          </div>
-          <div class="border border-slate-200 bg-slate-50 p-4 rounded-lg">
-            <h4 class="font-bold text-slate-800 text-sm mb-1 border-b border-slate-200 pb-2">Audit-friendly</h4>
-            <p class="text-xs text-slate-600 mt-2">Setiap keputusan kuantitatif harus memiliki jejak rekaman yang dapat
-              direkonstruksi untuk keperluan evaluasi performa.</p>
-          </div>
-        </div>
-
-        <div class="border border-slate-200 rounded-lg p-6 bg-white print-break-inside-avoid">
-          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6 text-center">Alur Pemrosesan
-            Deterministik Sistem</h3>
-
-          <div class="max-w-sm mx-auto text-center text-sm font-medium">
-            <div class="flow-node bg-slate-100 border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
-              Pemicu terjadwal</div>
-            <div class="flow-connector"></div>
-            <div class="flow-arrow-down"></div>
-
-            <div class="flow-node bg-white border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
-              Pemindaian pasar di Polymarket</div>
-            <div class="flow-connector"></div>
-            <div class="flow-arrow-down"></div>
-
-            <div class="flow-node bg-white border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
-              Pengambilan data fundamental tim (sumber publik)</div>
-            <div class="flow-connector"></div>
-            <div class="flow-arrow-down"></div>
-
-            <div class="flow-node bg-white border border-slate-300 text-slate-700 py-2.5 px-4 rounded shadow-sm">
-              Validasi kualitas data</div>
-            <div class="flow-connector"></div>
-            <div class="flow-arrow-down"></div>
-
-            <div class="flow-node bg-indigo-50 border border-indigo-200 text-indigo-800 py-2.5 px-4 rounded shadow-sm">
-              Mesin keputusan deterministik</div>
-            <div class="flow-connector"></div>
-            <div class="flow-arrow-down"></div>
-
+          <div class="border border-green-300 rounded-lg p-5 bg-green-50 shadow-sm relative">
             <div
-              class="flow-node bg-emerald-50 border border-emerald-200 text-emerald-800 py-2.5 px-4 rounded shadow-sm">
-              Pencatatan keputusan ke database<br><span class="text-xs font-normal opacity-80">(Mode shadow saat
-                ini)</span></div>
+              class="hidden md:block absolute -left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white border border-gray-300 rounded-full flex items-center justify-center text-gray-500 font-bold z-10 shadow-sm">
+              →</div>
+            <h3 class="font-bold text-green-900 text-center mb-4 pb-2 border-b border-green-200">v2 (Target)</h3>
+            <ul class="space-y-3 text-sm text-green-800 font-medium">
+              <li class="flex items-center"><span>✓ Multi-source (ESPN + Basketball-Reference)</span></li>
+              <li class="flex items-center"><span>✓ AI synthesizer dengan guardrails</span></li>
+              <li class="flex items-center"><span>✓ Hedging sebagai risk management</span></li>
+              <li class="flex items-center"><span>✓ Live target 10 Juni 2026</span></li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <!-- Bagian III: Posisi proyek dalam roadmap -->
-      <section id="roadmap" class="mb-12 scroll-mt-20">
-        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-          <span class="text-slate-400 mr-2">III.</span> Posisi Proyek dalam Roadmap
-        </h2>
+      <!-- Section 3 -->
+      <section id="sec-3" class="mb-12 page-break">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">3. Source Data yang Dipilih</h2>
 
-        <div class="overflow-x-auto print-break-inside-avoid">
-          <table class="w-full text-sm text-left border-collapse">
-            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-t border-slate-200">
-              <tr>
-                <th scope="col" class="px-4 py-3">Fase Proyek</th>
-                <th scope="col" class="px-4 py-3">Status</th>
-                <th scope="col" class="px-4 py-3">Deskripsi Singkat</th>
+        <div class="overflow-x-auto mb-6">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-100 text-gray-700">
+                <th class="p-3 border border-gray-300 font-semibold w-1/4">Source</th>
+                <th class="p-3 border border-gray-300 font-semibold">Kategori</th>
+                <th class="p-3 border border-gray-300 font-semibold w-1/6">Status</th>
+                <th class="p-3 border border-gray-300 font-semibold w-1/4">Reliability & Cost</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200">
-              <tr class="bg-white text-slate-600">
-                <td class="px-4 py-3 font-medium text-slate-800">Fase 0: Fondasi Sistem</td>
-                <td class="px-4 py-3"><span class="text-emerald-600 font-semibold flex items-center">✓ Selesai</span>
-                </td>
-                <td class="px-4 py-3">Pipeline dasar, database, evaluator</td>
+            <tbody class="text-sm">
+              <tr>
+                <td class="p-3 border border-gray-300 font-bold">ESPN</td>
+                <td class="p-3 border border-gray-300 text-gray-600">Fundamental (standings, recent form, schedule)</td>
+                <td class="p-3 border border-gray-300 text-green-700 font-medium">Carryover v1.5</td>
+                <td class="p-3 border border-gray-300"><span class="text-green-600 font-medium">Tinggi</span><br><span
+                    class="text-gray-500">Free</span></td>
               </tr>
-              <tr class="bg-white text-slate-600">
-                <td class="px-4 py-3 font-medium text-slate-800">Fase 1: Stabilisasi</td>
-                <td class="px-4 py-3"><span class="text-emerald-600 font-semibold flex items-center">✓ Selesai</span>
-                </td>
-                <td class="px-4 py-3">Dokumentasi, test coverage</td>
+              <tr>
+                <td class="p-3 border border-gray-300 font-bold">Basketball-Reference</td>
+                <td class="p-3 border border-gray-300 text-gray-600">Head-to-head historis + advanced stats (efficiency,
+                  pace)</td>
+                <td class="p-3 border border-gray-300 text-blue-700 font-medium">Baru (v2)</td>
+                <td class="p-3 border border-gray-300"><span class="text-yellow-600 font-medium">Medium</span> (Rate
+                  limit risk)<br><span class="text-gray-500">Free</span></td>
               </tr>
-              <tr class="bg-amber-50 border-y-2 border-amber-200 text-slate-800">
-                <td class="px-4 py-3 font-bold text-amber-900">Fase 2: Adapter Data NBA Nyata</td>
-                <td class="px-4 py-3"><span class="text-amber-600 font-bold flex items-center">⚠ Sedang Berjalan (Hari
-                    14+)</span></td>
-                <td class="px-4 py-3 font-medium">POSISI SAAT INI</td>
+              <tr>
+                <td class="p-3 border border-gray-300 font-bold">Polymarket (Internal)</td>
+                <td class="p-3 border border-gray-300 text-gray-600">Market microstructure (data harga + likuiditas
+                  market kita sendiri)</td>
+                <td class="p-3 border border-gray-300 text-green-700 font-medium">Carryover v1</td>
+                <td class="p-3 border border-gray-300"><span class="text-green-600 font-medium">Tinggi</span><br><span
+                    class="text-gray-500">Free</span></td>
               </tr>
-              <tr class="bg-white text-slate-400">
-                <td class="px-4 py-3 font-medium text-slate-500">Fase 3: Aktivasi AI Analyzer</td>
-                <td class="px-4 py-3">— Belum dimulai</td>
-                <td class="px-4 py-3">Probabilitas dari model AI</td>
+            </tbody>
+          </table>
+          <p class="text-xs text-gray-500 mt-2 italic">*Catatan Polymarket: Ini bukan sentimen, melainkan data
+            otoritatif untuk market yang kita trade.</p>
+        </div>
+
+        <!-- Warning Box -->
+        <div class="bg-yellow-50 border border-yellow-300 p-5 rounded-lg mb-6 avoid-break">
+          <h4 class="font-bold text-yellow-800 flex items-center mb-3">
+            <span class="mr-2">⚠</span> Warning: Limitasi Basketball-Reference
+          </h4>
+          <p class="text-sm text-yellow-900 mb-3">
+            Sports Reference LLC (operator) tidak menyediakan API resmi. Akses mengandalkan scraping HTML. Mereka
+            memiliki kebijakan ketat (maksimal ~20 request/menit, ban IP untuk repetisi) karena beban server HTML dan
+            perlindungan model bisnis (langganan premium Stathead).
+          </p>
+          <div class="bg-white p-3 rounded border border-yellow-200">
+            <h5 class="text-sm font-bold text-gray-800 mb-2">Mitigasi NekoSport:</h5>
+            <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
+              <li><strong>Cache TTL agresif:</strong> 6 jam untuk data historis, 1 jam untuk current.</li>
+              <li><strong>Throttling:</strong> Minimal 3 detik antar request. Scan NBA playoffs (~6 markets) butuh ~12
+                request (aman di bawah limit).</li>
+              <li><strong>Fallback Quality:</strong> Jika terkena limit (429/IP ban), fallback ke data quality MINIMAL
+                untuk scan terkait (mencegah crash).</li>
+            </ul>
+          </div>
+          <p class="text-xs text-yellow-800 mt-3 font-medium">
+            Plan B Blokir Permanen: Switch ke halaman ESPN team-vs-team, atau tunda metrik head-to-head ke scope v2.1.
+          </p>
+        </div>
+
+        <div class="text-sm text-gray-500 italic border-l-2 border-gray-300 pl-3">
+          Disclaimer: Analisis sentimen Reddit/news di-defer ke v3 karena scope NLP membutuhkan tambahan waktu yang
+          tidak available di timeline saat ini.
+        </div>
+      </section>
+
+      <!-- Section 4 -->
+      <section id="sec-4" class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">4. Data Flow End-to-End</h2>
+        <p class="mb-6 text-sm text-gray-600">
+          Berikut adalah alur data eksekusi bot. Arsitektur bergeser dari rule-based murni menjadi <span
+            class="font-semibold text-blue-600">AI Synthesizer dengan Strict Guardrails</span>. <br />
+          <span class="italic hide-on-print">(Klik setiap kotak untuk melihat detail teknis)</span>
+        </p>
+
+        <div class="max-w-2xl mx-auto py-4">
+
+          <!-- Node 1 -->
+          <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition bg-white"
+            onclick="toggleDetail('flow-1', 'icon-1')">
+            <div class="flex justify-between items-center font-bold text-gray-800">
+              <span>1. Trigger Sistem</span>
+              <span id="icon-1" class="text-gray-400 font-mono hide-on-print">+</span>
+            </div>
+            <div class="text-sm text-gray-500 mt-1">Cron scheduler harian</div>
+            <div id="flow-1" class="hidden expand-on-print mt-3 pt-3 border-t border-gray-200 text-sm text-gray-700">
+              Pemicu utama dijalankan dua kali sehari: Pukul 09:00 WIB dan 20:00 WIB untuk menangkap dinamika pasar
+              pregame.
+            </div>
+          </div>
+
+          <div class="flow-line"></div>
+          <div class="flow-arrow-down"></div>
+
+          <!-- Node 2 -->
+          <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition bg-white"
+            onclick="toggleDetail('flow-2', 'icon-2')">
+            <div class="flex justify-between items-center font-bold text-gray-800">
+              <span>2. Polymarket Scan</span>
+              <span id="icon-2" class="text-gray-400 font-mono hide-on-print">+</span>
+            </div>
+            <div class="text-sm text-gray-500 mt-1">Ambil market NBA pregame aktif</div>
+            <div id="flow-2" class="hidden expand-on-print mt-3 pt-3 border-t border-gray-200 text-sm text-gray-700">
+              Menarik list market dari API Polymarket internal. Memfilter hanya market yang berkaitan dengan NBA
+              Playoffs dan berstatus pregame.
+            </div>
+          </div>
+
+          <div class="flow-line"></div>
+          <div class="flow-arrow-down"></div>
+
+          <!-- Node 3 -->
+          <div class="border border-blue-300 rounded-lg p-4 cursor-pointer hover:bg-blue-50 transition bg-blue-50"
+            onclick="toggleDetail('flow-3', 'icon-3')">
+            <div class="flex justify-between items-center font-bold text-blue-900">
+              <span>3. Parallel Fetch (Multi-source)</span>
+              <span id="icon-3" class="text-blue-500 font-mono hide-on-print">+</span>
+            </div>
+            <div class="text-sm text-blue-700 mt-1">ESPN & Basketball-Reference</div>
+            <div id="flow-3" class="hidden expand-on-print mt-3 pt-3 border-t border-blue-200 text-sm text-gray-700">
+              <ul class="list-disc pl-5">
+                <li><strong>ESPN:</strong> standings, recent form, schedule.</li>
+                <li><strong>Basketball-Ref:</strong> H2H historis, advanced stats.</li>
+              </ul>
+              Proses berjalan paralel per market dengan internal throttling untuk B-Ref.
+            </div>
+          </div>
+
+          <div class="flow-line"></div>
+          <div class="flow-arrow-down"></div>
+
+          <!-- Node 4 -->
+          <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition bg-white"
+            onclick="toggleDetail('flow-4', 'icon-4')">
+            <div class="flex justify-between items-center font-bold text-gray-800">
+              <span>4. Triangulation Engine</span>
+              <span id="icon-4" class="text-gray-400 font-mono hide-on-print">+</span>
+            </div>
+            <div class="text-sm text-gray-500 mt-1">Konsolidasi metrik & quality scoring</div>
+            <div id="flow-4" class="hidden expand-on-print mt-3 pt-3 border-t border-gray-200 text-sm text-gray-700">
+              <ul class="list-disc pl-5">
+                <li>Konsolidasi metrik dari berbagai source.</li>
+                <li>Hitung disagreement score (jika source memberikan sinyal bertolak belakang).</li>
+                <li>Assign Quality Level: HIGH, MINIMAL, DEGRADED, atau FAIL.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Hard Gate -->
+          <div class="py-2 text-center">
+            <span
+              class="inline-block bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded border border-red-300">
+              HARD GATE: Quality DEGRADED/FAIL → SKIP
+            </span>
+          </div>
+          <div class="flow-line"></div>
+          <div class="flow-arrow-down"></div>
+
+          <!-- Node 5 -->
+          <div class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition bg-white"
+            onclick="toggleDetail('flow-5', 'icon-5')">
+            <div class="flex justify-between items-center font-bold text-gray-800">
+              <span>5. Math / Rule Engine</span>
+              <span id="icon-5" class="text-gray-400 font-mono hide-on-print">+</span>
+            </div>
+            <div class="text-sm text-gray-500 mt-1">Input layer sebelum AI</div>
+            <div id="flow-5" class="hidden expand-on-print mt-3 pt-3 border-t border-gray-200 text-sm text-gray-700">
+              Menghitung Expected Value (EV), Kelly fraction, dan rekomendasi stake (base size). Memberikan flag status
+              gate untuk bahan referensi AI.
+            </div>
+          </div>
+
+          <div class="flow-line"></div>
+          <div class="flow-arrow-down"></div>
+
+          <!-- Node 6 -->
+          <div
+            class="border-2 border-indigo-400 rounded-lg p-4 cursor-pointer hover:bg-indigo-50 transition bg-indigo-50"
+            onclick="toggleDetail('flow-6', 'icon-6')">
+            <div class="flex justify-between items-center font-bold text-indigo-900">
+              <span>6. AI Synthesizer (Claude Sonnet 4.6)</span>
+              <span id="icon-6" class="text-indigo-500 font-mono hide-on-print">+</span>
+            </div>
+            <div class="text-sm text-indigo-700 mt-1">Core Decision Engine</div>
+            <div id="flow-6" class="hidden expand-on-print mt-3 pt-3 border-t border-indigo-200 text-sm text-gray-800">
+              <strong>Input:</strong> Triangulated data + output EV/Kelly dari rule engine.<br>
+              <strong>Output:</strong> Keputusan final (BUY/SKIP) + size modifier + rekomendasi hedge + <i>reasoning
+                trace</i> (alasan logis).
+            </div>
+          </div>
+
+          <!-- Guardrails -->
+          <div class="py-2 text-center flex flex-col items-center space-y-2">
+            <div
+              class="bg-yellow-50 border border-yellow-400 text-yellow-900 text-xs text-left px-4 py-2 rounded max-w-sm w-full">
+              <strong>GUARDRAIL #1: AI Validator</strong><br>
+              - Schema valid?<br>
+              - Reasoning trace valid?<br>
+              - Decision tidak contradictory?
+            </div>
+            <div
+              class="bg-yellow-50 border border-yellow-400 text-yellow-900 text-xs text-left px-4 py-2 rounded max-w-sm w-full">
+              <strong>GUARDRAIL #2: Risk Engine (Non-overrideable)</strong><br>
+              - Daily loss cap, Max concurrent, Hedge cap<br>
+              - Emergency stop
+            </div>
+          </div>
+
+          <div class="flow-line"></div>
+          <div class="flow-arrow-down"></div>
+
+          <!-- Node 7 & 8 -->
+          <div class="border border-green-300 rounded-lg p-4 bg-green-50">
+            <div class="font-bold text-green-900 mb-2">7. Execution & Logging</div>
+            <div class="text-sm text-green-800">
+              <ul class="list-disc pl-5">
+                <li><strong>Mode:</strong> Shadow / Paper / Live (dikontrol manual oleh operator).</li>
+                <li><strong>Persist:</strong> Save to Database + kirim Telegram report.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 5 -->
+      <section id="sec-5" class="mb-12 page-break">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">5. Decision Logic</h2>
+        <p class="mb-6 text-gray-700">Kondisi yang menentukan apakah bot melakukan <strong>SKIP</strong> atau eksekusi
+          <strong>BUY</strong>.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <!-- SKIP -->
+          <div class="bg-red-50 border border-red-200 rounded-lg p-5">
+            <h3 class="font-bold text-red-800 mb-3 text-lg flex items-center">
+              <span class="mr-2">✗</span> SKIP Otomatis
+            </h3>
+            <p class="text-xs text-red-600 mb-4 italic">(Hard gate, tidak bisa di-override)</p>
+            <ul class="space-y-2 text-sm text-gray-800 list-disc pl-4">
+              <li>Data quality DEGRADED atau FAIL.</li>
+              <li>AI output gagal validasi setelah 1x retry.</li>
+              <li>Reasoning trace kosong atau tidak reference input.</li>
+              <li>Volume/liquidity/spread di luar threshold per segment.</li>
+              <li>Risk gate violated.</li>
+            </ul>
+          </div>
+
+          <!-- BUY -->
+          <div class="bg-green-50 border border-green-200 rounded-lg p-5">
+            <h3 class="font-bold text-green-800 mb-3 text-lg flex items-center">
+              <span class="mr-2">✓</span> BUY Execute
+            </h3>
+            <p class="text-xs text-green-600 mb-4 italic">(Semua kondisi di bawah terpenuhi)</p>
+            <ul class="space-y-2 text-sm text-gray-800 list-disc pl-4">
+              <li>Data quality MINIMAL ke atas.</li>
+              <li>AI decision = BUY dengan reasoning trace valid.</li>
+              <li>Risk gates pass (aman dari limit).</li>
+              <li>Execution mode allow trading (paper/live).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r">
+          <h4 class="font-bold text-blue-900 mb-2">Size Scaling Logic</h4>
+          <ul class="text-sm text-gray-700 space-y-1">
+            <li><strong>Base:</strong> Kelly fractional dari rule engine.</li>
+            <li><strong>AI Modifier:</strong> AI dapat memberikan modifier 0.5 - 1.5x (cap maksimal 1.5x untuk safety).
+            </li>
+            <li><strong>Absolute Cap:</strong> Hard cap dari risk engine tetap berlaku sebagai final gate.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Section 6 -->
+      <section id="sec-6" class="mb-12 avoid-break">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">6. Hedging Logic (First-Class Feature)</h2>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+          <h3 class="font-bold text-gray-800 mb-4">Kapan AI akan menyarankan Hedge?</h3>
+          <div class="flex flex-col space-y-3">
+            <div class="flex items-start">
+              <div
+                class="bg-blue-100 text-blue-800 rounded px-3 py-1 font-semibold text-sm w-48 shrink-0 border border-blue-200">
+                High Disagreement</div>
+              <div class="ml-4 text-sm text-gray-700 pt-1">Multi-source disagree tinggi, tetapi AI tetap confident untuk
+                BUY primary.</div>
+            </div>
+            <div class="flex items-start">
+              <div
+                class="bg-blue-100 text-blue-800 rounded px-3 py-1 font-semibold text-sm w-48 shrink-0 border border-blue-200">
+                Split Signals</div>
+              <div class="ml-4 text-sm text-gray-700 pt-1">Sebagian data menunjukkan indikator bullish, sebagian
+                bearish.</div>
+            </div>
+            <div class="flex items-start">
+              <div
+                class="bg-green-100 text-green-800 rounded px-3 py-1 font-semibold text-sm w-48 shrink-0 border border-green-200">
+                Market Opportunity</div>
+              <div class="ml-4 text-sm text-gray-700 pt-1">Market dengan liquidity tinggi di kedua sisi (memungkinkan
+                exit hedge dengan low slippage).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
+            <h4 class="font-bold text-gray-900 mb-2 border-b pb-1 text-sm">Spesifikasi Hedge v2</h4>
+            <ul class="text-sm text-gray-600 space-y-1 list-disc pl-4">
+              <li><strong>Side:</strong> Berlawanan dari primary.</li>
+              <li><strong>Size:</strong> 50% dari primary (fixed ratio).</li>
+              <li><strong>Timing:</strong> Immediate setelah primary entry confirmed.</li>
+              <li><strong>Registry:</strong> Same market_id, masuk ke tabel <code
+                  class="bg-gray-100 px-1 rounded text-red-600">hedge_pairs</code>.</li>
+            </ul>
+          </div>
+          <div class="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
+            <h4 class="font-bold text-gray-900 mb-2 border-b pb-1 text-sm">Hedge dibatalkan jika:</h4>
+            <ul class="text-sm text-gray-600 space-y-1 list-disc pl-4">
+              <li>Primary gagal entry.</li>
+              <li>Risk engine block (total exposure primary + hedge melebihi cap maksimum).</li>
+              <li>Mode shadow (hanya log niat hedge, tidak eksekusi nyata).</li>
+            </ul>
+          </div>
+          <div class="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
+            <h4 class="font-bold text-gray-900 mb-2 border-b pb-1 text-sm">Effectiveness Tracking</h4>
+            <ul class="text-sm text-gray-600 space-y-1 list-disc pl-4">
+              <li>Evaluator menghitung PnL pair (primary + hedge) vs hypothetical (primary saja).</li>
+              <li>Jika hedge consistently merugikan pada segment tertentu, auto-disable untuk segment tersebut.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-4 italic">
+          Catatan: Rolling hedge dan variable ratio bersifat out-of-scope untuk v2. Akan dipertimbangkan di v3 setelah
+          v2 stabil.
+        </p>
+      </section>
+
+      <!-- Section 7 -->
+      <section id="sec-7" class="mb-12 page-break">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">7. Antisipasi Pertanyaan: "Kenapa Tidak Pakai AI
+          Web Scraping?"</h2>
+
+        <div class="mb-6">
+          <p class="text-gray-700 leading-relaxed mb-4">
+            Workflow manual dengan ChatGPT (mencari web → membaca 10-20 artikel → sintesis → ambil keputusan) sangat
+            efektif untuk manusia. Namun, untuk implementasi bot otomatis dengan target <i>go-live</i> 10 Juni, terdapat
+            4 alasan teknis mendasar mengapa jalur tersebut tidak kita tempuh.
+          </p>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Alasan 1 -->
+          <div>
+            <h4 class="font-bold text-red-700 text-lg mb-2">1. Cost Multiplier (Biaya 10-50x Lipat)</h4>
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-gray-100 text-gray-700">
+                  <tr>
+                    <th class="p-3 border-b font-semibold">Pendekatan</th>
+                    <th class="p-3 border-b font-semibold">Cost per AI call</th>
+                    <th class="p-3 border-b font-semibold">Calls/hari</th>
+                    <th class="p-3 border-b font-semibold">Cost/bulan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="p-3 border-b bg-green-50 font-medium">Structured data + AI Synthesizer (v2)</td>
+                    <td class="p-3 border-b text-green-700">~$0,025 (dengan caching)</td>
+                    <td class="p-3 border-b">12</td>
+                    <td class="p-3 border-b font-bold text-green-700">~Rp 150.000</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 bg-red-50 font-medium">AI Web Scraping per market</td>
+                    <td class="p-3 text-red-700">~$0,50-1,00 (estimasi kasar)*</td>
+                    <td class="p-3">12</td>
+                    <td class="p-3 font-bold text-red-700">~Rp 2.500.000-5.000.000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+              *Web scraping butuh input token raksasa (50k-100k) untuk parse HTML mentah. Angka $0.50-$1.00 adalah
+              estimasi perbandingan kasar berdasarkan volume token tipikal.
+            </p>
+          </div>
+
+          <!-- Alasan 2 -->
+          <div>
+            <h4 class="font-bold text-red-700 text-lg mb-2">2. Latency 5-10x Lebih Lambat</h4>
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-gray-100 text-gray-700">
+                  <tr>
+                    <th class="p-3 border-b font-semibold">Pendekatan</th>
+                    <th class="p-3 border-b font-semibold">Per-market latency</th>
+                    <th class="p-3 border-b font-semibold">12 markets total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="p-3 border-b bg-green-50 font-medium">Structured data parallel fetch</td>
+                    <td class="p-3 border-b text-green-700">2-5 detik</td>
+                    <td class="p-3 border-b font-bold text-green-700">30-60 detik</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 bg-red-50 font-medium">AI web scraping sequential</td>
+                    <td class="p-3 text-red-700">30-60 detik</td>
+                    <td class="p-3 font-bold text-red-700">6-12 menit</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-sm text-gray-700 mt-2">
+              Scanner harus cepat (< 2 menit). Delay 12 menit berisiko harga pasar bergerak drastis, membuat analisis
+                obsoleto saat dieksekusi. </p>
+          </div>
+
+          <!-- Alasan 3 & 4 Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+              <h4 class="font-bold text-gray-800 mb-2">3. Audit Trail Rusak</h4>
+              <p class="text-sm text-gray-600">
+                Google search results berubah real-time. Jika kita mereplay decision minggu lalu, data sudah tidak sama.
+                Arsitektur <i>Structured Data</i> menjamin auditability yang solid (data source tersimpan, replay
+                decision menghasilkan AI reasoning yang konsisten).
+              </p>
+            </div>
+            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+              <h4 class="font-bold text-gray-800 mb-2">4. Kemunduran Timeline</h4>
+              <p class="text-sm text-gray-600">
+                Membangun pipeline NLP/Scraping yang robust anti-bot butuh 2-3 minggu tambahan khusus untuk engineering
+                integrasi web tool. Target live trade untuk NBA Final 10 Juni menjadi <strong>tidak achievable</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 bg-blue-50 border-l-4 border-blue-600 p-4 text-blue-900 rounded-r-lg text-sm font-medium">
+          <strong>Kesimpulan:</strong> Structured data + AI synthesizer adalah trade-off terbaik untuk akurasi, cost,
+          latency, dan timeline. AI Web Scraping akan dipertimbangkan untuk v3 sebagai <i>augmentation layer</i> (bukan
+          replacement) setelah v2 terbukti profitable.
+        </div>
+      </section>
+
+      <!-- Section 8 -->
+      <section id="sec-8" class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">8. Cost & Minimum Invest</h2>
+
+        <h3 class="text-xl font-bold font-serif text-gray-800 mb-3 mt-4">8.1 Konsumsi API Claude Sonnet 4.6</h3>
+        <div class="bg-gray-50 p-4 border border-gray-200 rounded-lg text-sm mb-6 flex flex-col md:flex-row gap-8">
+          <div class="flex-1">
+            <strong class="text-gray-900 block mb-2 border-b pb-1">Asumsi per AI Call:</strong>
+            <ul class="text-gray-700 space-y-1 list-disc pl-4">
+              <li>Input: ~6.500 token (prompt, data, rule engine, context)</li>
+              <li>Output: ~1.200 token (decision, reasoning, confidence)</li>
+            </ul>
+            <strong class="text-gray-900 block mt-3 mb-2 border-b pb-1">Cost per Call:</strong>
+            <ul class="text-gray-700 space-y-1 list-disc pl-4">
+              <li>Tanpa prompt caching: ~$0,038 (~Rp 630)</li>
+              <li>Dengan prompt caching: ~$0,025 (~Rp 415)</li>
+            </ul>
+          </div>
+          <div class="flex-1">
+            <strong class="text-gray-900 block mb-2 border-b pb-1">Volume Estimate (NBA Playoffs):</strong>
+            <ul class="text-gray-700 space-y-1 list-disc pl-4">
+              <li>2 scan/hari (pagi & sore)</li>
+              <li>Per scan: 4-8 markets aktif</li>
+              <li>Pass filter scanner: ~60%</li>
+              <li><strong>Total: ~10-12 AI calls/hari</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <h3 class="text-xl font-bold font-serif text-gray-800 mb-3">8.2 Total Biaya Operasional (OPEX)</h3>
+        <div class="overflow-x-auto mb-6">
+          <table class="w-full lg:w-2/3 text-left border-collapse border border-gray-200 shadow-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="p-3 border-b text-gray-700">Item</th>
+                <th class="p-3 border-b text-gray-700 text-right">Biaya/bulan</th>
               </tr>
-              <tr class="bg-white text-slate-400">
-                <td class="px-4 py-3 font-medium text-slate-500">Fase 4: Resolusi Trade Otomatis</td>
-                <td class="px-4 py-3">— Belum dimulai</td>
-                <td class="px-4 py-3">Sistem tahu menang/kalah</td>
+            </thead>
+            <tbody class="text-gray-800">
+              <tr>
+                <td class="p-3 border-b">VPS</td>
+                <td class="p-3 border-b text-right font-medium">Rp 400.000</td>
               </tr>
-              <tr class="bg-white text-slate-400">
-                <td class="px-4 py-3 font-medium text-slate-500">Fase 5: Adapter Multi-Cabang</td>
-                <td class="px-4 py-3">— Belum dimulai</td>
-                <td class="px-4 py-3">NHL, esports, dll</td>
+              <tr>
+                <td class="p-3 border-b">Claude API Sonnet 4.6</td>
+                <td class="p-3 border-b text-right font-medium">Rp 150.000 - 330.000</td>
               </tr>
-              <tr class="bg-white text-slate-400">
-                <td class="px-4 py-3 font-medium text-slate-500">Fase 6: Validasi Shadow</td>
-                <td class="px-4 py-3">— Belum dimulai</td>
-                <td class="px-4 py-3">Kumpulkan ≥30 trade resolved</td>
+              <tr>
+                <td class="p-3 border-b">Buffer overhead lain</td>
+                <td class="p-3 border-b text-right font-medium">Rp 100.000</td>
               </tr>
-              <tr class="bg-slate-800 text-white border-t border-slate-700">
-                <td class="px-4 py-3 font-bold">Live Trade</td>
-                <td class="px-4 py-3 font-medium text-slate-300">Setelah Fase 6 lulus</td>
-                <td class="px-4 py-3">Eksekusi finansial nyata</td>
+              <tr class="bg-gray-50 font-bold">
+                <td class="p-3 border-b text-gray-900">TOTAL ESTIMASI</td>
+                <td class="p-3 border-b text-right text-gray-900">Rp 650.000 - 830.000/bulan</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div class="mt-6 p-4 border border-slate-200 rounded-lg bg-slate-50">
-          <h4 class="font-semibold text-slate-800 mb-2 text-sm">Kriteria Kelulusan Fase 2 yang Belum Terpenuhi:</h4>
-          <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1 mb-4">
-            <li>Data lengkap untuk ≥80% pertandingan NBA aktif.</li>
-            <li>Pemindaian menghasilkan campuran keputusan yang masuk akal.</li>
-            <li>Skor fundamental bervariasi antar tim.</li>
-          </ul>
-          <div class="bg-white p-3 border border-slate-200 rounded flex justify-between items-center text-sm">
-            <span class="font-medium text-slate-700">Status Validasi Data Hari Ini:</span>
-            <span class="text-rose-600 font-bold bg-rose-50 px-2 py-1 rounded">1 dari 8 tim aktif (12.5%) — Target:
-              80%</span>
-          </div>
-        </div>
-      </section>
+        <h3 class="text-xl font-bold font-serif text-gray-800 mb-3">8.3 Minimum Invest — 3 Skenario</h3>
+        <p class="text-sm text-gray-600 mb-3 italic">Rule of thumb: Biaya operasional sebaiknya < 5-10% dari bankroll
+            trading agar tidak tergerus fixed cost.</p>
+            <div class="overflow-x-auto mb-6">
+              <table class="w-full text-left border-collapse text-sm shadow-sm">
+                <thead class="bg-gray-800 text-white">
+                  <tr>
+                    <th class="p-3 font-semibold rounded-tl-lg">Skenario</th>
+                    <th class="p-3 font-semibold">Bankroll</th>
+                    <th class="p-3 font-semibold">Per-trade stake (2% Kelly)</th>
+                    <th class="p-3 font-semibold">Operasional %</th>
+                    <th class="p-3 font-semibold rounded-tr-lg">Survive 10-loss streak</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="p-3 font-bold text-gray-800">Konservatif</td>
+                    <td class="p-3 text-gray-700">Rp 35-50 juta</td>
+                    <td class="p-3 text-gray-700">Rp 700rb - 1 juta</td>
+                    <td class="p-3 text-green-600 font-medium">&lt;2%</td>
+                    <td class="p-3 text-gray-700">20% bankroll</td>
+                  </tr>
+                  <tr class="border-b border-gray-200 hover:bg-gray-50 bg-green-50">
+                    <td class="p-3 font-bold text-gray-800">Moderate <span
+                        class="text-xs text-green-700 block font-normal">(Rec: Post-NBA Final)</span></td>
+                    <td class="p-3 text-gray-700">Rp 15-20 juta</td>
+                    <td class="p-3 text-gray-700">Rp 300-400rb</td>
+                    <td class="p-3 text-blue-600 font-medium">&lt;5%</td>
+                    <td class="p-3 text-gray-700">20% bankroll</td>
+                  </tr>
+                  <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="p-3 font-bold text-gray-800">Minimal Test <span
+                        class="text-xs text-gray-500 block font-normal">(Rec: Game 7 Only)</span></td>
+                    <td class="p-3 text-gray-700">Rp 7-10 juta</td>
+                    <td class="p-3 text-gray-700">Rp 140-200rb</td>
+                    <td class="p-3 text-yellow-600 font-medium">&lt;10%</td>
+                    <td class="p-3 text-gray-700">20% bankroll</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-      <!-- Bagian IV: Eksperimen -->
-      <section id="eksperimen" class="mb-12 scroll-mt-20">
-        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-          <span class="text-slate-400 mr-2">IV.</span> Hasil Observasi & Eksperimen Diagnostik
-        </h2>
-
-        <p class="text-slate-700 mb-6 text-sm">
-          Tim proyek telah melaksanakan 5 sekuens pengujian terisolasi untuk memisahkan indikasi kegagalan pada lapisan
-          pemindai (scanner) dengan lapisan pengolah data (adapter).
-        </p>
-
-        <div class="space-y-4 print-break-inside-avoid">
-
-          <!-- Babak 1 -->
-          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <!-- Disclaimer Box -->
             <div
-              class="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center text-sm font-semibold text-slate-700">
-              <span>Eksperimen 1: Pembersihan ruang lingkup pemindaian</span>
-              <span class="font-normal text-slate-500 text-xs">~2 minggu lalu</span>
-            </div>
-            <div class="p-4 bg-white text-sm">
-              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-3 text-slate-500 font-medium">Hipotesis</div>
-                <div class="md:col-span-9 text-slate-800">Pemindaian menerima jenis pasar di luar target (futures,
-                  handicap, totals, draft) yang menghasilkan noise.</div>
-
-                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Tindakan</div>
-                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">Penambahan filter
-                  eksplisit untuk menolak jenis pasar non-target.</div>
-
-                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Hasil &
-                  Pelajaran</div>
-                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">
-                  Pemindaian terkonsentrasi pada pasar pregame matchup/moneyline sesuai cakupan produksi. Ini merupakan
-                  perbaikan strukturil, namun bukan akar masalah utama.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Babak 2 -->
-          <div class="border border-slate-200 rounded-lg overflow-hidden">
-            <div
-              class="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center text-sm font-semibold text-slate-700">
-              <span>Eksperimen 2: Pelonggaran threshold pemindaian</span>
-              <span class="font-normal text-slate-500 text-xs">~1.5 minggu lalu</span>
-            </div>
-            <div class="p-4 bg-white text-sm">
-              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-3 text-slate-500 font-medium">Hipotesis</div>
-                <div class="md:col-span-9 text-slate-800">Ambang batas volume/likuiditas terlalu ketat untuk realita
-                  pasar NBA Polymarket saat ini.</div>
-
-                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Tindakan</div>
-                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">Penurunan threshold ke
-                  vol≥5000/liq≥5000 dengan jalur pelapis vol≥3000/liq≥20000.</div>
-
-                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-2 mt-2">Hasil &
-                  Pelajaran</div>
-                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-2 mt-2">
-                  0 kandidat lolos selama 24 iterasi observasi (window 2 jam). Pelonggaran threshold tidak menyelesaikan
-                  blocker; terindikasi ada penyebab tersembunyi.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Babak 3 & 4 (Combined in UI using Details for brevity, but prompt asks for structured sequence. Let's keep them explicit) -->
-
-          <details class="group border border-slate-200 rounded-lg overflow-hidden bg-white print-break-inside-avoid">
-            <summary
-              class="bg-white hover:bg-slate-50 px-4 py-3 flex justify-between items-center text-sm font-semibold text-slate-700 cursor-pointer transition-colors">
-              <div class="flex items-center">
-                <span class="mr-2">Eksperimen 3 & 4: Pembangunan Tool Diagnostik (Klik untuk detail)</span>
-              </div>
-              <span class="text-indigo-500 group-open:rotate-180 transition-transform">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </span>
-            </summary>
-            <div class="p-4 border-t border-slate-200 bg-slate-50 text-sm space-y-6">
-              <!-- Babak 3 -->
-              <div>
-                <h4 class="font-bold text-slate-800 mb-2 border-l-2 border-slate-400 pl-2">Eksperimen 3: Tool monitoring
-                  runtime</h4>
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 pl-3">
-                  <div class="md:col-span-3 text-slate-500">Tindakan:</div>
-                  <div class="md:col-span-9 text-slate-700">Pembangunan <code>scan_monitor</code> yang mencatat status
-                    pemindaian setiap 5 menit.</div>
-                  <div class="md:col-span-3 text-slate-500">Hasil:</div>
-                  <div class="md:col-span-9 text-slate-700">Konfirmasi 0 kandidat lolos selama window observasi; tidak
-                    ada pasar yang mencapai tahap validasi adapter. Pemindai memang tidak meloloskan apapun.</div>
-                </div>
-              </div>
-              <!-- Babak 4 -->
-              <div>
-                <h4 class="font-bold text-slate-800 mb-2 border-l-2 border-slate-400 pl-2">Eksperimen 4: Tool audit
-                  bypass filter</h4>
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 pl-3">
-                  <div class="md:col-span-3 text-slate-500">Tindakan:</div>
-                  <div class="md:col-span-9 text-slate-700">Pembangunan <code>coverage_audit</code> untuk menguji
-                    adapter pada pasar low-volume yang tidak lolos filter normal.</div>
-                  <div class="md:col-span-3 text-slate-500">Hasil:</div>
-                  <div class="md:col-span-9 text-slate-700">0 pasar tercakup karena adanya validasi freshness yang
-                    menyaring lebih dulu. Tool tersedia tapi belum memberikan bahan validasi adapter langsung.</div>
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <!-- Babak 5 -->
-          <div
-            class="border-2 border-indigo-200 rounded-lg overflow-hidden shadow-sm relative print-break-inside-avoid">
-            <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">HARI
-              INI</div>
-            <div
-              class="bg-indigo-50 px-4 py-3 border-b border-indigo-100 flex justify-between items-center text-sm font-bold text-indigo-900">
-              <span>Eksperimen 5: Validasi Adapter Langsung (Isolasi Akar Masalah)</span>
-            </div>
-            <div class="p-4 bg-white text-sm">
-              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-3 text-slate-500 font-medium">Hipotesis</div>
-                <div class="md:col-span-9 text-slate-800">Blocker mungkin di adapter data, bukan di pemindai. Adapter
-                  belum pernah diuji runtime di luar test environment buatan.</div>
-
-                <div class="md:col-span-3 text-slate-500 font-medium border-t border-slate-100 pt-3 mt-1">Tindakan</div>
-                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-3 mt-1">Pembangunan proof tool
-                  yang memanggil adapter NBA langsung pada 8 tim playoff aktif, mem-bypass seluruh filter pemindai.
-                </div>
-
-                <div class="md:col-span-3 text-indigo-700 font-bold border-t border-slate-100 pt-3 mt-1">Hasil Observasi
-                </div>
-                <div
-                  class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-3 mt-1 font-medium bg-slate-50 p-2 rounded">
-                  <span class="text-emerald-600">1 dari 8 tim menghasilkan data lengkap (76ers).</span><br>
-                  <span class="text-rose-600">7 dari 8 tim menghasilkan data parsial dengan pola kegagalan
-                    identik.</span>
-                </div>
-
-                <div class="md:col-span-3 text-slate-800 font-bold border-t border-slate-100 pt-3 mt-1">Pelajaran Utama
-                </div>
-                <div class="md:col-span-9 text-slate-800 border-t border-slate-100 pt-3 mt-1">
-                  Blocker BUKAN di pemindai. Blocker spesifik berada di modul parser data ESPN yang mensyaratkan minimum
-                  10 pertandingan selesai dalam window pengambilan data. Mengingat realita NBA Playoffs awal Mei,
-                  sebagian besar tim hanya memiliki 5-9 pertandingan playoff selesai, sehingga status data ditolak oleh
-                  sistem sebagai "tidak lengkap".
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Bagian V: Akar Masalah -->
-      <section id="diagnosis" class="mb-12 scroll-mt-20">
-        <div class="bg-rose-50 border border-rose-200 rounded-xl p-6 print-break-inside-avoid">
-          <h2 class="text-xl font-bold text-rose-900 mb-4 flex items-center">
-            <span class="mr-2">✗</span> V. Diagnosis Presisi: Akar Masalah Terisolasi
-          </h2>
-
-          <div class="space-y-4 text-slate-800 text-sm">
-            <p class="font-medium bg-white p-4 rounded border border-rose-100 shadow-sm">
-              Modul parser data fundamental NBA mensyaratkan minimum <strong>10 pertandingan selesai</strong> untuk
-              menandai data sebagai "lengkap". Threshold ini bukan tuning sembarangan — ia adalah bagian definisi metrik
-              form yang konsisten di tiga modul terkait: parser, formula perhitungan skor performa, dan aturan kualitas
-              data.
-            </p>
-
-            <p>
-              Dalam realita window playoffs NBA awal Mei 2026, pertandingan yang tercatat di sumber data ESPN per tim
-              hanya <strong>5-9 game</strong> (Round 1 + Round 2 yang sedang berjalan). Hanya tim yang melalui Round 1
-              dengan 7 game penuh + 3 game Round 2 = 10 game yang melewati threshold. Dari 8 tim aktif Round 2, hanya
-              satu yang memenuhi kondisi tersebut.
-            </p>
-
-            <div class="mt-4 pt-4 border-t border-rose-200">
-              <h4 class="font-bold text-rose-900 mb-2">Implikasi Struktural:</h4>
-              <ul class="list-disc pl-5 space-y-2 text-rose-800">
-                <li>Threshold 10 game bukan <em>bug</em> dalam arti sempit; sistem bekerja sesuai desain (menolak data
-                  minim).</li>
-                <li>Yang tidak diperhitungkan dalam desain awal: Endpoint ESPN kemungkinan besar mengembalikan
-                  <em>window playoff</em> saja secara terisolasi, bukan menggabungkan 10 game terakhir secara absolut
-                  (termasuk regular season).</li>
-                <li>Perubahan threshold tidak bisa dilakukan terisolasi. Mengubah angka di parser tanpa mengoordinasikan
-                  dengan formula skor dan aturan kualitas akan menghasilkan skor yang skala normalisasinya rusak.</li>
-                <li class="font-bold text-rose-900">Dampak temporal: Dengan format data saat ini, adapter NBA secara
-                  struktural tidak akan mencapai status "lengkap" konsisten selama ~6 minggu playoffs (Mei-Juni 2026),
-                  tanpa intervensi arsitektural.</li>
+              class="bg-yellow-100 border-l-4 border-yellow-500 p-5 rounded shadow-sm text-sm text-yellow-900 mt-6 avoid-break">
+              <strong class="block mb-2 font-bold uppercase text-yellow-800">Disclaimer Angka:</strong>
+              Semua angka di atas adalah asumsi awal untuk diskusi, bukan kalkulasi pasti. Hal berikut akan
+              terkonfirmasi:
+              <ul class="list-disc pl-5 mt-2 space-y-1">
+                <li>Volume AI call actual akan diketahui setelah Phase 4 (paper mode) berjalan.</li>
+                <li>Biaya VPS Rp 400.000/bulan adalah angka yang stakeholder berikan.</li>
+                <li><strong>Profitabilitas tidak dijamin</strong> — angka di atas adalah cost operasional, bukan profit
+                  projection.</li>
+                <li>Estimate AI web scraping ($0,50-1,00/call) pada seksi sebelumnya adalah perkiraan kasar untuk
+                  perbandingan, bukan benchmark presisi.</li>
               </ul>
             </div>
-          </div>
-        </div>
       </section>
 
-      <!-- Bagian VI: Tiga Opsi -->
-      <section id="opsi" class="mb-12 scroll-mt-20">
-        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-          <span class="text-slate-400 mr-2">VI.</span> Tiga Opsi Strategis Ke Depan
-        </h2>
+      <!-- Section 9 -->
+      <section id="sec-9" class="mb-4 page-break">
+        <div class="bg-gray-900 text-white p-6 md:p-8 rounded-xl shadow-lg relative overflow-hidden">
+          <!-- Subtle background decoration -->
+          <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-blue-500 rounded-full opacity-10 blur-2xl"></div>
 
-        <p class="text-slate-600 mb-6 text-sm">
-          Berdasarkan diagnosis di atas, tim memproyeksikan tiga jalur tindak lanjut dengan trade-off yang berbeda
-          antara kecepatan, risiko kualitas, dan reversibilitas.
-        </p>
+          <h2 class="text-2xl font-bold font-serif border-b border-gray-700 pb-3 mb-6 relative z-10">9. Yang Dibutuhkan
+            dari Stakeholder</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch print-break-inside-avoid">
+          <p class="mb-6 text-gray-300 relative z-10">Untuk eksekusi rencana v2 ini, tim proyek membutuhkan 3 keputusan
+            dari stakeholder:</p>
 
-          <!-- Card 1 -->
-          <div class="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col">
-            <div class="bg-slate-50 border-b border-slate-200 p-4 rounded-t-lg">
-              <h3 class="font-bold text-slate-800">Opsi 1: Investigasi parameter sumber data ESPN</h3>
+          <div class="space-y-6 relative z-10">
+            <div class="flex gap-4">
+              <div
+                class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">
+                1</div>
+              <div>
+                <h4 class="font-bold text-lg text-blue-300">Approval Arah Teknis</h4>
+                <p class="text-gray-300 text-sm mt-1">Apakah arsitektur yang dipresentasikan (multi-source + AI
+                  synthesizer + hedging) sesuai dengan visi proyek? Atau ada arah berbeda yang perlu didiskusikan?</p>
+              </div>
             </div>
-            <div class="p-4 text-sm text-slate-700 flex-grow flex flex-col">
-              <p class="mb-4 flex-grow">Penyelidikan apakah endpoint ESPN memiliki parameter yang membuka window data
-                lebih lebar (regular season + playoff). Bila ada, perubahan minimal pada satu fungsi cukup untuk membuka
-                adapter mencapai status lengkap tanpa mengubah definisi metrik.</p>
-
-              <dl class="space-y-2 border-t border-slate-100 pt-3 text-xs">
-                <div class="flex justify-between">
-                  <dt class="font-semibold text-slate-500">Waktu Eksekusi</dt>
-                  <dd class="text-right font-medium">30-60 menit (eksperimen + verifikasi)</dd>
-                </div>
-                <div class="flex justify-between">
-                  <dt class="font-semibold text-slate-500">Reversibility</dt>
-                  <dd class="text-right text-emerald-600 font-semibold">Tinggi</dd>
-                </div>
-                <div class="flex justify-between flex-col mt-2 pt-2 border-t border-slate-50">
-                  <dt class="font-semibold text-slate-500 mb-1">Manfaat Utama</dt>
-                  <dd class="text-slate-800 bg-slate-50 p-2 rounded">Solusi minimal-invasive. Definisi metrik form tetap
-                    utuh. Phase 2 berpotensi terbuka dalam hari ini juga.</dd>
-                </div>
-                <div class="flex justify-between flex-col">
-                  <dt class="font-semibold text-slate-500 mb-1">Risiko Teknis</dt>
-                  <dd class="text-slate-800">Rendah. Bila gagal, waktu yang terpakai relatif kecil dan informasi tetap
-                    berguna untuk Opsi 2/3.</dd>
-                </div>
-                <div class="flex justify-between mt-2 pt-2 border-t border-slate-100">
-                  <dt class="font-semibold text-slate-500">Biaya Operasional</dt>
-                  <dd class="text-right">Tetap (Tidak ada tambahan)</dd>
-                </div>
-              </dl>
+            <div class="flex gap-4">
+              <div
+                class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">
+                2</div>
+              <div>
+                <h4 class="font-bold text-lg text-blue-300">Pilihan Skenario Minimum Invest</h4>
+                <p class="text-gray-300 text-sm mt-1">Konservatif, Moderate, atau Minimal Test? Keputusan ini menentukan
+                  bankroll allocation dan risk caps yang akan di-set di Phase 0.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div
+                class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">
+                3</div>
+              <div>
+                <h4 class="font-bold text-lg text-blue-300">Wallet Strategy dengan Yukinyan</h4>
+                <p class="text-gray-300 text-sm mt-1">NekoSport dan Yukinyan saat ini share wallet Polymarket. Untuk
+                  live mode, perlu diputuskan: separate wallet untuk NekoSport, atau shared dengan aggregate cap
+                  mechanism. Tanpa keputusan ini, live mode tidak bisa diaktifkan.</p>
+              </div>
             </div>
           </div>
 
-          <!-- Card 2 -->
-          <div class="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col">
-            <div class="bg-slate-50 border-b border-slate-200 p-4 rounded-t-lg">
-              <h3 class="font-bold text-slate-800">Opsi 2: Penundaan ke regular season NBA</h3>
-            </div>
-            <div class="p-4 text-sm text-slate-700 flex-grow flex flex-col">
-              <p class="mb-4 flex-grow">Penerimaan bahwa dengan format data window playoffs, validasi adapter berkala
-                tidak feasible dalam 6 minggu ke depan. Tunda kelulusan Fase 2 hingga regular season NBA dimulai
-                (Oktober 2026) di mana setiap tim main 80+ pertandingan.</p>
-
-              <dl class="space-y-2 border-t border-slate-100 pt-3 text-xs">
-                <div class="flex justify-between">
-                  <dt class="font-semibold text-slate-500">Waktu Eksekusi</dt>
-                  <dd class="text-right font-medium">~5 bulan penundaan target</dd>
-                </div>
-                <div class="flex justify-between">
-                  <dt class="font-semibold text-slate-500">Reversibility</dt>
-                  <dd class="text-right text-emerald-600 font-semibold">Tinggi</dd>
-                </div>
-                <div class="flex justify-between flex-col mt-2 pt-2 border-t border-slate-50">
-                  <dt class="font-semibold text-slate-500 mb-1">Manfaat Utama</dt>
-                  <dd class="text-slate-800 bg-slate-50 p-2 rounded">Sistem dibangun dengan disiplin desain utuh.
-                    Definisi metrik tetap valid. Tidak ada <i>technical debt</i>.</dd>
-                </div>
-                <div class="flex justify-between flex-col">
-                  <dt class="font-semibold text-slate-500 mb-1">Risiko Proyek</dt>
-                  <dd class="text-slate-800">Timeline mundur signifikan. Waktu jeda bisa dimanfaatkan untuk Phase 3 (AI)
-                    atau pause aktivitas.</dd>
-                </div>
-                <div class="flex justify-between mt-2 pt-2 border-t border-slate-100">
-                  <dt class="font-semibold text-slate-500">Biaya Operasional</dt>
-                  <dd class="text-right font-medium text-amber-600">Infrastruktur terus berjalan ~5 bulan</dd>
-                </div>
-              </dl>
-            </div>
+          <div class="mt-8 bg-gray-800 border border-gray-700 p-5 rounded-lg relative z-10">
+            <h4 class="font-bold text-white mb-3 text-sm tracking-wider uppercase">Target Timeline Eksekusi:</h4>
+            <ul class="text-sm text-gray-300 space-y-2 grid grid-cols-1 md:grid-cols-2 gap-x-4">
+              <li><strong class="text-gray-400">11-12 Mei:</strong> Phase 0 finalisasi spec</li>
+              <li><strong class="text-gray-400">12-18 Mei:</strong> Multi-source NBA adapter</li>
+              <li><strong class="text-gray-400">18-24 Mei:</strong> AI synthesizer integration</li>
+              <li><strong class="text-gray-400">24-29 Mei:</strong> Hedging engine</li>
+              <li><strong class="text-gray-400">30 Mei - 7 Jun:</strong> Paper mode hardening (min 20 trades)</li>
+              <li><strong class="text-gray-400">8-9 Juni:</strong> Pre-live review</li>
+              <li class="text-green-400 md:col-span-2 pt-2 border-t border-gray-700 mt-2 font-medium"><strong>10
+                  Juni:</strong> Live trade NBA Final Game 7 (if necessary)</li>
+            </ul>
           </div>
-
-          <!-- Card 3 -->
-          <div class="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col">
-            <div class="bg-slate-50 border-b border-slate-200 p-4 rounded-t-lg">
-              <h3 class="font-bold text-slate-800">Opsi 3: Redesign metrik form ke window variabel</h3>
-            </div>
-            <div class="p-4 text-sm text-slate-700 flex-grow flex flex-col">
-              <p class="mb-4 flex-grow">Perubahan definisi metrik form dari "10 game terakhir tetap" menjadi "N game
-                terakhir dengan minimum N=5", dengan pembaruan terkoordinasi pada parser, formula perhitungan skor, dan
-                aturan kualitas, didokumentasikan di config store.</p>
-
-              <dl class="space-y-2 border-t border-slate-100 pt-3 text-xs">
-                <div class="flex justify-between">
-                  <dt class="font-semibold text-slate-500">Waktu Eksekusi</dt>
-                  <dd class="text-right font-medium">1-2 minggu (engineering & verifikasi)</dd>
-                </div>
-                <div class="flex justify-between">
-                  <dt class="font-semibold text-slate-500">Reversibility</dt>
-                  <dd class="text-right text-rose-600 font-semibold">Rendah</dd>
-                </div>
-                <div class="flex justify-between flex-col mt-2 pt-2 border-t border-slate-50">
-                  <dt class="font-semibold text-slate-500 mb-1">Manfaat Utama</dt>
-                  <dd class="text-slate-800 bg-slate-50 p-2 rounded">Phase 2 berpotensi terbuka selama periode playoffs
-                    berjalan. Target live trade akhir Mei tetap dikejar.</dd>
-                </div>
-                <div class="flex justify-between flex-col">
-                  <dt class="font-semibold text-slate-500 mb-1">Risiko Teknis</dt>
-                  <dd class="text-slate-800">Skala metrik berubah. Risiko overfitting formula baru. Risk register R-09
-                    (tuning bias) aktif.</dd>
-                </div>
-                <div class="flex justify-between mt-2 pt-2 border-t border-slate-100">
-                  <dt class="font-semibold text-slate-500">Biaya Operasional</dt>
-                  <dd class="text-right">Overhead engineering 1-2 minggu</dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- Bagian VII: Rekomendasi -->
-      <section id="rekomendasi" class="scroll-mt-20 print-break-inside-avoid">
-        <div class="bg-slate-800 rounded-xl p-6 shadow-md text-white">
-          <h2 class="text-xl font-bold mb-4 border-b border-slate-600 pb-3 flex items-center">
-            <span class="mr-2 text-slate-400">VII.</span> Rekomendasi Tim & Poin Diskusi
-          </h2>
-
-          <p class="mb-4 text-slate-200 text-sm md:text-base leading-relaxed">
-            Tim merekomendasikan eksekusi <strong>Opsi 1</strong> sebagai langkah selanjutnya karena profil biaya
-            investigasi yang sangat rendah dan reversibilitas tinggi. Hasil investigasi ini (baik terkonfirmasi positif
-            maupun negatif) akan memberikan basis informasi faktual yang lebih solid untuk diskusi lanjutan.
-          </p>
-
-          <div class="bg-slate-700/50 border border-slate-600 rounded p-4 mb-4">
-            <h4 class="font-semibold text-white mb-2 text-sm">Persetujuan strategis diperlukan untuk:</h4>
-            <ol class="list-decimal pl-5 space-y-1 text-sm text-slate-300">
-              <li>Otorisasi alokasi waktu untuk eksekusi Opsi 1.</li>
-              <li>Persiapan diskusi lanjutan mengenai perbandingan Opsi 2 vs Opsi 3, sebagai langkah kontingensi apabila
-                Opsi 1 terbukti tidak feasible.</li>
-              <li>Re-evaluasi target timeline komersial proyek berdasarkan diagnosis hari ini.</li>
-            </ol>
-          </div>
-
-          <p class="text-sm text-slate-400 italic">
-            Catatan: Tim siap mengeksekusi opsi manapun yang disepakati. Pertimbangan utama pada tahap ini bukanlah
-            aspek teknikalitas, melainkan manajemen <em>trade-off</em> antara kecepatan timeline eksekusi, efisiensi
-            biaya operasional berjalan, dan integritas kualitas fondasi sistem jangka panjang.
-          </p>
         </div>
       </section>
 
     </main>
 
-    <!-- Sidebar Navigation (Desktop Only) -->
-    <aside class="hidden lg:block lg:w-1/4 sticky top-24 pt-2 no-print self-start">
-      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
-          Navigasi Dokumen</h3>
-        <ul class="space-y-3 text-sm font-medium text-slate-600">
-          <li><a href="#ringkasan" class="hover:text-indigo-600 transition-colors">I. Ringkasan Eksekutif</a></li>
-          <li><a href="#arsitektur" class="hover:text-indigo-600 transition-colors">II. Fungsionalitas Sistem</a></li>
-          <li><a href="#roadmap" class="hover:text-indigo-600 transition-colors">III. Posisi Roadmap</a></li>
-          <li><a href="#eksperimen" class="hover:text-indigo-600 transition-colors">IV. Hasil Observasi</a></li>
-          <li><a href="#diagnosis" class="text-rose-600 hover:text-rose-700 transition-colors">V. Diagnosis Akar
-              Masalah</a></li>
-          <li><a href="#opsi" class="hover:text-indigo-600 transition-colors">VI. Tiga Opsi Strategis</a></li>
-          <li><a href="#rekomendasi" class="text-indigo-600 hover:text-indigo-700 transition-colors">VII. Rekomendasi
-              Tim</a></li>
+    <!-- Right Sidebar (Table of Contents) -->
+    <aside class="hidden lg:block w-1/4 shrink-0 no-print">
+      <nav class="sticky top-24 bg-white p-5 border border-gray-200 rounded-lg shadow-sm">
+        <h3 class="font-bold text-gray-900 mb-4 font-serif uppercase text-sm tracking-wide">Navigasi Dokumen</h3>
+        <ul class="space-y-3 text-sm text-gray-600">
+          <li><a href="#sec-1" class="hover:text-blue-600 transition block">1. Ringkasan Eksekutif</a></li>
+          <li><a href="#sec-2" class="hover:text-blue-600 transition block">2. Apa yang Dibangun</a></li>
+          <li><a href="#sec-3" class="hover:text-blue-600 transition block">3. Source Data</a></li>
+          <li><a href="#sec-4" class="hover:text-blue-600 transition block">4. Data Flow (End-to-End)</a></li>
+          <li><a href="#sec-5" class="hover:text-blue-600 transition block">5. Decision Logic</a></li>
+          <li><a href="#sec-6" class="hover:text-blue-600 transition block">6. Hedging Logic</a></li>
+          <li><a href="#sec-7" class="hover:text-blue-600 transition block">7. Mengapa Non-Web Scraping</a></li>
+          <li><a href="#sec-8" class="hover:text-blue-600 transition block">8. Cost & Min. Invest</a></li>
+          <li><a href="#sec-9" class="hover:text-blue-600 transition font-bold block text-blue-700">9. Keputusan
+              Stakeholder</a></li>
         </ul>
-      </div>
+      </nav>
     </aside>
 
   </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-8 text-sm text-gray-500 bg-white border-t border-gray-200 no-print">
+    <p>Tanggal 9 Mei 2026 • Status: Untuk Approval Stakeholder • Versi Blueprint v2.0</p>
+  </footer>
 
 </body>
 
